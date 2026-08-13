@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B9B199F4302D8D9B0021A532 /* Swinject in Frameworks */ = {isa = PBXBuildFile; productRef = B9B199F3302D8D9B0021A532 /* Swinject */; };
+		B9B199F7302D8E190021A532 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = B9B199F6302D8E190021A532 /* Alamofire */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		B9B199B8302D89B70021A532 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -65,6 +70,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B9B199F7302D8E190021A532 /* Alamofire in Frameworks */,
+				B9B199F4302D8D9B0021A532 /* Swinject in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -111,11 +118,13 @@
 		B9B199A0302D89B70021A532 /* VibeFinderMobile */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = B9B199CA302D89B70021A532 /* Build configuration list for PBXNativeTarget "VibeFinderMobile" */;
-			buildPhases = (
-				B9B1999D302D89B70021A532 /* Sources */,
-				B9B1999E302D89B70021A532 /* Frameworks */,
-				B9B1999F302D89B70021A532 /* Resources */,
-			);
+				buildPhases = (
+					B9B19DB0302E32000021A532 /* SwiftGen */,
+					B9B19DB1302E36000021A532 /* SwiftLint */,
+					B9B1999D302D89B70021A532 /* Sources */,
+					B9B1999E302D89B70021A532 /* Frameworks */,
+					B9B1999F302D89B70021A532 /* Resources */,
+				);
 			buildRules = (
 			);
 			dependencies = (
@@ -125,6 +134,8 @@
 			);
 			name = VibeFinderMobile;
 			packageProductDependencies = (
+				B9B199F3302D8D9B0021A532 /* Swinject */,
+				B9B199F6302D8E190021A532 /* Alamofire */,
 			);
 			productName = VibeFinderMobile;
 			productReference = B9B199A1302D89B70021A532 /* VibeFinderMobile.app */;
@@ -208,6 +219,10 @@
 			);
 			mainGroup = B9B19998302D89B70021A532;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				B9B199F2302D8D9B0021A532 /* XCRemoteSwiftPackageReference "Swinject" */,
+				B9B199F5302D8E190021A532 /* XCRemoteSwiftPackageReference "Alamofire" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B9B199A2302D89B70021A532 /* Products */;
 			projectDirPath = "";
@@ -243,6 +258,53 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		B9B19DB0302E32000021A532 /* SwiftGen */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/swiftgen.yml",
+				"$(SRCROOT)/VibeFinderMobile/Assets.xcassets",
+			);
+			name = SwiftGen;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/VibeFinderMobile/Generated/Assets.swift",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\"\nmkdir -p \"${SRCROOT}/VibeFinderMobile/Generated\"\n\nif command -v swiftgen >/dev/null; then\n  swiftgen config run --config \"${SRCROOT}/swiftgen.yml\"\nelse\n  echo \"warning: SwiftGen not installed. Install it with: brew install swiftgen\"\nfi\n";
+		};
+		B9B19DB1302E36000021A532 /* SwiftLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/.swiftlint.yml",
+				"$(SRCROOT)/VibeFinderMobile",
+				"$(SRCROOT)/VibeFinderMobileTests",
+				"$(SRCROOT)/VibeFinderMobileUITests",
+			);
+			name = SwiftLint;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\"\n\nif [ \"$(xcode-select -p)\" = \"/Library/Developer/CommandLineTools\" ] && [ -d \"/Applications/Xcode.app/Contents/Developer\" ]; then\n  export DEVELOPER_DIR=\"/Applications/Xcode.app/Contents/Developer\"\nfi\n\nif command -v swiftlint >/dev/null; then\n  swiftlint --config \"${SRCROOT}/.swiftlint.yml\"\nelse\n  echo \"warning: SwiftLint not installed. Install it with: brew install swiftlint\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		B9B1999D302D89B70021A532 /* Sources */ = {
@@ -294,7 +356,6 @@
 				INFOPLIST_FILE = VibeFinderMobile/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -326,7 +387,6 @@
 				INFOPLIST_FILE = VibeFinderMobile/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -591,6 +651,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B9B199F2302D8D9B0021A532 /* XCRemoteSwiftPackageReference "Swinject" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Swinject/Swinject.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.10.0;
+			};
+		};
+		B9B199F5302D8E190021A532 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.12.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B9B199F3302D8D9B0021A532 /* Swinject */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B9B199F2302D8D9B0021A532 /* XCRemoteSwiftPackageReference "Swinject" */;
+			productName = Swinject;
+		};
+		B9B199F6302D8E190021A532 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B9B199F5302D8E190021A532 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B9B19999302D89B70021A532 /* Project object */;
 }

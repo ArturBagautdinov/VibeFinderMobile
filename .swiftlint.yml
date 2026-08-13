@@ -1,0 +1,19 @@
+excluded:
+  - VibeFinderMobile/Generated
+  - VibeFinderMobile.xcodeproj
+  - VibeFinderMobile.xcodeproj/project.xcworkspace
+
+disabled_rules:
+  - trailing_whitespace
+
+line_length:
+  warning: 140
+  error: 240
+
+type_body_length:
+  warning: 300
+  error: 500
+
+file_length:
+  warning: 500
+  error: 1000

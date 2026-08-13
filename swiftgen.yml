@@ -1,0 +1,6 @@
+xcassets:
+  inputs:
+    - VibeFinderMobile/Assets.xcassets
+  outputs:
+    - templateName: swift5
+      output: VibeFinderMobile/Generated/Assets.swift
