@@ -1,0 +1,110 @@
+// swiftlint:disable all
+// Generated using SwiftGen — https://github.com/SwiftGen/SwiftGen
+
+import Foundation
+
+// swiftlint:disable superfluous_disable_command file_length implicit_return prefer_self_in_static_references
+
+// MARK: - Strings
+
+// swiftlint:disable explicit_type_interface function_parameter_count identifier_name line_length
+// swiftlint:disable nesting type_body_length type_name vertical_whitespace_opening_braces
+internal enum L10n {
+  internal enum Auth {
+    internal enum Common {
+      /// Password
+      internal static let password = L10n.tr("Localizable", "auth.common.password", fallback: "Password")
+    }
+    internal enum Login {
+      /// Create account
+      internal static let createAccount = L10n.tr("Localizable", "auth.login.create_account", fallback: "Create account")
+      /// Welcome back
+      internal static let headline = L10n.tr("Localizable", "auth.login.headline", fallback: "Welcome back")
+      /// Username or email
+      internal static let identifier = L10n.tr("Localizable", "auth.login.identifier", fallback: "Username or email")
+      /// Log In
+      internal static let submit = L10n.tr("Localizable", "auth.login.submit", fallback: "Log In")
+      /// Sign in to continue collecting stories, games, books, movies, and series that match your vibe.
+      internal static let subtitle = L10n.tr("Localizable", "auth.login.subtitle", fallback: "Sign in to continue collecting stories, games, books, movies, and series that match your vibe.")
+      /// Log In
+      internal static let title = L10n.tr("Localizable", "auth.login.title", fallback: "Log In")
+    }
+    internal enum Register {
+      /// Confirm password
+      internal static let confirmPassword = L10n.tr("Localizable", "auth.register.confirm_password", fallback: "Confirm password")
+      /// Email
+      internal static let email = L10n.tr("Localizable", "auth.register.email", fallback: "Email")
+      /// First name
+      internal static let firstName = L10n.tr("Localizable", "auth.register.first_name", fallback: "First name")
+      /// I already have an account
+      internal static let haveAccount = L10n.tr("Localizable", "auth.register.have_account", fallback: "I already have an account")
+      /// Create your account
+      internal static let headline = L10n.tr("Localizable", "auth.register.headline", fallback: "Create your account")
+      /// Last name
+      internal static let lastName = L10n.tr("Localizable", "auth.register.last_name", fallback: "Last name")
+      /// Register
+      internal static let submit = L10n.tr("Localizable", "auth.register.submit", fallback: "Register")
+      /// Use the same details that will identify your VibeFinder profile.
+      internal static let subtitle = L10n.tr("Localizable", "auth.register.subtitle", fallback: "Use the same details that will identify your VibeFinder profile.")
+      /// Almost there
+      internal static let successTitle = L10n.tr("Localizable", "auth.register.success_title", fallback: "Almost there")
+      /// Registration
+      internal static let title = L10n.tr("Localizable", "auth.register.title", fallback: "Registration")
+      /// Username
+      internal static let username = L10n.tr("Localizable", "auth.register.username", fallback: "Username")
+    }
+    internal enum Validation {
+      /// Passwords do not match.
+      internal static let passwordMismatch = L10n.tr("Localizable", "auth.validation.password_mismatch", fallback: "Passwords do not match.")
+      /// Fill in all required fields.
+      internal static let requiredFields = L10n.tr("Localizable", "auth.validation.required_fields", fallback: "Fill in all required fields.")
+    }
+  }
+  internal enum Common {
+    /// OK
+    internal static let ok = L10n.tr("Localizable", "common.ok", fallback: "OK")
+  }
+  internal enum Error {
+    /// We could not read the server response.
+    internal static let decoding = L10n.tr("Localizable", "error.decoding", fallback: "We could not read the server response.")
+    /// Request failed with status code %d.
+    internal static func httpStatus(_ p1: Int) -> String {
+      return L10n.tr("Localizable", "error.http_status", p1, fallback: "Request failed with status code %d.")
+    }
+    /// Check your connection and try again.
+    internal static let network = L10n.tr("Localizable", "error.network", fallback: "Check your connection and try again.")
+    /// Something went wrong. Please try again.
+    internal static let unknown = L10n.tr("Localizable", "error.unknown", fallback: "Something went wrong. Please try again.")
+  }
+  internal enum Home {
+    /// VibeFinder
+    internal static let title = L10n.tr("Localizable", "home.title", fallback: "VibeFinder")
+    /// Welcome, %@.
+    internal static func welcome(_ p1: Any) -> String {
+      return L10n.tr("Localizable", "home.welcome", String(describing: p1), fallback: "Welcome, %@.")
+    }
+  }
+}
+// swiftlint:enable explicit_type_interface function_parameter_count identifier_name line_length
+// swiftlint:enable nesting type_body_length type_name vertical_whitespace_opening_braces
+
+// MARK: - Implementation Details
+
+extension L10n {
+  private static func tr(_ table: String, _ key: String, _ args: CVarArg..., fallback value: String) -> String {
+    let format = BundleToken.bundle.localizedString(forKey: key, value: value, table: table)
+    return String(format: format, locale: Locale.current, arguments: args)
+  }
+}
+
+// swiftlint:disable convenience_type
+private final class BundleToken {
+  static let bundle: Bundle = {
+    #if SWIFT_PACKAGE
+    return Bundle.module
+    #else
+    return Bundle(for: BundleToken.self)
+    #endif
+  }()
+}
+// swiftlint:enable convenience_type
