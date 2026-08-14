@@ -1,6 +1,6 @@
 import UIKit
 
-final class AuthFormView: UIView {
+final class AuthFormView: UIView, UITextFieldDelegate {
     enum Mode {
         case login
         case register
@@ -44,6 +44,7 @@ final class AuthFormView: UIView {
     private let titleLabel = UILabel()
     private let subtitleLabel = UILabel()
     private let scrollView = UIScrollView()
+    private var orderedFields: [UITextField] = []
 
     init(mode: Mode) {
         super.init(frame: .zero)
@@ -98,6 +99,8 @@ final class AuthFormView: UIView {
         let fields = mode == .login
             ? [identifierField, passwordField]
             : [emailField, usernameField, firstNameField, lastNameField, passwordField, confirmPasswordField]
+        orderedFields = fields
+        configureTextFields(fields)
 
         let stackView = UIStackView(arrangedSubviews: [
             logoImageView,
@@ -119,6 +122,7 @@ final class AuthFormView: UIView {
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(stackView)
         addSubview(scrollView)
+        addKeyboardDismissTapGesture()
 
         NSLayoutConstraint.activate([
             scrollView.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor),
@@ -128,12 +132,41 @@ final class AuthFormView: UIView {
 
             stackView.leadingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.leadingAnchor, constant: 24),
             stackView.trailingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.trailingAnchor, constant: -24),
-            stackView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: mode == .login ? 40 : 24),
+            stackView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: mode == .login ? 100 : 24),
             stackView.bottomAnchor.constraint(
                 equalTo: scrollView.contentLayoutGuide.bottomAnchor,
                 constant: -24
             )
         ])
+    }
+
+    private func configureTextFields(_ fields: [UITextField]) {
+        fields.enumerated().forEach { index, field in
+            field.delegate = self
+            field.returnKeyType = index == fields.indices.last ? .done : .next
+        }
+    }
+
+    private func addKeyboardDismissTapGesture() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        tapGesture.cancelsTouchesInView = false
+        scrollView.addGestureRecognizer(tapGesture)
+    }
+
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        guard let index = orderedFields.firstIndex(of: textField) else {
+            dismissKeyboard()
+            return true
+        }
+
+        let nextIndex = orderedFields.index(after: index)
+        if orderedFields.indices.contains(nextIndex) {
+            orderedFields[nextIndex].becomeFirstResponder()
+        } else {
+            dismissKeyboard()
+        }
+
+        return true
     }
 
     private func subscribeToKeyboardNotifications() {
@@ -174,5 +207,9 @@ final class AuthFormView: UIView {
             self.scrollView.contentInset.bottom = bottom
             self.scrollView.verticalScrollIndicatorInsets.bottom = bottom
         }
+    }
+
+    @objc private func dismissKeyboard() {
+        endEditing(true)
     }
 }
