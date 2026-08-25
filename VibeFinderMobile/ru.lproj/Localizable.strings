@@ -30,6 +30,7 @@
 "auth.register.username" = "Имя пользователя";
 "auth.validation.password_mismatch" = "Пароли не совпадают.";
 "auth.validation.required_fields" = "Заполните все обязательные поля.";
+"common.back" = "Назад";
 "common.ok" = "ОК";
 "error.decoding" = "Не удалось прочитать ответ сервера.";
 "error.http_status" = "Запрос завершился с кодом %d.";

@@ -39,6 +39,7 @@ final class AuthFormView: UIView, UITextFieldDelegate {
     )
     let submitButton = PrimaryButton(type: .system)
     let switchButton = UIButton(type: .system)
+    let backButton = UIButton(type: .system)
 
     private let errorLabel = UILabel()
     private let titleLabel = UILabel()
@@ -83,6 +84,8 @@ final class AuthFormView: UIView, UITextFieldDelegate {
     private func configure(mode: Mode) {
         backgroundColor = AppTheme.Color.background
         accessibilityIdentifier = mode == .login ? "auth.login.screen" : "auth.register.screen"
+
+        configureBackButton(mode: mode)
 
         titleLabel.text = mode == .login ? L10n.Auth.Login.headline : L10n.Auth.Register.headline
         titleLabel.accessibilityIdentifier = mode == .login ? "auth.login.titleLabel" : "auth.register.titleLabel"
@@ -134,6 +137,7 @@ final class AuthFormView: UIView, UITextFieldDelegate {
             ]
 
         let stackView = UIStackView(arrangedSubviews: [
+            backButton,
             promptCloudView,
             titleLabel,
             subtitleLabel
@@ -144,6 +148,7 @@ final class AuthFormView: UIView, UITextFieldDelegate {
         ])
         stackView.axis = .vertical
         stackView.spacing = mode == .login ? 16 : 14
+        stackView.setCustomSpacing(18, after: backButton)
         stackView.setCustomSpacing(mode == .login ? 34 : 26, after: promptCloudView)
         stackView.setCustomSpacing(10, after: titleLabel)
         stackView.setCustomSpacing(mode == .login ? 34 : 26, after: subtitleLabel)
@@ -173,6 +178,19 @@ final class AuthFormView: UIView, UITextFieldDelegate {
                 constant: -24
             )
         ])
+    }
+
+    private func configureBackButton(mode: Mode) {
+        var configuration = UIButton.Configuration.plain()
+        configuration.title = L10n.Common.back
+        configuration.image = UIImage(systemName: "chevron.left")
+        configuration.imagePadding = 4
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+        configuration.baseForegroundColor = AppTheme.Color.primary
+        backButton.configuration = configuration
+        backButton.contentHorizontalAlignment = .leading
+        backButton.titleLabel?.font = .preferredFont(forTextStyle: .headline)
+        backButton.accessibilityIdentifier = mode == .login ? "auth.login.backButton" : "auth.register.backButton"
     }
 
     private func makeFieldSection(title: String, field: UITextField) -> UIStackView {

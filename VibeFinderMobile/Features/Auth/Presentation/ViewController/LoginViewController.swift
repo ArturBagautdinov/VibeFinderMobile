@@ -6,6 +6,7 @@ final class LoginViewController: UIViewController, AlertPresenting {
     private var pendingSuccessMessage: String?
 
     var onRegisterSelected: (() -> Void)?
+    var onBackSelected: (() -> Void)?
 
     init(viewModel: LoginViewModel) {
         self.viewModel = viewModel
@@ -48,6 +49,7 @@ final class LoginViewController: UIViewController, AlertPresenting {
     private func configureActions() {
         navigationItem.title = nil
         navigationItem.hidesBackButton = true
+        authView.backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
         authView.submitButton.addTarget(self, action: #selector(loginTapped), for: .touchUpInside)
         authView.switchButton.addTarget(self, action: #selector(registerTapped), for: .touchUpInside)
     }
@@ -69,5 +71,9 @@ final class LoginViewController: UIViewController, AlertPresenting {
 
     @objc private func registerTapped() {
         onRegisterSelected?()
+    }
+
+    @objc private func backTapped() {
+        onBackSelected?()
     }
 }

@@ -5,6 +5,7 @@ final class RegisterViewController: UIViewController {
     private let authView = AuthFormView(mode: .register)
 
     var onLoginSelected: (() -> Void)?
+    var onBackSelected: (() -> Void)?
 
     init(viewModel: RegisterViewModel) {
         self.viewModel = viewModel
@@ -28,6 +29,7 @@ final class RegisterViewController: UIViewController {
     private func configureActions() {
         navigationItem.title = nil
         navigationItem.hidesBackButton = true
+        authView.backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
         authView.submitButton.addTarget(self, action: #selector(registerTapped), for: .touchUpInside)
         authView.switchButton.addTarget(self, action: #selector(loginTapped), for: .touchUpInside)
     }
@@ -53,5 +55,9 @@ final class RegisterViewController: UIViewController {
 
     @objc private func loginTapped() {
         onLoginSelected?()
+    }
+
+    @objc private func backTapped() {
+        onBackSelected?()
     }
 }

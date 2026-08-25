@@ -18,6 +18,14 @@ final class AuthCoordinator: Coordinator {
     }
 
     private func showOnboarding() {
+        setRoot(makeOnboardingViewController(), direction: nil)
+    }
+
+    private func returnToOnboarding() {
+        setRoot(makeOnboardingViewController(), direction: .backward)
+    }
+
+    private func makeOnboardingViewController() -> AuthOnboardingViewController {
         let viewController = AuthOnboardingViewController()
         viewController.onStartSelected = { [weak self] in
             self?.showRegister()
@@ -25,7 +33,7 @@ final class AuthCoordinator: Coordinator {
         viewController.onSignInSelected = { [weak self] in
             self?.showLogin(direction: .forward)
         }
-        setRoot(viewController, direction: nil)
+        return viewController
     }
 
     private func showLogin(direction: TransitionDirection?, completion: (() -> Void)? = nil) {
@@ -36,6 +44,9 @@ final class AuthCoordinator: Coordinator {
         let viewController = LoginViewController(viewModel: viewModel)
         viewController.onRegisterSelected = { [weak self] in
             self?.showRegister()
+        }
+        viewController.onBackSelected = { [weak self] in
+            self?.returnToOnboarding()
         }
         setRoot(viewController, direction: direction, completion: completion)
     }
@@ -48,6 +59,9 @@ final class AuthCoordinator: Coordinator {
         let viewController = RegisterViewController(viewModel: viewModel)
         viewController.onLoginSelected = { [weak self] in
             self?.showLogin(direction: .backward)
+        }
+        viewController.onBackSelected = { [weak self] in
+            self?.returnToOnboarding()
         }
         setRoot(viewController, direction: .forward)
     }

@@ -30,6 +30,7 @@
 "auth.register.username" = "Username";
 "auth.validation.password_mismatch" = "Passwords do not match.";
 "auth.validation.required_fields" = "Fill in all required fields.";
+"common.back" = "Back";
 "common.ok" = "OK";
 "error.decoding" = "We could not read the server response.";
 "error.http_status" = "Request failed with status code %d.";
