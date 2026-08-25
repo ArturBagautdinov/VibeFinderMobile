@@ -8,7 +8,7 @@
 "auth.login.title" = "Log In";
 "auth.onboarding.sign_in" = "Sign in";
 "auth.onboarding.start" = "Start exploring";
-"auth.onboarding.subtitle" = "Describe what you feel like watching or playing. VibeFinder will find something that fits.";
+"auth.onboarding.subtitle" = "Describe what you feel like watching, reading or playing. VibeFinder will find something that fits.";
 "auth.onboarding.title" = "Find something that matches your vibe.";
 "auth.onboarding.title_highlight" = "matches your vibe";
 "auth.prompt.cozy_game" = "Cozy game";

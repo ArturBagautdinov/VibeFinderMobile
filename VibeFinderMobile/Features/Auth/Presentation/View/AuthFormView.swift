@@ -45,7 +45,7 @@ final class AuthFormView: UIView, UITextFieldDelegate {
     private let titleLabel = UILabel()
     private let subtitleLabel = UILabel()
     private let scrollView = UIScrollView()
-    private let promptCloudView = FloatingPromptCloudView(prompts: AuthPromptFactory.makePrompts())
+    private let brandTitleView = FloatingBrandTitleView()
     private var orderedFields: [UITextField] = []
 
     init(mode: Mode) {
@@ -67,7 +67,7 @@ final class AuthFormView: UIView, UITextFieldDelegate {
         guard window != nil else {
             return
         }
-        promptCloudView.startFloating()
+        brandTitleView.startFloating()
     }
 
     func setLoading(_ isLoading: Bool) {
@@ -137,8 +137,8 @@ final class AuthFormView: UIView, UITextFieldDelegate {
             ]
 
         let stackView = UIStackView(arrangedSubviews: [
-            backButton,
-            promptCloudView,
+            makeBackButtonRow(),
+            brandTitleView,
             titleLabel,
             subtitleLabel
         ] + fieldSections + [
@@ -149,12 +149,12 @@ final class AuthFormView: UIView, UITextFieldDelegate {
         stackView.axis = .vertical
         stackView.spacing = mode == .login ? 16 : 14
         stackView.setCustomSpacing(18, after: backButton)
-        stackView.setCustomSpacing(mode == .login ? 34 : 26, after: promptCloudView)
+        stackView.setCustomSpacing(mode == .login ? 32 : 24, after: brandTitleView)
         stackView.setCustomSpacing(10, after: titleLabel)
         stackView.setCustomSpacing(mode == .login ? 34 : 26, after: subtitleLabel)
         stackView.setCustomSpacing(24, after: errorLabel)
         stackView.translatesAutoresizingMaskIntoConstraints = false
-        promptCloudView.heightAnchor.constraint(equalToConstant: mode == .login ? 150 : 122).isActive = true
+        brandTitleView.heightAnchor.constraint(equalToConstant: mode == .login ? 96 : 82).isActive = true
 
         scrollView.keyboardDismissMode = .interactive
         scrollView.alwaysBounceVertical = true
@@ -181,16 +181,44 @@ final class AuthFormView: UIView, UITextFieldDelegate {
     }
 
     private func configureBackButton(mode: Mode) {
-        var configuration = UIButton.Configuration.plain()
-        configuration.title = L10n.Common.back
-        configuration.image = UIImage(systemName: "chevron.left")
-        configuration.imagePadding = 4
+        var configuration = UIButton.Configuration.filled()
+        configuration.image = UIImage(systemName: "questionmark")
+        configuration.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(
+            pointSize: 15,
+            weight: .bold
+        )
         configuration.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+        configuration.baseBackgroundColor = AppTheme.Color.surface
         configuration.baseForegroundColor = AppTheme.Color.primary
         backButton.configuration = configuration
-        backButton.contentHorizontalAlignment = .leading
-        backButton.titleLabel?.font = .preferredFont(forTextStyle: .headline)
         backButton.accessibilityIdentifier = mode == .login ? "auth.login.backButton" : "auth.register.backButton"
+        backButton.accessibilityLabel = L10n.Common.back
+        backButton.layer.cornerRadius = 22
+        backButton.layer.cornerCurve = .continuous
+        backButton.layer.borderColor = AppTheme.Color.primary.withAlphaComponent(0.35).cgColor
+        backButton.layer.borderWidth = 1
+        backButton.layer.shadowColor = AppTheme.Color.primary.cgColor
+        backButton.layer.shadowOpacity = 0.18
+        backButton.layer.shadowRadius = 10
+        backButton.layer.shadowOffset = CGSize(width: 0, height: 6)
+        backButton.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        backButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
+    }
+
+    private func makeBackButtonRow() -> UIView {
+        let rowView = UIView()
+        rowView.translatesAutoresizingMaskIntoConstraints = false
+        rowView.addSubview(backButton)
+        backButton.translatesAutoresizingMaskIntoConstraints = false
+
+        NSLayoutConstraint.activate([
+            backButton.topAnchor.constraint(equalTo: rowView.topAnchor),
+            backButton.trailingAnchor.constraint(equalTo: rowView.trailingAnchor),
+            backButton.bottomAnchor.constraint(equalTo: rowView.bottomAnchor),
+            rowView.heightAnchor.constraint(equalToConstant: 44)
+        ])
+
+        return rowView
     }
 
     private func makeFieldSection(title: String, field: UITextField) -> UIStackView {

@@ -8,7 +8,7 @@
 "auth.login.title" = "Вход";
 "auth.onboarding.sign_in" = "Войти";
 "auth.onboarding.start" = "Начать подбор";
-"auth.onboarding.subtitle" = "Опишите, что хочется посмотреть или во что поиграть. VibeFinder найдет то, что подойдет.";
+"auth.onboarding.subtitle" = "Опишите, что хочется посмотреть, прочитать или во что поиграть. VibeFinder найдет то, что подойдет.";
 "auth.onboarding.title" = "Найдите то, что совпадает с вашим вайбом.";
 "auth.onboarding.title_highlight" = "совпадает с вашим вайбом";
 "auth.prompt.cozy_game" = "Уютная игра";

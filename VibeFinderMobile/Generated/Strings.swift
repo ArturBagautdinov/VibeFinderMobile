@@ -36,8 +36,8 @@ internal enum L10n {
       internal static let signIn = L10n.tr("Localizable", "auth.onboarding.sign_in", fallback: "Sign in")
       /// Start exploring
       internal static let start = L10n.tr("Localizable", "auth.onboarding.start", fallback: "Start exploring")
-      /// Describe what you feel like watching or playing. VibeFinder will find something that fits.
-      internal static let subtitle = L10n.tr("Localizable", "auth.onboarding.subtitle", fallback: "Describe what you feel like watching or playing. VibeFinder will find something that fits.")
+      /// Describe what you feel like watching, reading or playing. VibeFinder will find something that fits.
+      internal static let subtitle = L10n.tr("Localizable", "auth.onboarding.subtitle", fallback: "Describe what you feel like watching, reading or playing. VibeFinder will find something that fits.")
       /// Find something that matches your vibe.
       internal static let title = L10n.tr("Localizable", "auth.onboarding.title", fallback: "Find something that matches your vibe.")
       /// matches your vibe

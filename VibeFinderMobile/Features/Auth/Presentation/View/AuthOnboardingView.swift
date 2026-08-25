@@ -73,7 +73,7 @@ final class AuthOnboardingView: UIView {
 
             contentStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 32),
             contentStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -32),
-            contentStack.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor, constant: -24)
+            contentStack.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor, constant: -36)
         ])
     }
 
