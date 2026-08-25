@@ -5,6 +5,10 @@ struct LoginRequest: Encodable {
     let password: String
 }
 
+struct RefreshTokenRequest: Encodable {
+    let refreshToken: String
+}
+
 struct RegistrationRequest: Encodable {
     let email: String
     let username: String
@@ -25,6 +29,10 @@ struct AuthResponse: Decodable {
     let roles: [String]
 }
 
+struct EmailVerificationResendRequest: Encodable {
+    let email: String
+}
+
 struct FormSubmissionResponse: Decodable {
     let message: String
     let redirectUrl: String?
@@ -42,4 +50,13 @@ struct FormSubmissionResponse: Decodable {
         redirectUrl = try container.decodeIfPresent(String.self, forKey: .redirectUrl)
         fieldErrors = try container.decodeIfPresent([String: String].self, forKey: .fieldErrors) ?? [:]
     }
+}
+
+struct EmailVerificationResponse: Decodable {
+    let success: Bool
+    let status: String
+    let type: String
+    let email: String
+    let userId: Int
+    let message: String
 }

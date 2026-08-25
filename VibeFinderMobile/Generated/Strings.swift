@@ -22,12 +22,40 @@ internal enum L10n {
       internal static let headline = L10n.tr("Localizable", "auth.login.headline", fallback: "Welcome back")
       /// Username or email
       internal static let identifier = L10n.tr("Localizable", "auth.login.identifier", fallback: "Username or email")
+      /// Email
+      internal static let identifierLabel = L10n.tr("Localizable", "auth.login.identifier_label", fallback: "Email")
       /// Log In
       internal static let submit = L10n.tr("Localizable", "auth.login.submit", fallback: "Log In")
       /// Sign in to continue collecting stories, games, books, movies, and series that match your vibe.
       internal static let subtitle = L10n.tr("Localizable", "auth.login.subtitle", fallback: "Sign in to continue collecting stories, games, books, movies, and series that match your vibe.")
       /// Log In
       internal static let title = L10n.tr("Localizable", "auth.login.title", fallback: "Log In")
+    }
+    internal enum Onboarding {
+      /// Sign in
+      internal static let signIn = L10n.tr("Localizable", "auth.onboarding.sign_in", fallback: "Sign in")
+      /// Start exploring
+      internal static let start = L10n.tr("Localizable", "auth.onboarding.start", fallback: "Start exploring")
+      /// Describe what you feel like watching or playing. VibeFinder will find something that fits.
+      internal static let subtitle = L10n.tr("Localizable", "auth.onboarding.subtitle", fallback: "Describe what you feel like watching or playing. VibeFinder will find something that fits.")
+      /// Find something that matches your vibe.
+      internal static let title = L10n.tr("Localizable", "auth.onboarding.title", fallback: "Find something that matches your vibe.")
+      /// matches your vibe
+      internal static let titleHighlight = L10n.tr("Localizable", "auth.onboarding.title_highlight", fallback: "matches your vibe")
+    }
+    internal enum Prompt {
+      /// Cozy game
+      internal static let cozyGame = L10n.tr("Localizable", "auth.prompt.cozy_game", fallback: "Cozy game")
+      /// Dark detective series
+      internal static let darkDetectiveSeries = L10n.tr("Localizable", "auth.prompt.dark_detective_series", fallback: "Dark detective series")
+      /// Emotional sci-fi
+      internal static let emotionalScifi = L10n.tr("Localizable", "auth.prompt.emotional_scifi", fallback: "Emotional sci-fi")
+      /// Rainy night movie
+      internal static let rainyNightMovie = L10n.tr("Localizable", "auth.prompt.rainy_night_movie", fallback: "Rainy night movie")
+      /// Slow Sunday
+      internal static let slowSunday = L10n.tr("Localizable", "auth.prompt.slow_sunday", fallback: "Slow Sunday")
+      /// Something weird
+      internal static let somethingWeird = L10n.tr("Localizable", "auth.prompt.something_weird", fallback: "Something weird")
     }
     internal enum Register {
       /// Confirm password

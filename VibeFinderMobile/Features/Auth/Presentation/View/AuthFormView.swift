@@ -44,6 +44,7 @@ final class AuthFormView: UIView, UITextFieldDelegate {
     private let titleLabel = UILabel()
     private let subtitleLabel = UILabel()
     private let scrollView = UIScrollView()
+    private let promptCloudView = FloatingPromptCloudView(prompts: AuthPromptFactory.makePrompts())
     private var orderedFields: [UITextField] = []
 
     init(mode: Mode) {
@@ -60,38 +61,53 @@ final class AuthFormView: UIView, UITextFieldDelegate {
         NotificationCenter.default.removeObserver(self)
     }
 
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        guard window != nil else {
+            return
+        }
+        promptCloudView.startFloating()
+    }
+
     func setLoading(_ isLoading: Bool) {
         submitButton.setLoading(isLoading)
     }
 
     func setError(_ message: String?) {
         errorLabel.text = message
+        errorLabel.accessibilityLabel = message
+        errorLabel.isAccessibilityElement = message != nil
         errorLabel.isHidden = message == nil
     }
 
     private func configure(mode: Mode) {
         backgroundColor = AppTheme.Color.background
-
-        let logoImageView = AppTheme.makeLogoImageView(height: mode == .login ? 82 : 80)
+        accessibilityIdentifier = mode == .login ? "auth.login.screen" : "auth.register.screen"
 
         titleLabel.text = mode == .login ? L10n.Auth.Login.headline : L10n.Auth.Register.headline
-        titleLabel.font = mode == .login ? .preferredFont(forTextStyle: .largeTitle) : .preferredFont(forTextStyle: .title1)
+        titleLabel.accessibilityIdentifier = mode == .login ? "auth.login.titleLabel" : "auth.register.titleLabel"
+        titleLabel.font = .systemFont(ofSize: mode == .login ? 42 : 38, weight: .black)
         titleLabel.textColor = AppTheme.Color.textPrimary
         titleLabel.adjustsFontForContentSizeCategory = true
         titleLabel.numberOfLines = 0
 
         subtitleLabel.text = mode == .login ? L10n.Auth.Login.subtitle : L10n.Auth.Register.subtitle
+        subtitleLabel.accessibilityIdentifier = mode == .login ? "auth.login.subtitleLabel" : "auth.register.subtitleLabel"
         subtitleLabel.font = .preferredFont(forTextStyle: .body)
         subtitleLabel.textColor = AppTheme.Color.textSecondary
         subtitleLabel.numberOfLines = 0
         subtitleLabel.adjustsFontForContentSizeCategory = true
 
         submitButton.setTitle(mode == .login ? L10n.Auth.Login.submit : L10n.Auth.Register.submit, for: .normal)
+        submitButton.accessibilityIdentifier = mode == .login ? "auth.login.submitButton" : "auth.register.submitButton"
 
         switchButton.setTitle(mode == .login ? L10n.Auth.Login.createAccount : L10n.Auth.Register.haveAccount, for: .normal)
+        switchButton.accessibilityIdentifier = mode == .login ? "auth.login.switchToRegisterButton" : "auth.register.switchToLoginButton"
         switchButton.tintColor = AppTheme.Color.accent
+        switchButton.titleLabel?.font = .preferredFont(forTextStyle: .headline)
 
         errorLabel.font = .preferredFont(forTextStyle: .footnote)
+        errorLabel.accessibilityIdentifier = "auth.errorLabel"
         errorLabel.textColor = .systemRed
         errorLabel.numberOfLines = 0
         errorLabel.isHidden = true
@@ -101,24 +117,43 @@ final class AuthFormView: UIView, UITextFieldDelegate {
             : [emailField, usernameField, firstNameField, lastNameField, passwordField, confirmPasswordField]
         orderedFields = fields
         configureTextFields(fields)
+        configureAccessibilityIdentifiers(mode: mode)
+
+        let fieldSections = mode == .login
+            ? [
+                makeFieldSection(title: L10n.Auth.Login.identifierLabel, field: identifierField),
+                makeFieldSection(title: L10n.Auth.Common.password, field: passwordField)
+            ]
+            : [
+                makeFieldSection(title: L10n.Auth.Register.email, field: emailField),
+                makeFieldSection(title: L10n.Auth.Register.username, field: usernameField),
+                makeFieldSection(title: L10n.Auth.Register.firstName, field: firstNameField),
+                makeFieldSection(title: L10n.Auth.Register.lastName, field: lastNameField),
+                makeFieldSection(title: L10n.Auth.Common.password, field: passwordField),
+                makeFieldSection(title: L10n.Auth.Register.confirmPassword, field: confirmPasswordField)
+            ]
 
         let stackView = UIStackView(arrangedSubviews: [
-            logoImageView,
+            promptCloudView,
             titleLabel,
             subtitleLabel
-        ] + fields + [
+        ] + fieldSections + [
             errorLabel,
             submitButton,
             switchButton
         ])
         stackView.axis = .vertical
-        stackView.spacing = mode == .login ? 14 : 12
-        stackView.setCustomSpacing(mode == .login ? 22 : 18, after: logoImageView)
-        stackView.setCustomSpacing(mode == .login ? 28 : 24, after: subtitleLabel)
+        stackView.spacing = mode == .login ? 16 : 14
+        stackView.setCustomSpacing(mode == .login ? 34 : 26, after: promptCloudView)
+        stackView.setCustomSpacing(10, after: titleLabel)
+        stackView.setCustomSpacing(mode == .login ? 34 : 26, after: subtitleLabel)
+        stackView.setCustomSpacing(24, after: errorLabel)
         stackView.translatesAutoresizingMaskIntoConstraints = false
+        promptCloudView.heightAnchor.constraint(equalToConstant: mode == .login ? 150 : 122).isActive = true
 
         scrollView.keyboardDismissMode = .interactive
         scrollView.alwaysBounceVertical = true
+        scrollView.accessibilityIdentifier = mode == .login ? "auth.login.scrollView" : "auth.register.scrollView"
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(stackView)
         addSubview(scrollView)
@@ -132,7 +167,7 @@ final class AuthFormView: UIView, UITextFieldDelegate {
 
             stackView.leadingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.leadingAnchor, constant: 24),
             stackView.trailingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.trailingAnchor, constant: -24),
-            stackView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: mode == .login ? 100 : 24),
+            stackView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: 24),
             stackView.bottomAnchor.constraint(
                 equalTo: scrollView.contentLayoutGuide.bottomAnchor,
                 constant: -24
@@ -140,11 +175,36 @@ final class AuthFormView: UIView, UITextFieldDelegate {
         ])
     }
 
+    private func makeFieldSection(title: String, field: UITextField) -> UIStackView {
+        let label = UILabel()
+        label.text = title
+        label.font = .preferredFont(forTextStyle: .subheadline)
+        label.textColor = AppTheme.Color.textSecondary
+        label.adjustsFontForContentSizeCategory = true
+
+        let stackView = UIStackView(arrangedSubviews: [label, field])
+        stackView.axis = .vertical
+        stackView.spacing = 8
+        return stackView
+    }
+
     private func configureTextFields(_ fields: [UITextField]) {
         fields.enumerated().forEach { index, field in
             field.delegate = self
             field.returnKeyType = index == fields.indices.last ? .done : .next
         }
+    }
+
+    private func configureAccessibilityIdentifiers(mode: Mode) {
+        passwordField.accessibilityIdentifier = mode == .login
+            ? "auth.login.passwordTextField"
+            : "auth.register.passwordTextField"
+        identifierField.accessibilityIdentifier = "auth.login.identifierTextField"
+        emailField.accessibilityIdentifier = "auth.register.emailTextField"
+        usernameField.accessibilityIdentifier = "auth.register.usernameTextField"
+        firstNameField.accessibilityIdentifier = "auth.register.firstNameTextField"
+        lastNameField.accessibilityIdentifier = "auth.register.lastNameTextField"
+        confirmPasswordField.accessibilityIdentifier = "auth.register.confirmPasswordTextField"
     }
 
     private func addKeyboardDismissTapGesture() {

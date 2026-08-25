@@ -20,12 +20,15 @@ final class HomeViewController: UIViewController {
     private func configureView() {
         title = L10n.Home.title
         view.backgroundColor = AppTheme.Color.background
+        view.accessibilityIdentifier = "home.screen"
         navigationItem.hidesBackButton = true
 
         let logoImageView = AppTheme.makeLogoImageView(height: 84)
+        logoImageView.accessibilityIdentifier = "home.logo.image"
 
         let label = UILabel()
         label.text = L10n.Home.welcome(username)
+        label.accessibilityIdentifier = "home.welcomeLabel"
         label.font = .preferredFont(forTextStyle: .title2)
         label.textColor = AppTheme.Color.textPrimary
         label.textAlignment = .center

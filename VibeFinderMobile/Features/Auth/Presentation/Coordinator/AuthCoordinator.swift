@@ -14,7 +14,18 @@ final class AuthCoordinator: Coordinator {
 
     func start() {
         navigationController.setNavigationBarHidden(true, animated: false)
-        showLogin(direction: nil)
+        showOnboarding()
+    }
+
+    private func showOnboarding() {
+        let viewController = AuthOnboardingViewController()
+        viewController.onStartSelected = { [weak self] in
+            self?.showRegister()
+        }
+        viewController.onSignInSelected = { [weak self] in
+            self?.showLogin(direction: .forward)
+        }
+        setRoot(viewController, direction: nil)
     }
 
     private func showLogin(direction: TransitionDirection?, completion: (() -> Void)? = nil) {

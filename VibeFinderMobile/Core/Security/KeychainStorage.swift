@@ -1,17 +1,6 @@
 import Foundation
 import Security
 
-protocol KeychainStoring {
-    func save(_ value: String, for key: String) throws
-    func read(_ key: String) throws -> String?
-    func delete(_ key: String) throws
-}
-
-enum KeychainStorageError: Error {
-    case unhandledStatus(OSStatus)
-    case invalidData
-}
-
 final class KeychainStorage: KeychainStoring {
     private let service: String
 

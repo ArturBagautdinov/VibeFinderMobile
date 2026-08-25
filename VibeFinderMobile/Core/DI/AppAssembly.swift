@@ -4,9 +4,14 @@ import Swinject
 
 final class AppAssembly: Assembly {
     private let environment: AppEnvironment
+    private let authRepositoryOverride: AuthRepositoryProtocol?
 
-    init(environment: AppEnvironment = .current) {
+    init(
+        environment: AppEnvironment = .current,
+        authRepositoryOverride: AuthRepositoryProtocol? = nil
+    ) {
         self.environment = environment
+        self.authRepositoryOverride = authRepositoryOverride
     }
 
     func assemble(container: Container) {
@@ -33,13 +38,17 @@ final class AppAssembly: Assembly {
         container.register(APIClientProtocol.self) { resolver in
             APIClient(
                 baseURL: resolver.resolve(AppEnvironment.self)!.baseURL,
-                session: resolver.resolve(Session.self)!
+                session: resolver.resolve(Session.self)!,
+                tokenStorage: resolver.resolve(TokenStorage.self)!
             )
         }
         .inObjectScope(.container)
 
-        container.register(AuthRepositoryProtocol.self) { resolver in
-            AuthRepository(
+        container.register(AuthRepositoryProtocol.self) { [authRepositoryOverride] resolver in
+            if let authRepositoryOverride {
+                return authRepositoryOverride
+            }
+            return AuthRepository(
                 apiClient: resolver.resolve(APIClientProtocol.self)!,
                 tokenStorage: resolver.resolve(TokenStorage.self)!
             )

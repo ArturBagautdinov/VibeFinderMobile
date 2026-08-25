@@ -5,19 +5,37 @@ struct APIEndpoint {
     let path: String
     let method: HTTPMethod
     let headers: HTTPHeaders
+    let queryItems: [URLQueryItem]
+    let requiresAuthorization: Bool
 
     init(
         path: String,
         method: HTTPMethod,
-        headers: HTTPHeaders = [.accept("application/json"), .contentType("application/json")]
+        headers: HTTPHeaders = [.accept("application/json"), .contentType("application/json")],
+        queryItems: [URLQueryItem] = [],
+        requiresAuthorization: Bool = false
     ) {
         self.path = path
         self.method = method
         self.headers = headers
+        self.queryItems = queryItems
+        self.requiresAuthorization = requiresAuthorization
     }
 }
 
 extension APIEndpoint {
     static let login = APIEndpoint(path: "api/auth/login", method: .post)
+    static let refresh = APIEndpoint(path: "api/auth/refresh", method: .post)
+    static let logout = APIEndpoint(path: "api/auth/logout", method: .post)
     static let register = APIEndpoint(path: "api/auth/register", method: .post)
+    static let resendEmailVerification = APIEndpoint(path: "api/auth/email-verification/resend", method: .post)
+
+    static func confirmEmailVerification(token: String) -> APIEndpoint {
+        APIEndpoint(
+            path: "api/auth/email-verification/confirm",
+            method: .get,
+            headers: [.accept("application/json")],
+            queryItems: [URLQueryItem(name: "token", value: token)]
+        )
+    }
 }
