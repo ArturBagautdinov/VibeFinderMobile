@@ -118,13 +118,13 @@
 		B9B199A0302D89B70021A532 /* VibeFinderMobile */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = B9B199CA302D89B70021A532 /* Build configuration list for PBXNativeTarget "VibeFinderMobile" */;
-				buildPhases = (
-					B9B19DB0302E32000021A532 /* SwiftGen */,
-					B9B19DB1302E36000021A532 /* SwiftLint */,
-					B9B1999D302D89B70021A532 /* Sources */,
-					B9B1999E302D89B70021A532 /* Frameworks */,
-					B9B1999F302D89B70021A532 /* Resources */,
-				);
+			buildPhases = (
+				B9B19DB0302E32000021A532 /* SwiftGen */,
+				B9B19DB1302E36000021A532 /* SwiftLint */,
+				B9B1999D302D89B70021A532 /* Sources */,
+				B9B1999E302D89B70021A532 /* Frameworks */,
+				B9B1999F302D89B70021A532 /* Resources */,
+			);
 			buildRules = (
 			);
 			dependencies = (
@@ -216,6 +216,7 @@
 			knownRegions = (
 				en,
 				Base,
+				ru,
 			);
 			mainGroup = B9B19998302D89B70021A532;
 			minimizedProjectReferenceProxies = 1;
@@ -270,12 +271,14 @@
 			inputPaths = (
 				"$(SRCROOT)/swiftgen.yml",
 				"$(SRCROOT)/VibeFinderMobile/Assets.xcassets",
+				"$(SRCROOT)/VibeFinderMobile/en.lproj/Localizable.strings",
 			);
 			name = SwiftGen;
 			outputFileListPaths = (
 			);
 			outputPaths = (
 				"$(SRCROOT)/VibeFinderMobile/Generated/Assets.swift",
+				"$(SRCROOT)/VibeFinderMobile/Generated/Strings.swift",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
