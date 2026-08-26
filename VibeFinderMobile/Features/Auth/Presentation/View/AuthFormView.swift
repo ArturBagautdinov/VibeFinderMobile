@@ -41,7 +41,7 @@ final class AuthFormView: UIView, UITextFieldDelegate {
     let switchButton = UIButton(type: .system)
     let backButton = UIButton(type: .system)
 
-    private let errorLabel = UILabel()
+    private let errorView = AuthErrorView()
     private let titleLabel = UILabel()
     private let subtitleLabel = UILabel()
     private let scrollView = UIScrollView()
@@ -75,10 +75,7 @@ final class AuthFormView: UIView, UITextFieldDelegate {
     }
 
     func setError(_ message: String?) {
-        errorLabel.text = message
-        errorLabel.accessibilityLabel = message
-        errorLabel.isAccessibilityElement = message != nil
-        errorLabel.isHidden = message == nil
+        errorView.setMessage(message)
     }
 
     private func configure(mode: Mode) {
@@ -109,12 +106,6 @@ final class AuthFormView: UIView, UITextFieldDelegate {
         switchButton.tintColor = AppTheme.Color.accent
         switchButton.titleLabel?.font = .preferredFont(forTextStyle: .headline)
 
-        errorLabel.font = .preferredFont(forTextStyle: .footnote)
-        errorLabel.accessibilityIdentifier = "auth.errorLabel"
-        errorLabel.textColor = .systemRed
-        errorLabel.numberOfLines = 0
-        errorLabel.isHidden = true
-
         let fields = mode == .login
             ? [identifierField, passwordField]
             : [emailField, usernameField, firstNameField, lastNameField, passwordField, confirmPasswordField]
@@ -142,7 +133,7 @@ final class AuthFormView: UIView, UITextFieldDelegate {
             titleLabel,
             subtitleLabel
         ] + fieldSections + [
-            errorLabel,
+            errorView,
             submitButton,
             switchButton
         ])
@@ -152,7 +143,7 @@ final class AuthFormView: UIView, UITextFieldDelegate {
         stackView.setCustomSpacing(mode == .login ? 32 : 24, after: brandTitleView)
         stackView.setCustomSpacing(10, after: titleLabel)
         stackView.setCustomSpacing(mode == .login ? 34 : 26, after: subtitleLabel)
-        stackView.setCustomSpacing(24, after: errorLabel)
+        stackView.setCustomSpacing(12, after: errorView)
         stackView.translatesAutoresizingMaskIntoConstraints = false
         brandTitleView.heightAnchor.constraint(equalToConstant: mode == .login ? 96 : 82).isActive = true
 
