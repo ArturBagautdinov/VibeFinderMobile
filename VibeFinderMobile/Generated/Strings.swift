@@ -114,6 +114,46 @@ internal enum L10n {
       return L10n.tr("Localizable", "home.welcome", String(describing: p1), fallback: "Welcome, %@.")
     }
   }
+  internal enum Search {
+    /// VibeFinder
+    internal static let brand = L10n.tr("Localizable", "search.brand", fallback: "VibeFinder")
+    /// What are you in the mood for?
+    internal static let title = L10n.tr("Localizable", "search.title", fallback: "What are you in the mood for?")
+    internal enum Prompt {
+      /// Describe a movie, series, game, book or just a feeling...
+      internal static let placeholder = L10n.tr("Localizable", "search.prompt.placeholder", fallback: "Describe a movie, series, game, book or just a feeling...")
+      /// Describe a feeling
+      internal static let title = L10n.tr("Localizable", "search.prompt.title", fallback: "Describe a feeling")
+    }
+    internal enum Recent {
+      /// 11 recommendations · 3 days ago
+      internal static let detectiveSeriesSubtitle = L10n.tr("Localizable", "search.recent.detective_series_subtitle", fallback: "11 recommendations · 3 days ago")
+      /// Dark detective series with smart writing
+      internal static let detectiveSeriesTitle = L10n.tr("Localizable", "search.recent.detective_series_title", fallback: "Dark detective series with smart writing")
+      /// 12 recommendations · Today
+      internal static let rainyEveningSubtitle = L10n.tr("Localizable", "search.recent.rainy_evening_subtitle", fallback: "12 recommendations · Today")
+      /// Something atmospheric for a rainy evening
+      internal static let rainyEveningTitle = L10n.tr("Localizable", "search.recent.rainy_evening_title", fallback: "Something atmospheric for a rainy evening")
+      /// See all
+      internal static let seeAll = L10n.tr("Localizable", "search.recent.see_all", fallback: "See all")
+      /// Recent vibes
+      internal static let title = L10n.tr("Localizable", "search.recent.title", fallback: "Recent vibes")
+      /// 9 recommendations · Yesterday
+      internal static let weekendGameSubtitle = L10n.tr("Localizable", "search.recent.weekend_game_subtitle", fallback: "9 recommendations · Yesterday")
+      /// A game I can finish this weekend
+      internal static let weekendGameTitle = L10n.tr("Localizable", "search.recent.weekend_game_title", fallback: "A game I can finish this weekend")
+    }
+    internal enum Suggestion {
+      /// Beautiful sci-fi
+      internal static let beautifulScifi = L10n.tr("Localizable", "search.suggestion.beautiful_scifi", fallback: "Beautiful sci-fi")
+      /// Cozy evening
+      internal static let cozyEvening = L10n.tr("Localizable", "search.suggestion.cozy_evening", fallback: "Cozy evening")
+      /// Dark mystery
+      internal static let darkMystery = L10n.tr("Localizable", "search.suggestion.dark_mystery", fallback: "Dark mystery")
+      /// Slow Sunday
+      internal static let slowSunday = L10n.tr("Localizable", "search.suggestion.slow_sunday", fallback: "Slow Sunday")
+    }
+  }
 }
 // swiftlint:enable explicit_type_interface function_parameter_count identifier_name line_length
 // swiftlint:enable nesting type_body_length type_name vertical_whitespace_opening_braces

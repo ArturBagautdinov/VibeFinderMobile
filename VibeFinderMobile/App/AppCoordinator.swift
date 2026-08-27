@@ -20,7 +20,7 @@ final class AppCoordinator: Coordinator {
         configureNavigationBar()
         window.rootViewController = navigationController
         window.makeKeyAndVisible()
-        showAuthFlow()
+        showSearch(username: "Bro")
     }
 
     private func configureNavigationBar() {
@@ -42,16 +42,17 @@ final class AppCoordinator: Coordinator {
             container: container
         )
         authCoordinator.onAuthenticated = { [weak self] username in
-            self?.showHome(username: username)
+            self?.showSearch(username: username)
         }
         childCoordinator = authCoordinator
         authCoordinator.start()
     }
 
-    private func showHome(username: String) {
+    private func showSearch(username: String) {
         childCoordinator = nil
-        navigationController.setNavigationBarHidden(false, animated: true)
-        let viewController = HomeViewController(username: username)
+        navigationController.setNavigationBarHidden(true, animated: true)
+        let viewModel = container.resolve(SearchViewModel.self, argument: username)!
+        let viewController = SearchViewController(viewModel: viewModel)
         navigationController.setViewControllers([viewController], animated: true)
     }
 }
