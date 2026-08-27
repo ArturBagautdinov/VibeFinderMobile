@@ -54,3 +54,4 @@
 "search.suggestion.dark_mystery" = "Dark mystery";
 "search.suggestion.slow_sunday" = "Slow Sunday";
 "search.title" = "What are you in the mood for?";
+"search.validation.empty_query" = "Describe what you are in the mood for.";

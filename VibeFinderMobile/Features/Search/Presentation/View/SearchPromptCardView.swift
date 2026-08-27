@@ -6,6 +6,10 @@ final class SearchPromptCardView: UIView {
 
     private let placeholderLabel = UILabel()
 
+    var query: String {
+        textView.text ?? ""
+    }
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         configure()
@@ -116,6 +120,15 @@ final class SearchPromptCardView: UIView {
         submitButton.layer.shadowOpacity = 0.32
         submitButton.layer.shadowRadius = 18
         submitButton.layer.shadowOffset = CGSize(width: 0, height: 10)
+    }
+
+    func setLoading(_ isLoading: Bool) {
+        submitButton.isEnabled = !isLoading
+        submitButton.configuration?.showsActivityIndicator = isLoading
+        submitButton.configuration?.image = isLoading ? nil : UIImage(systemName: "arrow.up")
+        submitButton.configuration?.baseBackgroundColor = isLoading
+            ? AppTheme.Color.textSecondary
+            : AppTheme.Color.primary
     }
 }
 

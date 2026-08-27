@@ -5,6 +5,9 @@ final class SearchViewModel {
         let username: String
         let suggestions: [String]
         let recentVibes: [RecentVibe]
+        let isLoading: Bool
+        let errorMessage: String?
+        let result: SearchPage?
     }
 
     struct RecentVibe {
@@ -12,9 +15,13 @@ final class SearchViewModel {
         let subtitle: String
     }
 
-    let state: State
+    private let searchRepository: SearchRepositoryProtocol
+    private(set) var state: State
 
-    init(username: String) {
+    var onStateChange: ((State) -> Void)?
+
+    init(username: String, searchRepository: SearchRepositoryProtocol) {
+        self.searchRepository = searchRepository
         self.state = State(
             username: username,
             suggestions: [
@@ -36,7 +43,55 @@ final class SearchViewModel {
                     title: L10n.Search.Recent.detectiveSeriesTitle,
                     subtitle: L10n.Search.Recent.detectiveSeriesSubtitle
                 )
-            ]
+            ],
+            isLoading: false,
+            errorMessage: nil,
+            result: nil
         )
+    }
+
+    func search(query: String) {
+        let normalizedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalizedQuery.isEmpty else {
+            update(errorMessage: L10n.Search.Validation.emptyQuery)
+            return
+        }
+
+        update(isLoading: true, errorMessage: nil, shouldClearResult: true)
+        searchRepository.search(query: normalizedQuery) { [weak self] result in
+            self?.completeOnMain {
+                switch result {
+                case let .success(page):
+                    self?.update(isLoading: false, errorMessage: nil, result: page)
+                case let .failure(error):
+                    self?.update(isLoading: false, errorMessage: error.userMessage, shouldClearResult: true)
+                }
+            }
+        }
+    }
+
+    private func update(
+        isLoading: Bool? = nil,
+        errorMessage: String? = nil,
+        result: SearchPage? = nil,
+        shouldClearResult: Bool = false
+    ) {
+        state = State(
+            username: state.username,
+            suggestions: state.suggestions,
+            recentVibes: state.recentVibes,
+            isLoading: isLoading ?? state.isLoading,
+            errorMessage: errorMessage,
+            result: shouldClearResult ? nil : result ?? state.result
+        )
+        onStateChange?(state)
+    }
+
+    private func completeOnMain(_ work: @escaping () -> Void) {
+        if Thread.isMainThread {
+            work()
+        } else {
+            DispatchQueue.main.async(execute: work)
+        }
     }
 }

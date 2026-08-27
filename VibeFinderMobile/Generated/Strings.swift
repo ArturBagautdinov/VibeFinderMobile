@@ -153,6 +153,10 @@ internal enum L10n {
       /// Slow Sunday
       internal static let slowSunday = L10n.tr("Localizable", "search.suggestion.slow_sunday", fallback: "Slow Sunday")
     }
+    internal enum Validation {
+      /// Describe what you are in the mood for.
+      internal static let emptyQuery = L10n.tr("Localizable", "search.validation.empty_query", fallback: "Describe what you are in the mood for.")
+    }
   }
 }
 // swiftlint:enable explicit_type_interface function_parameter_count identifier_name line_length

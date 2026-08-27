@@ -63,8 +63,16 @@ final class AppAssembly: Assembly {
             RegisterViewModel(authRepository: resolver.resolve(AuthRepositoryProtocol.self)!)
         }
 
-        container.register(SearchViewModel.self) { _, username in
-            SearchViewModel(username: username)
+        container.register(SearchRepositoryProtocol.self) { resolver in
+            SearchRepository(apiClient: resolver.resolve(APIClientProtocol.self)!)
+        }
+        .inObjectScope(.container)
+
+        container.register(SearchViewModel.self) { resolver, username in
+            SearchViewModel(
+                username: username,
+                searchRepository: resolver.resolve(SearchRepositoryProtocol.self)!
+            )
         }
     }
 }

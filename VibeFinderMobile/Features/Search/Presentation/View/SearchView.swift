@@ -11,6 +11,8 @@ final class SearchView: UIView {
 
     private let state: SearchViewModel.State
     private let promptCardView = SearchPromptCardView()
+    private let statusView = SearchStatusView()
+    private let resultsView = SearchResultsView()
 
     init(state: SearchViewModel.State) {
         self.state = state
@@ -36,6 +38,8 @@ final class SearchView: UIView {
             SearchHeaderView(username: state.username),
             titleLabel,
             promptCardView,
+            statusView,
+            resultsView,
             SearchSuggestionsView(suggestions: state.suggestions),
             RecentVibesView(recentVibes: state.recentVibes)
         ])
@@ -59,6 +63,8 @@ final class SearchView: UIView {
             contentStack.trailingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.trailingAnchor, constant: -12),
             contentStack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -28),
         ])
+
+        render(state)
     }
 
     private func makeTitleLabel() -> UILabel {
@@ -70,5 +76,11 @@ final class SearchView: UIView {
         label.numberOfLines = 0
         label.adjustsFontForContentSizeCategory = true
         return label
+    }
+
+    func render(_ state: SearchViewModel.State) {
+        promptCardView.setLoading(state.isLoading)
+        statusView.setMessage(state.errorMessage)
+        resultsView.render(page: state.result)
     }
 }

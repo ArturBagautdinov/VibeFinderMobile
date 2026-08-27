@@ -54,3 +54,4 @@
 "search.suggestion.dark_mystery" = "Темная тайна";
 "search.suggestion.slow_sunday" = "Медленное воскресенье";
 "search.title" = "Что вам сейчас по настроению?";
+"search.validation.empty_query" = "Опишите, что вам сейчас по настроению.";

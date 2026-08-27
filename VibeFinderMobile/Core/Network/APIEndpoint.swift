@@ -29,6 +29,11 @@ extension APIEndpoint {
     static let logout = APIEndpoint(path: "api/auth/logout", method: .post)
     static let register = APIEndpoint(path: "api/auth/register", method: .post)
     static let resendEmailVerification = APIEndpoint(path: "api/auth/email-verification/resend", method: .post)
+    static let startSearch = APIEndpoint(path: "api/search", method: .post, requiresAuthorization: true)
+
+    static func searchPage(id: Int) -> APIEndpoint {
+        APIEndpoint(path: "api/search/\(id)", method: .get, headers: [.accept("application/json")], requiresAuthorization: true)
+    }
 
     static func confirmEmailVerification(token: String) -> APIEndpoint {
         APIEndpoint(

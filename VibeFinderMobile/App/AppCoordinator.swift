@@ -20,7 +20,7 @@ final class AppCoordinator: Coordinator {
         configureNavigationBar()
         window.rootViewController = navigationController
         window.makeKeyAndVisible()
-        showSearch(username: "Bro")
+        restoreSession()
     }
 
     private func configureNavigationBar() {
@@ -46,6 +46,21 @@ final class AppCoordinator: Coordinator {
         }
         childCoordinator = authCoordinator
         authCoordinator.start()
+    }
+
+    private func restoreSession() {
+        let authRepository = container.resolve(AuthRepositoryProtocol.self)!
+        authRepository.refreshSession { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case let .success(session):
+                    let username = session.displayName.isEmpty ? session.username : session.displayName
+                    self?.showSearch(username: username)
+                case .failure:
+                    self?.showAuthFlow()
+                }
+            }
+        }
     }
 
     private func showSearch(username: String) {

@@ -20,11 +20,24 @@ final class SearchViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         configure()
+        bindViewModel()
     }
 
     private func configure() {
         navigationItem.title = nil
         navigationItem.hidesBackButton = true
         navigationController?.setNavigationBarHidden(true, animated: false)
+        searchView.submitButton.addTarget(self, action: #selector(searchTapped), for: .touchUpInside)
+    }
+
+    private func bindViewModel() {
+        viewModel.onStateChange = { [weak self] state in
+            self?.searchView.render(state)
+        }
+    }
+
+    @objc private func searchTapped() {
+        view.endEditing(true)
+        viewModel.search(query: searchView.promptTextView.text)
     }
 }

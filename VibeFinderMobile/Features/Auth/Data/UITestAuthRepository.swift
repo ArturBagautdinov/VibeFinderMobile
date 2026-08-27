@@ -43,6 +43,11 @@ final class UITestAuthRepository: AuthRepositoryProtocol {
     }
 
     func refreshSession(completion: @escaping (Result<AuthSession, APIError>) -> Void) {
+        guard arguments.contains("-ui-testing-restored-session") else {
+            completion(.failure(.statusCode(401)))
+            return
+        }
+
         completion(.success(AuthSession(username: "ui-test", displayName: "UI Test User")))
     }
 
