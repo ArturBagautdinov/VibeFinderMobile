@@ -11,11 +11,7 @@ final class SearchHeaderView: UIView {
     }
 
     private func configure(username: String) {
-        let brandLabel = UILabel()
-        brandLabel.text = L10n.Search.brand
-        brandLabel.font = .systemFont(ofSize: 30, weight: .black)
-        brandLabel.textColor = AppTheme.Color.textPrimary
-        brandLabel.adjustsFontForContentSizeCategory = true
+        let brandTitleView = makeBrandTitleView()
 
         let avatarLabel = UILabel()
         avatarLabel.text = String(username.prefix(1)).uppercased()
@@ -36,7 +32,7 @@ final class SearchHeaderView: UIView {
         avatarContainer.translatesAutoresizingMaskIntoConstraints = false
         avatarContainer.addSubview(avatarLabel)
 
-        let stackView = UIStackView(arrangedSubviews: [brandLabel, avatarContainer])
+        let stackView = UIStackView(arrangedSubviews: [brandTitleView, avatarContainer])
         stackView.axis = .horizontal
         stackView.alignment = .center
         stackView.distribution = .equalSpacing
@@ -57,5 +53,33 @@ final class SearchHeaderView: UIView {
             stackView.trailingAnchor.constraint(equalTo: trailingAnchor),
             stackView.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
+    }
+
+    private func makeBrandTitleView() -> UIStackView {
+        let vibeLabel = makeBrandLabel(text: "Vibe", color: AppTheme.Color.primary)
+        let finderLabel = makeBrandLabel(text: "Finder", color: AppTheme.Color.secondaryAccent)
+
+        let stackView = UIStackView(arrangedSubviews: [vibeLabel, finderLabel])
+        stackView.axis = .horizontal
+        stackView.alignment = .center
+        stackView.spacing = 6
+        stackView.accessibilityIdentifier = "search.brandTitleView"
+
+        return stackView
+    }
+
+    private func makeBrandLabel(text: String, color: UIColor) -> UILabel {
+        let label = UILabel()
+        label.text = text
+        label.font = .systemFont(ofSize: 32, weight: .black)
+        label.textColor = color
+        label.adjustsFontSizeToFitWidth = true
+        label.minimumScaleFactor = 0.75
+        label.layer.shadowColor = color.cgColor
+        label.layer.shadowOpacity = 0.34
+        label.layer.shadowRadius = 12
+        label.layer.shadowOffset = .zero
+
+        return label
     }
 }
