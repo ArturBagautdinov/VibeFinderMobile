@@ -12,7 +12,7 @@ final class SearchView: UIView {
     private let state: SearchViewModel.State
     private let promptCardView = SearchPromptCardView()
     private let statusView = SearchStatusView()
-    private let resultsView = SearchResultsView()
+    private let loadingView = SearchLoadingView()
 
     init(state: SearchViewModel.State) {
         self.state = state
@@ -39,7 +39,6 @@ final class SearchView: UIView {
             titleLabel,
             promptCardView,
             statusView,
-            resultsView,
             SearchSuggestionsView(suggestions: state.suggestions),
             RecentVibesView(recentVibes: state.recentVibes)
         ])
@@ -51,6 +50,8 @@ final class SearchView: UIView {
 
         scrollView.addSubview(contentStack)
         addSubview(scrollView)
+        addSubview(loadingView)
+        loadingView.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
             scrollView.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor),
@@ -62,6 +63,11 @@ final class SearchView: UIView {
             contentStack.leadingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.leadingAnchor, constant: 12),
             contentStack.trailingAnchor.constraint(equalTo: scrollView.frameLayoutGuide.trailingAnchor, constant: -12),
             contentStack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -28),
+
+            loadingView.topAnchor.constraint(equalTo: topAnchor),
+            loadingView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            loadingView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            loadingView.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
 
         render(state)
@@ -81,6 +87,6 @@ final class SearchView: UIView {
     func render(_ state: SearchViewModel.State) {
         promptCardView.setLoading(state.isLoading)
         statusView.setMessage(state.errorMessage)
-        resultsView.render(page: state.result)
+        loadingView.setVisible(state.isLoading)
     }
 }

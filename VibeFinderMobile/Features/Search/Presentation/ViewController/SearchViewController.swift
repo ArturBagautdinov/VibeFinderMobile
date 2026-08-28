@@ -4,6 +4,8 @@ final class SearchViewController: UIViewController {
     private let viewModel: SearchViewModel
     private lazy var searchView = SearchView(state: viewModel.state)
 
+    var onResultsReady: ((SearchPage) -> Void)?
+
     init(viewModel: SearchViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -33,6 +35,9 @@ final class SearchViewController: UIViewController {
     private func bindViewModel() {
         viewModel.onStateChange = { [weak self] state in
             self?.searchView.render(state)
+        }
+        viewModel.onResultsReady = { [weak self] page in
+            self?.onResultsReady?(page)
         }
     }
 

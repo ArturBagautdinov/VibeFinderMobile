@@ -41,6 +41,8 @@
 "search.brand" = "VibeFinder";
 "search.prompt.placeholder" = "Describe a movie, series, game, book or just a feeling...";
 "search.prompt.title" = "Describe a feeling";
+"search.loading.subtitle" = "Tuning the mood, genres and hidden signals.";
+"search.loading.title" = "Finding your vibe";
 "search.recent.detective_series_subtitle" = "11 recommendations · 3 days ago";
 "search.recent.detective_series_title" = "Dark detective series with smart writing";
 "search.recent.rainy_evening_subtitle" = "12 recommendations · Today";
@@ -53,5 +55,6 @@
 "search.suggestion.cozy_evening" = "Cozy evening";
 "search.suggestion.dark_mystery" = "Dark mystery";
 "search.suggestion.slow_sunday" = "Slow Sunday";
+"search.results.title" = "Your matches";
 "search.title" = "What are you in the mood for?";
 "search.validation.empty_query" = "Describe what you are in the mood for.";

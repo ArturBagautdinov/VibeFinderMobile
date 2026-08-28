@@ -10,6 +10,7 @@ final class AppCoordinator: Coordinator {
     private let container: Container
     private let navigationController = UINavigationController()
     private var childCoordinator: Coordinator?
+    private var searchCoordinator: SearchCoordinator?
 
     init(window: UIWindow, container: Container) {
         self.window = window
@@ -64,10 +65,14 @@ final class AppCoordinator: Coordinator {
     }
 
     private func showSearch(username: String) {
-        childCoordinator = nil
         navigationController.setNavigationBarHidden(true, animated: true)
-        let viewModel = container.resolve(SearchViewModel.self, argument: username)!
-        let viewController = SearchViewController(viewModel: viewModel)
-        navigationController.setViewControllers([viewController], animated: true)
+        childCoordinator = nil
+        let searchCoordinator = SearchCoordinator(
+            navigationController: navigationController,
+            container: container,
+            username: username
+        )
+        self.searchCoordinator = searchCoordinator
+        searchCoordinator.start()
     }
 }

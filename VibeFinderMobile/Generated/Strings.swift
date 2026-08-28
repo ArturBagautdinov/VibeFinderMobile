@@ -119,6 +119,12 @@ internal enum L10n {
     internal static let brand = L10n.tr("Localizable", "search.brand", fallback: "VibeFinder")
     /// What are you in the mood for?
     internal static let title = L10n.tr("Localizable", "search.title", fallback: "What are you in the mood for?")
+    internal enum Loading {
+      /// Tuning the mood, genres and hidden signals.
+      internal static let subtitle = L10n.tr("Localizable", "search.loading.subtitle", fallback: "Tuning the mood, genres and hidden signals.")
+      /// Finding your vibe
+      internal static let title = L10n.tr("Localizable", "search.loading.title", fallback: "Finding your vibe")
+    }
     internal enum Prompt {
       /// Describe a movie, series, game, book or just a feeling...
       internal static let placeholder = L10n.tr("Localizable", "search.prompt.placeholder", fallback: "Describe a movie, series, game, book or just a feeling...")
@@ -142,6 +148,10 @@ internal enum L10n {
       internal static let weekendGameSubtitle = L10n.tr("Localizable", "search.recent.weekend_game_subtitle", fallback: "9 recommendations · Yesterday")
       /// A game I can finish this weekend
       internal static let weekendGameTitle = L10n.tr("Localizable", "search.recent.weekend_game_title", fallback: "A game I can finish this weekend")
+    }
+    internal enum Results {
+      /// Your matches
+      internal static let title = L10n.tr("Localizable", "search.results.title", fallback: "Your matches")
     }
     internal enum Suggestion {
       /// Beautiful sci-fi

@@ -70,20 +70,38 @@ struct VibeFinderMobileTests {
     }
 
     @Test
-    func searchViewModelStoresSearchResult() {
+    @MainActor
+    func searchViewModelEmitsSearchResult() {
         let repository = SearchRepositorySpy()
         repository.result = .success(.fixture())
         let viewModel = SearchViewModel(username: "Artur", searchRepository: repository)
         var states: [SearchViewModel.State] = []
+        var resultPage: SearchPage?
         viewModel.onStateChange = { states.append($0) }
+        viewModel.onResultsReady = { page in
+            resultPage = page
+        }
 
         viewModel.search(query: "cozy movie")
 
         #expect(repository.searchCallCount == 1)
         #expect(repository.lastQuery == "cozy movie")
-        #expect(states.last?.result?.id == 101)
+        #expect(resultPage?.id == 101)
         #expect(states.last?.isLoading == false)
         #expect(states.last?.errorMessage == nil)
+    }
+
+    @Test
+    @MainActor
+    func searchResultsViewModelBuildsCellViewModels() {
+        let viewModel = SearchResultsViewModel(page: .fixture())
+
+        #expect(viewModel.sections.count == 1)
+        #expect(viewModel.sections.first?.title == "Exact match")
+        #expect(viewModel.sections.first?.items.first?.title == "Arrival")
+        #expect(viewModel.sections.first?.items.first?.meta == "2016 · sci-fi")
+        #expect(viewModel.sections.first?.items.first?.matchText == "★ 92%")
+        #expect(viewModel.sections.first?.items.first?.isTopMatch == true)
     }
 }
 

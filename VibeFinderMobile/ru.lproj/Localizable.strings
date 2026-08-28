@@ -41,6 +41,8 @@
 "search.brand" = "VibeFinder";
 "search.prompt.placeholder" = "Опишите фильм, сериал, игру, книгу или просто настроение...";
 "search.prompt.title" = "Опишите настроение";
+"search.loading.subtitle" = "Настраиваем настроение, жанры и скрытые сигналы.";
+"search.loading.title" = "Ищем ваш вайб";
 "search.recent.detective_series_subtitle" = "11 рекомендаций · 3 дня назад";
 "search.recent.detective_series_title" = "Темный детективный сериал с умным сценарием";
 "search.recent.rainy_evening_subtitle" = "12 рекомендаций · Сегодня";
@@ -53,5 +55,6 @@
 "search.suggestion.cozy_evening" = "Уютный вечер";
 "search.suggestion.dark_mystery" = "Темная тайна";
 "search.suggestion.slow_sunday" = "Медленное воскресенье";
+"search.results.title" = "Ваши совпадения";
 "search.title" = "Что вам сейчас по настроению?";
 "search.validation.empty_query" = "Опишите, что вам сейчас по настроению.";

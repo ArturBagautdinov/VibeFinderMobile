@@ -68,6 +68,11 @@ final class AppAssembly: Assembly {
         }
         .inObjectScope(.container)
 
+        container.register(SearchResultImageLoading.self) { _ in
+            SearchResultImageLoader()
+        }
+        .inObjectScope(.container)
+
         container.register(SearchViewModel.self) { resolver, username in
             SearchViewModel(
                 username: username,

@@ -7,7 +7,6 @@ final class SearchViewModel {
         let recentVibes: [RecentVibe]
         let isLoading: Bool
         let errorMessage: String?
-        let result: SearchPage?
     }
 
     struct RecentVibe {
@@ -19,6 +18,7 @@ final class SearchViewModel {
     private(set) var state: State
 
     var onStateChange: ((State) -> Void)?
+    var onResultsReady: ((SearchPage) -> Void)?
 
     init(username: String, searchRepository: SearchRepositoryProtocol) {
         self.searchRepository = searchRepository
@@ -45,8 +45,7 @@ final class SearchViewModel {
                 )
             ],
             isLoading: false,
-            errorMessage: nil,
-            result: nil
+            errorMessage: nil
         )
     }
 
@@ -57,14 +56,15 @@ final class SearchViewModel {
             return
         }
 
-        update(isLoading: true, errorMessage: nil, shouldClearResult: true)
+        update(isLoading: true, errorMessage: nil)
         searchRepository.search(query: normalizedQuery) { [weak self] result in
             self?.completeOnMain {
                 switch result {
                 case let .success(page):
-                    self?.update(isLoading: false, errorMessage: nil, result: page)
+                    self?.update(isLoading: false, errorMessage: nil)
+                    self?.onResultsReady?(page)
                 case let .failure(error):
-                    self?.update(isLoading: false, errorMessage: error.userMessage, shouldClearResult: true)
+                    self?.update(isLoading: false, errorMessage: error.userMessage)
                 }
             }
         }
@@ -72,17 +72,14 @@ final class SearchViewModel {
 
     private func update(
         isLoading: Bool? = nil,
-        errorMessage: String? = nil,
-        result: SearchPage? = nil,
-        shouldClearResult: Bool = false
+        errorMessage: String? = nil
     ) {
         state = State(
             username: state.username,
             suggestions: state.suggestions,
             recentVibes: state.recentVibes,
             isLoading: isLoading ?? state.isLoading,
-            errorMessage: errorMessage,
-            result: shouldClearResult ? nil : result ?? state.result
+            errorMessage: errorMessage
         )
         onStateChange?(state)
     }
