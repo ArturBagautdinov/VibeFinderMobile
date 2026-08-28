@@ -51,4 +51,16 @@ final class SearchResultsViewController: UIViewController, UICollectionViewDeleg
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         resultsView.updateStickySummaryVisibility(for: scrollView.contentOffset.y)
     }
+
+    func collectionView(
+        _ collectionView: UICollectionView,
+        willDisplaySupplementaryView view: UICollectionReusableView,
+        forElementKind elementKind: String,
+        at indexPath: IndexPath
+    ) {
+        guard elementKind == SearchResultsDataSource.bucketHeaderKind else {
+            return
+        }
+        (view as? SearchBucketHeaderView)?.animateAppearanceIfNeeded()
+    }
 }

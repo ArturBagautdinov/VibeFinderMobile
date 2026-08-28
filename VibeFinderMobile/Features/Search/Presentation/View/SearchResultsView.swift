@@ -155,7 +155,7 @@ final class SearchResultsView: UIView {
 
             let headerSize = NSCollectionLayoutSize(
                 widthDimension: .fractionalWidth(1),
-                heightDimension: .estimated(70)
+                heightDimension: .estimated(92)
             )
             let header = NSCollectionLayoutBoundarySupplementaryItem(
                 layoutSize: headerSize,
