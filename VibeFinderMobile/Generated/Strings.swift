@@ -128,6 +128,8 @@ internal enum L10n {
     internal enum Prompt {
       /// Describe a movie, series, game, book or just a feeling...
       internal static let placeholder = L10n.tr("Localizable", "search.prompt.placeholder", fallback: "Describe a movie, series, game, book or just a feeling...")
+      /// Search
+      internal static let submit = L10n.tr("Localizable", "search.prompt.submit", fallback: "Search")
       /// Describe a feeling
       internal static let title = L10n.tr("Localizable", "search.prompt.title", fallback: "Describe a feeling")
     }

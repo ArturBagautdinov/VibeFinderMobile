@@ -5,6 +5,14 @@ final class SearchPromptCardView: UIView {
     let submitButton = UIButton(type: .system)
 
     private let placeholderLabel = UILabel()
+    private var submitButtonWidthConstraint: NSLayoutConstraint?
+    private var hasQueryText = false
+    private var isLoading = false
+
+    private enum Layout {
+        static let compactButtonSize: CGFloat = 36
+        static let expandedButtonWidth: CGFloat = 110
+    }
 
     var query: String {
         textView.text ?? ""
@@ -62,6 +70,9 @@ final class SearchPromptCardView: UIView {
         addSubview(submitButton)
         submitButton.translatesAutoresizingMaskIntoConstraints = false
 
+        submitButtonWidthConstraint = submitButton.widthAnchor.constraint(equalToConstant: Layout.compactButtonSize)
+        submitButtonWidthConstraint?.isActive = true
+
         NSLayoutConstraint.activate([
             textView.topAnchor.constraint(equalTo: inputContainer.topAnchor),
             textView.leadingAnchor.constraint(equalTo: inputContainer.leadingAnchor),
@@ -80,8 +91,7 @@ final class SearchPromptCardView: UIView {
 
             submitButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
             submitButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
-            submitButton.widthAnchor.constraint(equalToConstant: 36),
-            submitButton.heightAnchor.constraint(equalToConstant: 36),
+            submitButton.heightAnchor.constraint(equalToConstant: Layout.compactButtonSize),
             heightAnchor.constraint(greaterThanOrEqualToConstant: 172)
         ])
     }
@@ -108,13 +118,7 @@ final class SearchPromptCardView: UIView {
     }
 
     private func configureSubmitButton() {
-        var configuration = UIButton.Configuration.filled()
-        configuration.image = UIImage(systemName: "arrow.up")
-        configuration.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 16, weight: .bold)
-        configuration.baseBackgroundColor = AppTheme.Color.primary
-        configuration.baseForegroundColor = .white
-        configuration.cornerStyle = .capsule
-        submitButton.configuration = configuration
+        applySubmitButtonConfiguration(animated: false)
         submitButton.accessibilityIdentifier = "search.submitButton"
         submitButton.layer.shadowColor = AppTheme.Color.primary.cgColor
         submitButton.layer.shadowOpacity = 0.32
@@ -123,17 +127,86 @@ final class SearchPromptCardView: UIView {
     }
 
     func setLoading(_ isLoading: Bool) {
+        self.isLoading = isLoading
         submitButton.isEnabled = !isLoading
-        submitButton.configuration?.showsActivityIndicator = isLoading
-        submitButton.configuration?.image = isLoading ? nil : UIImage(systemName: "arrow.up")
-        submitButton.configuration?.baseBackgroundColor = isLoading
+        applySubmitButtonConfiguration(animated: false)
+    }
+
+    private func updateTextState(animated: Bool) {
+        let hasText = !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        placeholderLabel.isHidden = hasText
+
+        guard hasText != hasQueryText else {
+            return
+        }
+
+        hasQueryText = hasText
+        submitButtonWidthConstraint?.constant = hasText
+            ? Layout.expandedButtonWidth
+            : Layout.compactButtonSize
+        applySubmitButtonConfiguration(animated: animated)
+
+        let animations = {
+            self.layoutIfNeeded()
+        }
+
+        if animated {
+            UIView.animate(
+                withDuration: 0.34,
+                delay: 0,
+                usingSpringWithDamping: 0.84,
+                initialSpringVelocity: 0.18,
+                options: [.beginFromCurrentState, .allowUserInteraction],
+                animations: animations
+            )
+        } else {
+            animations()
+        }
+    }
+
+    private func applySubmitButtonConfiguration(animated: Bool) {
+        let update = {
+            self.submitButton.configuration = self.makeSubmitButtonConfiguration()
+        }
+
+        if animated {
+            UIView.transition(
+                with: submitButton,
+                duration: 0.18,
+                options: [.transitionCrossDissolve, .allowUserInteraction],
+                animations: update
+            )
+        } else {
+            update()
+        }
+    }
+
+    private func makeSubmitButtonConfiguration() -> UIButton.Configuration {
+        var configuration = UIButton.Configuration.filled()
+        configuration.image = isLoading ? nil : UIImage(systemName: "arrow.up")
+        if hasQueryText && !isLoading {
+            var title = AttributedString(L10n.Search.Prompt.submit)
+            title.font = .systemFont(ofSize: 16, weight: .bold)
+            configuration.attributedTitle = title
+        }
+        configuration.imagePlacement = hasQueryText ? .trailing : .leading
+        configuration.imagePadding = hasQueryText ? 3 : 0
+        configuration.contentInsets = hasQueryText
+            ? NSDirectionalEdgeInsets(top: 0, leading: 14, bottom: 0, trailing: 16)
+            : .zero
+        configuration.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 16, weight: .bold)
+        configuration.baseBackgroundColor = isLoading
             ? AppTheme.Color.textSecondary
             : AppTheme.Color.primary
+        configuration.baseForegroundColor = .white
+        configuration.cornerStyle = .capsule
+        configuration.showsActivityIndicator = isLoading
+        return configuration
     }
 }
 
 extension SearchPromptCardView: UITextViewDelegate {
     func textViewDidChange(_ textView: UITextView) {
-        placeholderLabel.isHidden = !textView.text.isEmpty
+        updateTextState(animated: true)
     }
 }

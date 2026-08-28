@@ -40,6 +40,7 @@
 "home.welcome" = "Welcome, %@.";
 "search.brand" = "VibeFinder";
 "search.prompt.placeholder" = "Describe a movie, series, game, book or just a feeling...";
+"search.prompt.submit" = "Search";
 "search.prompt.title" = "Describe a feeling";
 "search.loading.subtitle" = "Tuning the mood, genres and hidden signals.";
 "search.loading.title" = "Finding your vibe";

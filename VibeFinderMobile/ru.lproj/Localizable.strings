@@ -40,6 +40,7 @@
 "home.welcome" = "Добро пожаловать, %@.";
 "search.brand" = "VibeFinder";
 "search.prompt.placeholder" = "Опишите фильм, сериал, игру, книгу или просто настроение...";
+"search.prompt.submit" = "Поиск";
 "search.prompt.title" = "Опишите настроение";
 "search.loading.subtitle" = "Настраиваем настроение, жанры и скрытые сигналы.";
 "search.loading.title" = "Ищем ваш вайб";
