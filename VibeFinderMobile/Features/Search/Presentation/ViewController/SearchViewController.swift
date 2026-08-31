@@ -5,6 +5,7 @@ final class SearchViewController: UIViewController {
     private lazy var searchView = SearchView(state: viewModel.state)
 
     var onResultsReady: ((SearchPage) -> Void)?
+    var onMoreSuggestionsSelected: (([SearchSuggestionDisplayModel]) -> Void)?
 
     init(viewModel: SearchViewModel) {
         self.viewModel = viewModel
@@ -31,10 +32,14 @@ final class SearchViewController: UIViewController {
         navigationController?.setNavigationBarHidden(true, animated: false)
         searchView.submitButton.addTarget(self, action: #selector(searchTapped), for: .touchUpInside)
         searchView.onSuggestionSelected = { [weak self] suggestion in
-            self?.searchView.setPromptText(suggestion)
+            self?.selectSuggestion(suggestion)
         }
         searchView.onCustomSuggestionSubmitted = { [weak self] suggestion in
             self?.viewModel.addCustomSuggestion(suggestion)
+        }
+        searchView.onMoreSuggestionsSelected = { [weak self] in
+            guard let self else { return }
+            self.onMoreSuggestionsSelected?(self.viewModel.state.allSuggestions)
         }
     }
 
@@ -50,5 +55,9 @@ final class SearchViewController: UIViewController {
     @objc private func searchTapped() {
         view.endEditing(true)
         viewModel.search(query: searchView.promptTextView.text)
+    }
+
+    func selectSuggestion(_ suggestion: SearchSuggestionDisplayModel) {
+        searchView.setPromptText(suggestion.title)
     }
 }

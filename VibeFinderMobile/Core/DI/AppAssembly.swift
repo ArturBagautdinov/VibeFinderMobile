@@ -68,8 +68,13 @@ final class AppAssembly: Assembly {
         }
         .inObjectScope(.container)
 
-        container.register(SearchSuggestionsStoreProtocol.self) { _ in
-            UserDefaultsSearchSuggestionsStore(userDefaults: .standard)
+        container.register(CoreDataStack.self) { _ in
+            CoreDataStack()
+        }
+        .inObjectScope(.container)
+
+        container.register(SearchSuggestionsStoreProtocol.self) { resolver in
+            CoreDataSearchSuggestionsStore(coreDataStack: resolver.resolve(CoreDataStack.self)!)
         }
         .inObjectScope(.container)
 

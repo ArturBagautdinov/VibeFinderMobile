@@ -57,6 +57,7 @@ struct VibeFinderMobileTests {
     }
 
     @Test
+    @MainActor
     func searchViewModelShowsEmptyQueryBeforeNetworkRequest() {
         let repository = SearchRepositorySpy()
         let suggestionsStore = SearchSuggestionsStoreSpy()
@@ -76,7 +77,7 @@ struct VibeFinderMobileTests {
 
     @Test
     @MainActor
-    func searchViewModelEmitsSearchResult() {
+    func searchViewModelEmitsSearchResult() async {
         let repository = SearchRepositorySpy()
         let suggestionsStore = SearchSuggestionsStoreSpy()
         repository.result = .success(.fixture())
@@ -93,6 +94,7 @@ struct VibeFinderMobileTests {
         }
 
         viewModel.search(query: "cozy movie")
+        await Task.yield()
 
         #expect(repository.searchCallCount == 1)
         #expect(repository.lastQuery == "cozy movie")
@@ -102,6 +104,7 @@ struct VibeFinderMobileTests {
     }
 
     @Test
+    @MainActor
     func searchViewModelStoresCustomSuggestion() {
         let repository = SearchRepositorySpy()
         let suggestionsStore = SearchSuggestionsStoreSpy()
@@ -115,8 +118,40 @@ struct VibeFinderMobileTests {
 
         viewModel.addCustomSuggestion("  Cyberpunk noir  ")
 
-        #expect(suggestionsStore.savedSuggestions.last?.title == "Cyberpunk noir")
-        #expect(states.last?.suggestions.contains("Cyberpunk noir") == true)
+        #expect(suggestionsStore.savedSuggestions.first?.title == "Cyberpunk noir")
+        #expect(states.last?.allSuggestions.contains { $0.title == "Cyberpunk noir" } == true)
+        #expect(states.last?.visibleSuggestions.first?.title == "Cyberpunk noir")
+    }
+
+    @Test
+    @MainActor
+    func searchViewModelLimitsVisibleSuggestions() {
+        let repository = SearchRepositorySpy()
+        let suggestionsStore = SearchSuggestionsStoreSpy()
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: suggestionsStore
+        )
+
+        #expect(viewModel.state.visibleSuggestions.count == 5)
+        #expect(viewModel.state.allSuggestions.count == SearchSuggestion.defaults.count)
+        #expect(viewModel.state.canShowMoreSuggestions == true)
+    }
+
+    @Test
+    func coreDataSearchSuggestionsStorePersistsCustomSuggestions() {
+        let store = CoreDataSearchSuggestionsStore(
+            coreDataStack: CoreDataStack(name: "VibeFinderMobileTests", inMemory: true)
+        )
+        var suggestions = store.loadSuggestions()
+        suggestions.append(.custom(title: "Quiet cyberpunk"))
+
+        store.saveSuggestions(suggestions)
+        let savedSuggestions = store.loadSuggestions()
+
+        #expect(savedSuggestions.contains { $0.title == "Quiet cyberpunk" })
+        #expect(savedSuggestions.count == suggestions.count)
     }
 
     @Test

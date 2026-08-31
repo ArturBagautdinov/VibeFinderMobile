@@ -1,8 +1,9 @@
 import UIKit
 
 final class SearchView: UIView {
-    var onSuggestionSelected: ((String) -> Void)?
+    var onSuggestionSelected: ((SearchSuggestionDisplayModel) -> Void)?
     var onCustomSuggestionSubmitted: ((String) -> Void)?
+    var onMoreSuggestionsSelected: (() -> Void)?
 
     var promptTextView: UITextView {
         promptCardView.textView
@@ -14,7 +15,10 @@ final class SearchView: UIView {
 
     private let state: SearchViewModel.State
     private let promptCardView = SearchPromptCardView()
-    private lazy var suggestionsView = SearchSuggestionsView(suggestions: state.suggestions)
+    private lazy var suggestionsView = SearchSuggestionsView(
+        suggestions: state.visibleSuggestions,
+        canShowMoreSuggestions: state.canShowMoreSuggestions
+    )
     private let statusView = SearchStatusView()
     private let loadingView = SearchLoadingView()
 
@@ -36,6 +40,9 @@ final class SearchView: UIView {
         }
         suggestionsView.onCustomSuggestionSubmitted = { [weak self] suggestion in
             self?.onCustomSuggestionSubmitted?(suggestion)
+        }
+        suggestionsView.onMoreSuggestionsSelected = { [weak self] in
+            self?.onMoreSuggestionsSelected?()
         }
 
         let scrollView = UIScrollView()
@@ -97,7 +104,10 @@ final class SearchView: UIView {
     func render(_ state: SearchViewModel.State) {
         promptCardView.setLoading(state.isLoading)
         statusView.setMessage(state.errorMessage)
-        suggestionsView.render(suggestions: state.suggestions)
+        suggestionsView.render(
+            suggestions: state.visibleSuggestions,
+            canShowMoreSuggestions: state.canShowMoreSuggestions
+        )
         loadingView.setVisible(state.isLoading)
     }
 

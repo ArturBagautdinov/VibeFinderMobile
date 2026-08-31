@@ -1,11 +1,13 @@
 import UIKit
 
 final class SearchSuggestionsView: UIScrollView {
-    var onSuggestionSelected: ((String) -> Void)?
+    var onSuggestionSelected: ((SearchSuggestionDisplayModel) -> Void)?
     var onCustomSuggestionSubmitted: ((String) -> Void)?
+    var onMoreSuggestionsSelected: (() -> Void)?
 
     private let stackView = UIStackView()
-    private var suggestions: [String] = []
+    private var suggestions: [SearchSuggestionDisplayModel] = []
+    private var canShowMoreSuggestions = false
     private var isAddingCustomSuggestion = false
 
     private enum Animation {
@@ -17,18 +19,25 @@ final class SearchSuggestionsView: UIScrollView {
         static let maxChipWidth: CGFloat = 210
     }
 
-    init(suggestions: [String]) {
+    init(
+        suggestions: [SearchSuggestionDisplayModel],
+        canShowMoreSuggestions: Bool
+    ) {
         super.init(frame: .zero)
-        configure(suggestions: suggestions)
+        configure(suggestions: suggestions, canShowMoreSuggestions: canShowMoreSuggestions)
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private func configure(suggestions: [String]) {
+    private func configure(
+        suggestions: [SearchSuggestionDisplayModel],
+        canShowMoreSuggestions: Bool
+    ) {
         showsHorizontalScrollIndicator = false
         self.suggestions = suggestions
+        self.canShowMoreSuggestions = canShowMoreSuggestions
         stackView.axis = .horizontal
         stackView.spacing = 12
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -44,17 +53,24 @@ final class SearchSuggestionsView: UIScrollView {
             heightAnchor.constraint(equalToConstant: 38)
         ])
 
-        render(suggestions: suggestions)
+        render(suggestions: suggestions, canShowMoreSuggestions: canShowMoreSuggestions)
     }
 
-    func render(suggestions: [String]) {
+    func render(
+        suggestions: [SearchSuggestionDisplayModel],
+        canShowMoreSuggestions: Bool
+    ) {
         self.suggestions = suggestions
+        self.canShowMoreSuggestions = canShowMoreSuggestions
         stackView.arrangedSubviews.forEach { view in
             stackView.removeArrangedSubview(view)
             view.removeFromSuperview()
         }
 
         suggestions.map(makeSuggestionChip).forEach(stackView.addArrangedSubview)
+        if canShowMoreSuggestions {
+            stackView.addArrangedSubview(makeMoreSuggestionsButton())
+        }
 
         if isAddingCustomSuggestion {
             stackView.addArrangedSubview(makeCustomSuggestionInput())
@@ -63,10 +79,12 @@ final class SearchSuggestionsView: UIScrollView {
         }
     }
 
-    private func makeSuggestionChip(_ title: String) -> UIButton {
-        let button = UIButton(configuration: makeSuggestionConfiguration(title: title, isHighlighted: false))
+    private func makeSuggestionChip(_ suggestion: SearchSuggestionDisplayModel) -> UIButton {
+        let button = UIButton(
+            configuration: makeSuggestionConfiguration(title: suggestion.title, isHighlighted: false)
+        )
         button.accessibilityIdentifier = "search.suggestionChip"
-        button.accessibilityValue = title
+        button.accessibilityValue = suggestion.title
         button.titleLabel?.lineBreakMode = .byTruncatingTail
         button.titleLabel?.numberOfLines = 1
         button.widthAnchor.constraint(lessThanOrEqualToConstant: Layout.maxChipWidth).isActive = true
@@ -74,9 +92,34 @@ final class SearchSuggestionsView: UIScrollView {
             UIAction { [weak self, weak button] _ in
                 guard let self else { return }
                 if let button {
-                    self.highlightSuggestionChip(button, title: title)
+                    self.highlightSuggestionChip(button, title: suggestion.title)
                 }
-                self.onSuggestionSelected?(title)
+                self.onSuggestionSelected?(suggestion)
+            },
+            for: .touchUpInside
+        )
+        return button
+    }
+
+    private func makeMoreSuggestionsButton() -> UIButton {
+        var configuration = UIButton.Configuration.plain()
+        configuration.title = L10n.Search.Suggestion.more
+        configuration.image = UIImage(systemName: "ellipsis")
+        configuration.imagePlacement = .trailing
+        configuration.imagePadding = 8
+        configuration.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 13, weight: .bold)
+        configuration.baseForegroundColor = AppTheme.Color.primary
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 11, leading: 18, bottom: 11, trailing: 18)
+        configuration.background.backgroundColor = AppTheme.Color.surface.withAlphaComponent(0.55)
+        configuration.background.strokeColor = AppTheme.Color.primary.withAlphaComponent(0.55)
+        configuration.background.strokeWidth = 1
+        configuration.background.cornerRadius = 24
+
+        let button = UIButton(configuration: configuration)
+        button.accessibilityIdentifier = "search.moreSuggestionsButton"
+        button.addAction(
+            UIAction { [weak self] _ in
+                self?.onMoreSuggestionsSelected?()
             },
             for: .touchUpInside
         )
@@ -219,7 +262,10 @@ final class SearchSuggestionsView: UIScrollView {
             duration: 0.24,
             options: [.transitionCrossDissolve, .allowUserInteraction]
         ) {
-            self.render(suggestions: self.suggestions)
+            self.render(
+                suggestions: self.suggestions,
+                canShowMoreSuggestions: self.canShowMoreSuggestions
+            )
         }
     }
 

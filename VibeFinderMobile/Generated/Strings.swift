@@ -158,14 +158,40 @@ internal enum L10n {
     internal enum Suggestion {
       /// Beautiful sci-fi
       internal static let beautifulScifi = L10n.tr("Localizable", "search.suggestion.beautiful_scifi", fallback: "Beautiful sci-fi")
+      /// Comfort book
+      internal static let comfortBook = L10n.tr("Localizable", "search.suggestion.comfort_book", fallback: "Comfort book")
       /// Cozy evening
       internal static let cozyEvening = L10n.tr("Localizable", "search.suggestion.cozy_evening", fallback: "Cozy evening")
+      /// Cozy game
+      internal static let cozyGame = L10n.tr("Localizable", "search.suggestion.cozy_game", fallback: "Cozy game")
       /// Your vibe
       internal static let customPlaceholder = L10n.tr("Localizable", "search.suggestion.custom_placeholder", fallback: "Your vibe")
       /// Dark mystery
       internal static let darkMystery = L10n.tr("Localizable", "search.suggestion.dark_mystery", fallback: "Dark mystery")
+      /// Emotional sci-fi
+      internal static let emotionalScifi = L10n.tr("Localizable", "search.suggestion.emotional_scifi", fallback: "Emotional sci-fi")
+      /// Late-night thriller
+      internal static let lateNightThriller = L10n.tr("Localizable", "search.suggestion.late_night_thriller", fallback: "Late-night thriller")
+      /// Mind-bending story
+      internal static let mindBendingStory = L10n.tr("Localizable", "search.suggestion.mind_bending_story", fallback: "Mind-bending story")
+      /// More
+      internal static let more = L10n.tr("Localizable", "search.suggestion.more", fallback: "More")
+      /// Rainy night movie
+      internal static let rainyNightMovie = L10n.tr("Localizable", "search.suggestion.rainy_night_movie", fallback: "Rainy night movie")
       /// Slow Sunday
       internal static let slowSunday = L10n.tr("Localizable", "search.suggestion.slow_sunday", fallback: "Slow Sunday")
+      /// Something weird
+      internal static let somethingWeird = L10n.tr("Localizable", "search.suggestion.something_weird", fallback: "Something weird")
+      /// Weekend adventure
+      internal static let weekendAdventure = L10n.tr("Localizable", "search.suggestion.weekend_adventure", fallback: "Weekend adventure")
+    }
+    internal enum Suggestions {
+      internal enum All {
+        /// Choose a prompt to start searching.
+        internal static let subtitle = L10n.tr("Localizable", "search.suggestions.all.subtitle", fallback: "Choose a prompt to start searching.")
+        /// All vibes
+        internal static let title = L10n.tr("Localizable", "search.suggestions.all.title", fallback: "All vibes")
+      }
     }
     internal enum Validation {
       /// Describe what you are in the mood for.

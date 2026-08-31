@@ -5,6 +5,14 @@ enum BuiltInSearchSuggestion: String, Codable, CaseIterable {
     case darkMystery
     case beautifulScifi
     case slowSunday
+    case rainyNightMovie
+    case cozyGame
+    case emotionalScifi
+    case somethingWeird
+    case lateNightThriller
+    case weekendAdventure
+    case comfortBook
+    case mindBendingStory
 }
 
 struct SearchSuggestion: Codable, Equatable {
