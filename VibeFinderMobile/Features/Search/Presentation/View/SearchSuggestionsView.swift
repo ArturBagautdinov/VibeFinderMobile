@@ -73,9 +73,30 @@ final class SearchSuggestionsView: UIScrollView {
         }
 
         if isAddingCustomSuggestion {
-            stackView.addArrangedSubview(makeCustomSuggestionInput())
+            let customSuggestionInput = makeCustomSuggestionInput()
+            stackView.addArrangedSubview(customSuggestionInput)
+            revealCustomSuggestionInput(customSuggestionInput)
         } else {
             stackView.addArrangedSubview(makeAddSuggestionButton())
+        }
+    }
+
+    func cancelCustomSuggestionInput() {
+        guard isAddingCustomSuggestion else {
+            return
+        }
+
+        isAddingCustomSuggestion = false
+        endEditing(true)
+        UIView.transition(
+            with: stackView,
+            duration: 0.22,
+            options: [.curveEaseIn, .allowUserInteraction]
+        ) {
+            self.render(
+                suggestions: self.suggestions,
+                canShowMoreSuggestions: self.canShowMoreSuggestions
+            )
         }
     }
 
@@ -194,11 +215,22 @@ final class SearchSuggestionsView: UIScrollView {
             submitButton.widthAnchor.constraint(equalToConstant: 24)
         ])
 
-        DispatchQueue.main.async {
-            textField.becomeFirstResponder()
-        }
-
         return containerView
+    }
+
+    private func revealCustomSuggestionInput(_ inputView: UIView) {
+        DispatchQueue.main.async { [weak self, weak inputView] in
+            guard let self, let inputView else {
+                return
+            }
+
+            self.layoutIfNeeded()
+            let targetRect = inputView
+                .convert(inputView.bounds, to: self)
+                .insetBy(dx: -12, dy: 0)
+            self.scrollRectToVisible(targetRect, animated: true)
+            inputView.findFirstTextField()?.becomeFirstResponder()
+        }
     }
 
     private func makeSuggestionConfiguration(title: String, isHighlighted: Bool) -> UIButton.Configuration {
@@ -285,5 +317,15 @@ extension SearchSuggestionsView: UITextFieldDelegate {
         submitCustomSuggestion(textField.text)
         textField.resignFirstResponder()
         return true
+    }
+}
+
+private extension UIView {
+    func findFirstTextField() -> UITextField? {
+        if let textField = self as? UITextField {
+            return textField
+        }
+
+        return subviews.lazy.compactMap { $0.findFirstTextField() }.first
     }
 }

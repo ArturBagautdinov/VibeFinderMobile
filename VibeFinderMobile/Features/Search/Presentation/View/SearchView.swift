@@ -44,6 +44,10 @@ final class SearchView: UIView {
         suggestionsView.onMoreSuggestionsSelected = { [weak self] in
             self?.onMoreSuggestionsSelected?()
         }
+        let dismissTapGesture = UITapGestureRecognizer(target: self, action: #selector(backgroundTapped))
+        dismissTapGesture.cancelsTouchesInView = false
+        dismissTapGesture.delegate = self
+        addGestureRecognizer(dismissTapGesture)
 
         let scrollView = UIScrollView()
         scrollView.alwaysBounceVertical = true
@@ -114,5 +118,23 @@ final class SearchView: UIView {
     func setPromptText(_ text: String) {
         promptCardView.setQuery(text, animated: true)
         promptTextView.becomeFirstResponder()
+    }
+
+    @objc private func backgroundTapped() {
+        endEditing(true)
+        suggestionsView.cancelCustomSuggestionInput()
+    }
+}
+
+extension SearchView: UIGestureRecognizerDelegate {
+    func gestureRecognizer(
+        _ gestureRecognizer: UIGestureRecognizer,
+        shouldReceive touch: UITouch
+    ) -> Bool {
+        guard let touchedView = touch.view else {
+            return true
+        }
+
+        return !touchedView.isDescendant(of: suggestionsView)
     }
 }

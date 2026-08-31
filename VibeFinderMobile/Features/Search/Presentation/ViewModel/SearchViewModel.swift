@@ -96,7 +96,7 @@ final class SearchViewModel {
             return
         }
 
-        suggestionModels.insert(.custom(title: normalizedSuggestion), at: 0)
+        suggestionModels.insert(.custom(title: normalizedSuggestion), at: 4)
         suggestionsStore.saveSuggestions(suggestionModels)
         update(suggestionModels: suggestionModels)
     }
