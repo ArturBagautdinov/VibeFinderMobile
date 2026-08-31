@@ -1,6 +1,8 @@
 import UIKit
 
 final class SearchView: UIView {
+    var onSuggestionSelected: ((String) -> Void)?
+
     var promptTextView: UITextView {
         promptCardView.textView
     }
@@ -11,6 +13,7 @@ final class SearchView: UIView {
 
     private let state: SearchViewModel.State
     private let promptCardView = SearchPromptCardView()
+    private lazy var suggestionsView = SearchSuggestionsView(suggestions: state.suggestions)
     private let statusView = SearchStatusView()
     private let loadingView = SearchLoadingView()
 
@@ -27,6 +30,9 @@ final class SearchView: UIView {
     private func configure() {
         backgroundColor = AppTheme.Color.background
         accessibilityIdentifier = "search.screen"
+        suggestionsView.onSuggestionSelected = { [weak self] suggestion in
+            self?.onSuggestionSelected?(suggestion)
+        }
 
         let scrollView = UIScrollView()
         scrollView.alwaysBounceVertical = true
@@ -39,7 +45,7 @@ final class SearchView: UIView {
             titleLabel,
             promptCardView,
             statusView,
-            SearchSuggestionsView(suggestions: state.suggestions),
+            suggestionsView,
             RecentVibesView(recentVibes: state.recentVibes)
         ])
         contentStack.axis = .vertical
@@ -88,5 +94,10 @@ final class SearchView: UIView {
         promptCardView.setLoading(state.isLoading)
         statusView.setMessage(state.errorMessage)
         loadingView.setVisible(state.isLoading)
+    }
+
+    func setPromptText(_ text: String) {
+        promptCardView.setQuery(text, animated: true)
+        promptTextView.becomeFirstResponder()
     }
 }

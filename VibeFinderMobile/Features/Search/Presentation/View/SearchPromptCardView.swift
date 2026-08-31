@@ -132,6 +132,11 @@ final class SearchPromptCardView: UIView {
         applySubmitButtonConfiguration(animated: false)
     }
 
+    func setQuery(_ query: String, animated: Bool) {
+        textView.text = query
+        updateTextState(animated: animated)
+    }
+
     private func updateTextState(animated: Bool) {
         let hasText = !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         placeholderLabel.isHidden = hasText
