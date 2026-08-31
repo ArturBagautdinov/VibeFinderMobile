@@ -2,6 +2,7 @@ import UIKit
 
 final class SearchView: UIView {
     var onSuggestionSelected: ((String) -> Void)?
+    var onCustomSuggestionSubmitted: ((String) -> Void)?
 
     var promptTextView: UITextView {
         promptCardView.textView
@@ -32,6 +33,9 @@ final class SearchView: UIView {
         accessibilityIdentifier = "search.screen"
         suggestionsView.onSuggestionSelected = { [weak self] suggestion in
             self?.onSuggestionSelected?(suggestion)
+        }
+        suggestionsView.onCustomSuggestionSubmitted = { [weak self] suggestion in
+            self?.onCustomSuggestionSubmitted?(suggestion)
         }
 
         let scrollView = UIScrollView()
@@ -93,6 +97,7 @@ final class SearchView: UIView {
     func render(_ state: SearchViewModel.State) {
         promptCardView.setLoading(state.isLoading)
         statusView.setMessage(state.errorMessage)
+        suggestionsView.render(suggestions: state.suggestions)
         loadingView.setVisible(state.isLoading)
     }
 

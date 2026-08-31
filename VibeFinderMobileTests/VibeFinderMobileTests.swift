@@ -59,7 +59,12 @@ struct VibeFinderMobileTests {
     @Test
     func searchViewModelShowsEmptyQueryBeforeNetworkRequest() {
         let repository = SearchRepositorySpy()
-        let viewModel = SearchViewModel(username: "Artur", searchRepository: repository)
+        let suggestionsStore = SearchSuggestionsStoreSpy()
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: suggestionsStore
+        )
         var states: [SearchViewModel.State] = []
         viewModel.onStateChange = { states.append($0) }
 
@@ -73,8 +78,13 @@ struct VibeFinderMobileTests {
     @MainActor
     func searchViewModelEmitsSearchResult() {
         let repository = SearchRepositorySpy()
+        let suggestionsStore = SearchSuggestionsStoreSpy()
         repository.result = .success(.fixture())
-        let viewModel = SearchViewModel(username: "Artur", searchRepository: repository)
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: suggestionsStore
+        )
         var states: [SearchViewModel.State] = []
         var resultPage: SearchPage?
         viewModel.onStateChange = { states.append($0) }
@@ -89,6 +99,24 @@ struct VibeFinderMobileTests {
         #expect(resultPage?.id == 101)
         #expect(states.last?.isLoading == false)
         #expect(states.last?.errorMessage == nil)
+    }
+
+    @Test
+    func searchViewModelStoresCustomSuggestion() {
+        let repository = SearchRepositorySpy()
+        let suggestionsStore = SearchSuggestionsStoreSpy()
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: suggestionsStore
+        )
+        var states: [SearchViewModel.State] = []
+        viewModel.onStateChange = { states.append($0) }
+
+        viewModel.addCustomSuggestion("  Cyberpunk noir  ")
+
+        #expect(suggestionsStore.savedSuggestions.last?.title == "Cyberpunk noir")
+        #expect(states.last?.suggestions.contains("Cyberpunk noir") == true)
     }
 
     @Test
@@ -153,6 +181,20 @@ private final class SearchRepositorySpy: SearchRepositoryProtocol {
         searchCallCount += 1
         lastQuery = query
         completion(result)
+    }
+}
+
+private final class SearchSuggestionsStoreSpy: SearchSuggestionsStoreProtocol {
+    private(set) var savedSuggestions: [SearchSuggestion] = []
+    var suggestions: [SearchSuggestion] = SearchSuggestion.defaults
+
+    func loadSuggestions() -> [SearchSuggestion] {
+        suggestions
+    }
+
+    func saveSuggestions(_ suggestions: [SearchSuggestion]) {
+        savedSuggestions = suggestions
+        self.suggestions = suggestions
     }
 }
 

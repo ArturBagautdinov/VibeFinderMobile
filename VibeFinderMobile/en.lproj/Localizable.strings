@@ -54,6 +54,7 @@
 "search.recent.weekend_game_title" = "A game I can finish this weekend";
 "search.suggestion.beautiful_scifi" = "Beautiful sci-fi";
 "search.suggestion.cozy_evening" = "Cozy evening";
+"search.suggestion.custom_placeholder" = "Your vibe";
 "search.suggestion.dark_mystery" = "Dark mystery";
 "search.suggestion.slow_sunday" = "Slow Sunday";
 "search.results.title" = "Your matches";

@@ -160,6 +160,8 @@ internal enum L10n {
       internal static let beautifulScifi = L10n.tr("Localizable", "search.suggestion.beautiful_scifi", fallback: "Beautiful sci-fi")
       /// Cozy evening
       internal static let cozyEvening = L10n.tr("Localizable", "search.suggestion.cozy_evening", fallback: "Cozy evening")
+      /// Your vibe
+      internal static let customPlaceholder = L10n.tr("Localizable", "search.suggestion.custom_placeholder", fallback: "Your vibe")
       /// Dark mystery
       internal static let darkMystery = L10n.tr("Localizable", "search.suggestion.dark_mystery", fallback: "Dark mystery")
       /// Slow Sunday

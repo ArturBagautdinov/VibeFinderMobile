@@ -33,6 +33,9 @@ final class SearchViewController: UIViewController {
         searchView.onSuggestionSelected = { [weak self] suggestion in
             self?.searchView.setPromptText(suggestion)
         }
+        searchView.onCustomSuggestionSubmitted = { [weak self] suggestion in
+            self?.viewModel.addCustomSuggestion(suggestion)
+        }
     }
 
     private func bindViewModel() {

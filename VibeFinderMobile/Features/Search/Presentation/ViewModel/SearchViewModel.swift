@@ -15,21 +15,25 @@ final class SearchViewModel {
     }
 
     private let searchRepository: SearchRepositoryProtocol
+    private let suggestionsStore: SearchSuggestionsStoreProtocol
+    private var suggestionModels: [SearchSuggestion]
     private(set) var state: State
 
     var onStateChange: ((State) -> Void)?
     var onResultsReady: ((SearchPage) -> Void)?
 
-    init(username: String, searchRepository: SearchRepositoryProtocol) {
+    init(
+        username: String,
+        searchRepository: SearchRepositoryProtocol,
+        suggestionsStore: SearchSuggestionsStoreProtocol
+    ) {
         self.searchRepository = searchRepository
+        self.suggestionsStore = suggestionsStore
+        let suggestionModels = suggestionsStore.loadSuggestions()
+        self.suggestionModels = suggestionModels
         self.state = State(
             username: username,
-            suggestions: [
-                L10n.Search.Suggestion.cozyEvening,
-                L10n.Search.Suggestion.darkMystery,
-                L10n.Search.Suggestion.beautifulScifi,
-                L10n.Search.Suggestion.slowSunday
-            ],
+            suggestions: Self.makeDisplayTitles(from: suggestionModels),
             recentVibes: [
                 RecentVibe(
                     title: L10n.Search.Recent.rainyEveningTitle,
@@ -70,13 +74,29 @@ final class SearchViewModel {
         }
     }
 
+    func addCustomSuggestion(_ suggestion: String) {
+        let normalizedSuggestion = suggestion.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalizedSuggestion.isEmpty else {
+            return
+        }
+
+        guard !state.suggestions.contains(where: { $0.caseInsensitiveCompare(normalizedSuggestion) == .orderedSame }) else {
+            return
+        }
+
+        suggestionModels.append(.custom(title: normalizedSuggestion))
+        suggestionsStore.saveSuggestions(suggestionModels)
+        update(suggestions: Self.makeDisplayTitles(from: suggestionModels))
+    }
+
     private func update(
+        suggestions: [String]? = nil,
         isLoading: Bool? = nil,
         errorMessage: String? = nil
     ) {
         state = State(
             username: state.username,
-            suggestions: state.suggestions,
+            suggestions: suggestions ?? state.suggestions,
             recentVibes: state.recentVibes,
             isLoading: isLoading ?? state.isLoading,
             errorMessage: errorMessage
@@ -89,6 +109,35 @@ final class SearchViewModel {
             work()
         } else {
             DispatchQueue.main.async(execute: work)
+        }
+    }
+
+    private static func makeDisplayTitles(from suggestions: [SearchSuggestion]) -> [String] {
+        suggestions.compactMap(makeDisplayTitle)
+    }
+
+    private static func makeDisplayTitle(from suggestion: SearchSuggestion) -> String? {
+        switch suggestion.kind {
+        case .builtIn:
+            guard let builtInSuggestion = BuiltInSearchSuggestion(rawValue: suggestion.id) else {
+                return suggestion.title
+            }
+            return makeDisplayTitle(from: builtInSuggestion)
+        case .custom:
+            return suggestion.title
+        }
+    }
+
+    private static func makeDisplayTitle(from suggestion: BuiltInSearchSuggestion) -> String {
+        switch suggestion {
+        case .cozyEvening:
+            return L10n.Search.Suggestion.cozyEvening
+        case .darkMystery:
+            return L10n.Search.Suggestion.darkMystery
+        case .beautifulScifi:
+            return L10n.Search.Suggestion.beautifulScifi
+        case .slowSunday:
+            return L10n.Search.Suggestion.slowSunday
         }
     }
 }

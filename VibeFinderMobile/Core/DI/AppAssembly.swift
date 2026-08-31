@@ -68,6 +68,11 @@ final class AppAssembly: Assembly {
         }
         .inObjectScope(.container)
 
+        container.register(SearchSuggestionsStoreProtocol.self) { _ in
+            UserDefaultsSearchSuggestionsStore(userDefaults: .standard)
+        }
+        .inObjectScope(.container)
+
         container.register(SearchResultImageLoading.self) { _ in
             SearchResultImageLoader()
         }
@@ -76,7 +81,8 @@ final class AppAssembly: Assembly {
         container.register(SearchViewModel.self) { resolver, username in
             SearchViewModel(
                 username: username,
-                searchRepository: resolver.resolve(SearchRepositoryProtocol.self)!
+                searchRepository: resolver.resolve(SearchRepositoryProtocol.self)!,
+                suggestionsStore: resolver.resolve(SearchSuggestionsStoreProtocol.self)!
             )
         }
     }
