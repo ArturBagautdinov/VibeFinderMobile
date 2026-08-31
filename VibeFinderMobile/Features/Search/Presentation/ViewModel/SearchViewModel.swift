@@ -96,8 +96,23 @@ final class SearchViewModel {
             return
         }
 
-        suggestionModels.insert(.custom(title: normalizedSuggestion), at: 4)
+        suggestionModels.insert(.custom(title: normalizedSuggestion), at: 0)
         suggestionsStore.saveSuggestions(suggestionModels)
+        update(suggestionModels: suggestionModels)
+    }
+
+    func deleteSuggestion(id: String) {
+        guard suggestionModels.contains(where: { $0.id == id }) else {
+            return
+        }
+
+        suggestionModels.removeAll { $0.id == id }
+        suggestionsStore.saveSuggestions(suggestionModels)
+        update(suggestionModels: suggestionModels)
+    }
+
+    func restoreDefaultSuggestions() {
+        suggestionModels = suggestionsStore.restoreDefaultSuggestions()
         update(suggestionModels: suggestionModels)
     }
 
@@ -127,10 +142,19 @@ final class SearchViewModel {
         canShowMoreSuggestions: Bool
     ) {
         let allSuggestions = suggestions.compactMap(makeDisplayModel)
+        let currentBuiltInIDs = Set(
+            suggestions
+                .filter { $0.kind == .builtIn }
+                .map(\.id)
+        )
+        let defaultBuiltInIDs = Set(SearchSuggestion.defaults.map(\.id))
+        let hasMissingDefaultSuggestions = !defaultBuiltInIDs.isSubset(of: currentBuiltInIDs)
         return (
             visibleSuggestions: Array(allSuggestions.prefix(Constants.visibleSuggestionLimit)),
             allSuggestions: allSuggestions,
-            canShowMoreSuggestions: allSuggestions.count > Constants.visibleSuggestionLimit
+            canShowMoreSuggestions: allSuggestions.isEmpty
+                || allSuggestions.count > Constants.visibleSuggestionLimit
+                || hasMissingDefaultSuggestions
         )
     }
 
@@ -139,16 +163,17 @@ final class SearchViewModel {
         case .builtIn:
             guard let builtInSuggestion = BuiltInSearchSuggestion(rawValue: suggestion.id) else {
                 return suggestion.title.map {
-                    SearchSuggestionDisplayModel(id: suggestion.id, title: $0)
+                    SearchSuggestionDisplayModel(id: suggestion.id, title: $0, isDeletable: true)
                 }
             }
             return SearchSuggestionDisplayModel(
                 id: suggestion.id,
-                title: makeDisplayTitle(from: builtInSuggestion)
+                title: makeDisplayTitle(from: builtInSuggestion),
+                isDeletable: true
             )
         case .custom:
             return suggestion.title.map {
-                SearchSuggestionDisplayModel(id: suggestion.id, title: $0)
+                SearchSuggestionDisplayModel(id: suggestion.id, title: $0, isDeletable: true)
             }
         }
     }

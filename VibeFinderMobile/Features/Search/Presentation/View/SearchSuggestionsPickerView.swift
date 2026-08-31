@@ -2,9 +2,11 @@ import UIKit
 
 final class SearchSuggestionsPickerView: UIView {
     var onSuggestionSelected: ((SearchSuggestionDisplayModel) -> Void)?
+    var onSuggestionDeleted: ((SearchSuggestionDisplayModel) -> Void)?
+    var onRestoreDefaultsSelected: (() -> Void)?
     var onCloseSelected: (() -> Void)?
 
-    private let suggestions: [SearchSuggestionDisplayModel]
+    private var suggestions: [SearchSuggestionDisplayModel]
     private let scrollView = UIScrollView()
     private let chipsStackView = UIStackView()
 
@@ -33,6 +35,7 @@ final class SearchSuggestionsPickerView: UIView {
             color: AppTheme.Color.textSecondary
         )
         subtitleLabel.numberOfLines = 0
+        let restoreDefaultsButton = makeRestoreDefaultsButton()
 
         let closeButton = makeCloseButton()
         let headerStackView = UIStackView(arrangedSubviews: [titleLabel, closeButton])
@@ -45,7 +48,7 @@ final class SearchSuggestionsPickerView: UIView {
         chipsStackView.spacing = 12
         chipsStackView.translatesAutoresizingMaskIntoConstraints = false
 
-        suggestions.map(makeSuggestionButton).forEach(chipsStackView.addArrangedSubview)
+        render(suggestions)
 
         scrollView.showsVerticalScrollIndicator = false
         scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -54,6 +57,7 @@ final class SearchSuggestionsPickerView: UIView {
         let contentStackView = UIStackView(arrangedSubviews: [
             headerStackView,
             subtitleLabel,
+            restoreDefaultsButton,
             scrollView
         ])
         contentStackView.axis = .vertical
@@ -77,6 +81,15 @@ final class SearchSuggestionsPickerView: UIView {
             chipsStackView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
             chipsStackView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor)
         ])
+    }
+
+    func render(_ suggestions: [SearchSuggestionDisplayModel]) {
+        self.suggestions = suggestions
+        chipsStackView.arrangedSubviews.forEach { view in
+            chipsStackView.removeArrangedSubview(view)
+            view.removeFromSuperview()
+        }
+        suggestions.map(makeSuggestionRow).forEach(chipsStackView.addArrangedSubview)
     }
 
     private func makeLabel(text: String, font: UIFont, color: UIColor) -> UILabel {
@@ -109,6 +122,46 @@ final class SearchSuggestionsPickerView: UIView {
         return button
     }
 
+    private func makeSuggestionRow(_ suggestion: SearchSuggestionDisplayModel) -> UIView {
+        let button = makeSuggestionButton(suggestion)
+        let deleteButton = makeDeleteButton(suggestion)
+        let rowStackView = UIStackView(arrangedSubviews: [button, deleteButton])
+        rowStackView.axis = .horizontal
+        rowStackView.alignment = .fill
+        rowStackView.spacing = 10
+
+        NSLayoutConstraint.activate([
+            deleteButton.widthAnchor.constraint(equalToConstant: 52)
+        ])
+
+        return rowStackView
+    }
+
+    private func makeRestoreDefaultsButton() -> UIButton {
+        var configuration = UIButton.Configuration.plain()
+        configuration.title = L10n.Search.Suggestion.restoreDefaults
+        configuration.image = UIImage(systemName: "arrow.clockwise")
+        configuration.imagePadding = 8
+        configuration.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 14, weight: .bold)
+        configuration.baseForegroundColor = AppTheme.Color.primary
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 13, leading: 16, bottom: 13, trailing: 16)
+        configuration.background.backgroundColor = AppTheme.Color.primary.withAlphaComponent(0.12)
+        configuration.background.strokeColor = AppTheme.Color.primary.withAlphaComponent(0.5)
+        configuration.background.strokeWidth = 1
+        configuration.background.cornerRadius = 18
+
+        let button = UIButton(configuration: configuration)
+        button.accessibilityIdentifier = "search.restoreDefaultSuggestionsButton"
+        button.contentHorizontalAlignment = .center
+        button.addAction(
+            UIAction { [weak self] _ in
+                self?.onRestoreDefaultsSelected?()
+            },
+            for: .touchUpInside
+        )
+        return button
+    }
+
     private func makeSuggestionButton(_ suggestion: SearchSuggestionDisplayModel) -> UIButton {
         var configuration = UIButton.Configuration.plain()
         configuration.title = suggestion.title
@@ -131,6 +184,28 @@ final class SearchSuggestionsPickerView: UIView {
         button.addAction(
             UIAction { [weak self] _ in
                 self?.onSuggestionSelected?(suggestion)
+            },
+            for: .touchUpInside
+        )
+        return button
+    }
+
+    private func makeDeleteButton(_ suggestion: SearchSuggestionDisplayModel) -> UIButton {
+        var configuration = UIButton.Configuration.plain()
+        configuration.image = UIImage(systemName: "trash")
+        configuration.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 14, weight: .bold)
+        configuration.baseForegroundColor = AppTheme.Color.accent
+        configuration.background.backgroundColor = AppTheme.Color.surface.withAlphaComponent(0.72)
+        configuration.background.strokeColor = AppTheme.Color.accent.withAlphaComponent(0.55)
+        configuration.background.strokeWidth = 1
+        configuration.background.cornerRadius = 18
+
+        let button = UIButton(configuration: configuration)
+        button.accessibilityIdentifier = "search.deleteSuggestionButton"
+        button.accessibilityLabel = L10n.Search.Suggestion.delete
+        button.addAction(
+            UIAction { [weak self] _ in
+                self?.onSuggestionDeleted?(suggestion)
             },
             for: .touchUpInside
         )

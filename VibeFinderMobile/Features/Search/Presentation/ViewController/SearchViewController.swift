@@ -34,6 +34,9 @@ final class SearchViewController: UIViewController {
         searchView.onSuggestionSelected = { [weak self] suggestion in
             self?.selectSuggestion(suggestion)
         }
+        searchView.onSuggestionDeleted = { [weak self] suggestion in
+            self?.deleteSuggestion(suggestion)
+        }
         searchView.onCustomSuggestionSubmitted = { [weak self] suggestion in
             self?.viewModel.addCustomSuggestion(suggestion)
         }
@@ -59,5 +62,16 @@ final class SearchViewController: UIViewController {
 
     func selectSuggestion(_ suggestion: SearchSuggestionDisplayModel) {
         searchView.setPromptText(suggestion.title)
+    }
+
+    @discardableResult
+    func deleteSuggestion(_ suggestion: SearchSuggestionDisplayModel) -> [SearchSuggestionDisplayModel] {
+        viewModel.deleteSuggestion(id: suggestion.id)
+        return viewModel.state.allSuggestions
+    }
+
+    func restoreDefaultSuggestions() -> [SearchSuggestionDisplayModel] {
+        viewModel.restoreDefaultSuggestions()
+        return viewModel.state.allSuggestions
     }
 }

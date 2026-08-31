@@ -1,10 +1,12 @@
 import UIKit
 
 final class SearchSuggestionsPickerViewController: UIViewController {
-    private let suggestions: [SearchSuggestionDisplayModel]
+    private var suggestions: [SearchSuggestionDisplayModel]
     private lazy var suggestionsView = SearchSuggestionsPickerView(suggestions: suggestions)
 
     var onSuggestionSelected: ((SearchSuggestionDisplayModel) -> Void)?
+    var onSuggestionDeleted: ((SearchSuggestionDisplayModel) -> [SearchSuggestionDisplayModel])?
+    var onRestoreDefaultsSelected: (() -> [SearchSuggestionDisplayModel])?
 
     init(suggestions: [SearchSuggestionDisplayModel]) {
         self.suggestions = suggestions
@@ -41,6 +43,18 @@ final class SearchSuggestionsPickerViewController: UIViewController {
             self?.dismiss(animated: true) {
                 self?.onSuggestionSelected?(suggestion)
             }
+        }
+        suggestionsView.onSuggestionDeleted = { [weak self] suggestion in
+            guard let self else { return }
+
+            self.suggestions = self.onSuggestionDeleted?(suggestion) ?? self.suggestions
+            self.suggestionsView.render(self.suggestions)
+        }
+        suggestionsView.onRestoreDefaultsSelected = { [weak self] in
+            guard let self else { return }
+
+            self.suggestions = self.onRestoreDefaultsSelected?() ?? self.suggestions
+            self.suggestionsView.render(self.suggestions)
         }
         suggestionsView.onCloseSelected = { [weak self] in
             self?.dismiss(animated: true)

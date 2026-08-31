@@ -23,10 +23,16 @@ final class CoreDataStack {
         }
         persistentContainer.persistentStoreDescriptions = [storeDescription]
 
+        let storeLoadSemaphore = DispatchSemaphore(value: 0)
+        var persistentStoreLoadError: Error?
         persistentContainer.loadPersistentStores { _, error in
-            if let error {
-                assertionFailure("Failed to load CoreData store: \(error.localizedDescription)")
-            }
+            persistentStoreLoadError = error
+            storeLoadSemaphore.signal()
+        }
+        storeLoadSemaphore.wait()
+
+        if let persistentStoreLoadError {
+            assertionFailure("Failed to load CoreData store: \(persistentStoreLoadError.localizedDescription)")
         }
 
         viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
@@ -50,7 +56,6 @@ final class CoreDataStack {
             makeAttribute(name: "title", type: .stringAttributeType, isOptional: true),
             makeAttribute(name: "order", type: .integer64AttributeType, isOptional: false)
         ]
-        entity.uniquenessConstraints = [["id"]]
         return entity
     }
 

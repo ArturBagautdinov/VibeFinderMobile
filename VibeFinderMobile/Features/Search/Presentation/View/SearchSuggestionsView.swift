@@ -2,6 +2,7 @@ import UIKit
 
 final class SearchSuggestionsView: UIScrollView {
     var onSuggestionSelected: ((SearchSuggestionDisplayModel) -> Void)?
+    var onSuggestionDeleted: ((SearchSuggestionDisplayModel) -> Void)?
     var onCustomSuggestionSubmitted: ((String) -> Void)?
     var onMoreSuggestionsSelected: (() -> Void)?
 
@@ -109,6 +110,9 @@ final class SearchSuggestionsView: UIScrollView {
         button.titleLabel?.lineBreakMode = .byTruncatingTail
         button.titleLabel?.numberOfLines = 1
         button.widthAnchor.constraint(lessThanOrEqualToConstant: Layout.maxChipWidth).isActive = true
+        if suggestion.isDeletable {
+            button.menu = makeDeleteMenu(for: suggestion)
+        }
         button.addAction(
             UIAction { [weak self, weak button] _ in
                 guard let self else { return }
@@ -120,6 +124,18 @@ final class SearchSuggestionsView: UIScrollView {
             for: .touchUpInside
         )
         return button
+    }
+
+    private func makeDeleteMenu(for suggestion: SearchSuggestionDisplayModel) -> UIMenu {
+        UIMenu(children: [
+            UIAction(
+                title: L10n.Search.Suggestion.delete,
+                image: UIImage(systemName: "trash"),
+                attributes: .destructive
+            ) { [weak self] _ in
+                self?.onSuggestionDeleted?(suggestion)
+            }
+        ])
     }
 
     private func makeMoreSuggestionsButton() -> UIButton {

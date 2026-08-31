@@ -2,6 +2,7 @@ import UIKit
 
 final class SearchView: UIView {
     var onSuggestionSelected: ((SearchSuggestionDisplayModel) -> Void)?
+    var onSuggestionDeleted: ((SearchSuggestionDisplayModel) -> Void)?
     var onCustomSuggestionSubmitted: ((String) -> Void)?
     var onMoreSuggestionsSelected: (() -> Void)?
 
@@ -37,6 +38,9 @@ final class SearchView: UIView {
         accessibilityIdentifier = "search.screen"
         suggestionsView.onSuggestionSelected = { [weak self] suggestion in
             self?.onSuggestionSelected?(suggestion)
+        }
+        suggestionsView.onSuggestionDeleted = { [weak self] suggestion in
+            self?.onSuggestionDeleted?(suggestion)
         }
         suggestionsView.onCustomSuggestionSubmitted = { [weak self] suggestion in
             self?.onCustomSuggestionSubmitted?(suggestion)

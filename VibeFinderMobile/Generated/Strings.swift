@@ -168,6 +168,8 @@ internal enum L10n {
       internal static let customPlaceholder = L10n.tr("Localizable", "search.suggestion.custom_placeholder", fallback: "Your vibe")
       /// Dark mystery
       internal static let darkMystery = L10n.tr("Localizable", "search.suggestion.dark_mystery", fallback: "Dark mystery")
+      /// Delete
+      internal static let delete = L10n.tr("Localizable", "search.suggestion.delete", fallback: "Delete")
       /// Emotional sci-fi
       internal static let emotionalScifi = L10n.tr("Localizable", "search.suggestion.emotional_scifi", fallback: "Emotional sci-fi")
       /// Late-night thriller
@@ -178,6 +180,8 @@ internal enum L10n {
       internal static let more = L10n.tr("Localizable", "search.suggestion.more", fallback: "More")
       /// Rainy night movie
       internal static let rainyNightMovie = L10n.tr("Localizable", "search.suggestion.rainy_night_movie", fallback: "Rainy night movie")
+      /// Restore default suggestions
+      internal static let restoreDefaults = L10n.tr("Localizable", "search.suggestion.restore_defaults", fallback: "Restore default suggestions")
       /// Slow Sunday
       internal static let slowSunday = L10n.tr("Localizable", "search.suggestion.slow_sunday", fallback: "Slow Sunday")
       /// Something weird

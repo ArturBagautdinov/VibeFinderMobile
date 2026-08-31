@@ -13,6 +13,12 @@ final class CoreDataSearchSuggestionsStore: SearchSuggestionsStoreProtocol {
         static let searchSuggestion = "SearchSuggestionEntity"
     }
 
+    private enum SeedMarker {
+        static let id = "__search_suggestions_seeded__"
+        static let kind = "seedMarker"
+        static let order = Int64.max
+    }
+
     private let coreDataStack: CoreDataStack
 
     init(coreDataStack: CoreDataStack) {
@@ -21,7 +27,7 @@ final class CoreDataSearchSuggestionsStore: SearchSuggestionsStoreProtocol {
 
     func loadSuggestions() -> [SearchSuggestion] {
         let context = coreDataStack.viewContext
-        ensureBuiltInSuggestions(in: context)
+        ensureSeeded(in: context)
 
         do {
             return try fetchSuggestionObjects(in: context).compactMap(makeSuggestion)
@@ -35,30 +41,73 @@ final class CoreDataSearchSuggestionsStore: SearchSuggestionsStoreProtocol {
         let context = coreDataStack.viewContext
 
         do {
-            try fetchSuggestionObjects(in: context).forEach(context.delete)
+            try fetchSuggestionObjects(in: context)
+                .filter { ($0.value(forKey: Field.id) as? String) != SeedMarker.id }
+                .forEach(context.delete)
             suggestions.enumerated().forEach { index, suggestion in
                 insert(suggestion, order: index, in: context)
             }
+            ensureSeedMarker(in: context)
             try saveIfNeeded(context)
         } catch {
             assertionFailure("Failed to save search suggestions: \(error.localizedDescription)")
         }
     }
 
-    private func ensureBuiltInSuggestions(in context: NSManagedObjectContext) {
+    func restoreDefaultSuggestions() -> [SearchSuggestion] {
+        let currentSuggestions = loadSuggestions()
+        let currentIDs = Set(currentSuggestions.map(\.id))
+        let missingDefaultSuggestions = SearchSuggestion.defaults.filter {
+            !currentIDs.contains($0.id)
+        }
+        let suggestions = currentSuggestions + missingDefaultSuggestions
+        saveSuggestions(suggestions)
+        return suggestions
+    }
+
+    private func ensureSeeded(in context: NSManagedObjectContext) {
         do {
-            let existingSuggestions = try fetchSuggestionObjects(in: context).compactMap(makeSuggestion)
-            let existingIDs = Set(existingSuggestions.map(\.id))
-            let missingBuiltInSuggestions = SearchSuggestion.defaults.filter { !existingIDs.contains($0.id) }
-            guard !missingBuiltInSuggestions.isEmpty else {
+            let existingObjects = try fetchSuggestionObjects(in: context)
+            let isSeeded = existingObjects.contains {
+                ($0.value(forKey: Field.id) as? String) == SeedMarker.id
+            }
+            guard !isSeeded else {
                 return
             }
 
-            var suggestions = existingSuggestions
-            suggestions.insert(contentsOf: missingBuiltInSuggestions, at: 0)
-            saveSuggestions(suggestions)
+            if existingObjects.isEmpty {
+                saveSuggestions(SearchSuggestion.defaults)
+            } else {
+                ensureSeedMarker(in: context)
+                try saveIfNeeded(context)
+            }
         } catch {
             assertionFailure("Failed to seed search suggestions: \(error.localizedDescription)")
+        }
+    }
+
+    private func ensureSeedMarker(in context: NSManagedObjectContext) {
+        do {
+            let hasSeedMarker = try fetchSuggestionObjects(in: context).contains {
+                ($0.value(forKey: Field.id) as? String) == SeedMarker.id
+            }
+            guard !hasSeedMarker else {
+                return
+            }
+
+            let object = NSManagedObject(
+                entity: NSEntityDescription.entity(
+                    forEntityName: Entity.searchSuggestion,
+                    in: context
+                )!,
+                insertInto: context
+            )
+            object.setValue(SeedMarker.id, forKey: Field.id)
+            object.setValue(SeedMarker.kind, forKey: Field.kind)
+            object.setValue(nil, forKey: Field.title)
+            object.setValue(SeedMarker.order, forKey: Field.order)
+        } catch {
+            assertionFailure("Failed to create search suggestions seed marker: \(error.localizedDescription)")
         }
     }
 

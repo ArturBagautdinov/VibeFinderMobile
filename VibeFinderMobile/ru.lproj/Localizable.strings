@@ -57,12 +57,14 @@
 "search.suggestion.cozy_game" = "Уютная игра";
 "search.suggestion.cozy_evening" = "Уютный вечер";
 "search.suggestion.custom_placeholder" = "Ваш вайб";
+"search.suggestion.delete" = "Удалить";
 "search.suggestion.dark_mystery" = "Темная тайна";
 "search.suggestion.emotional_scifi" = "Эмоциональная sci-fi";
 "search.suggestion.late_night_thriller" = "Поздний триллер";
 "search.suggestion.mind_bending_story" = "История-головоломка";
 "search.suggestion.more" = "Еще";
 "search.suggestion.rainy_night_movie" = "Фильм для дождливой ночи";
+"search.suggestion.restore_defaults" = "Восстановить стандартные подсказки";
 "search.suggestion.slow_sunday" = "Медленное воскресенье";
 "search.suggestion.something_weird" = "Что-то странное";
 "search.suggestion.weekend_adventure" = "Приключение на выходные";

@@ -57,12 +57,14 @@
 "search.suggestion.cozy_game" = "Cozy game";
 "search.suggestion.cozy_evening" = "Cozy evening";
 "search.suggestion.custom_placeholder" = "Your vibe";
+"search.suggestion.delete" = "Delete";
 "search.suggestion.dark_mystery" = "Dark mystery";
 "search.suggestion.emotional_scifi" = "Emotional sci-fi";
 "search.suggestion.late_night_thriller" = "Late-night thriller";
 "search.suggestion.mind_bending_story" = "Mind-bending story";
 "search.suggestion.more" = "More";
 "search.suggestion.rainy_night_movie" = "Rainy night movie";
+"search.suggestion.restore_defaults" = "Restore default suggestions";
 "search.suggestion.slow_sunday" = "Slow Sunday";
 "search.suggestion.something_weird" = "Something weird";
 "search.suggestion.weekend_adventure" = "Weekend adventure";
