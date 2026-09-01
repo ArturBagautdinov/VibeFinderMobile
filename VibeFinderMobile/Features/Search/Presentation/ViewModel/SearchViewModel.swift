@@ -1,9 +1,12 @@
 import Foundation
 
+@MainActor
 final class SearchViewModel {
     struct State {
         let username: String
-        let suggestions: [String]
+        let visibleSuggestions: [SearchSuggestionDisplayModel]
+        let allSuggestions: [SearchSuggestionDisplayModel]
+        let canShowMoreSuggestions: Bool
         let recentVibes: [RecentVibe]
         let isLoading: Bool
         let errorMessage: String?
@@ -15,21 +18,32 @@ final class SearchViewModel {
     }
 
     private let searchRepository: SearchRepositoryProtocol
+    private let suggestionsStore: SearchSuggestionsStoreProtocol
+    private var suggestionModels: [SearchSuggestion]
     private(set) var state: State
 
     var onStateChange: ((State) -> Void)?
     var onResultsReady: ((SearchPage) -> Void)?
 
-    init(username: String, searchRepository: SearchRepositoryProtocol) {
+    private enum Constants {
+        static let visibleSuggestionLimit = 5
+    }
+
+    init(
+        username: String,
+        searchRepository: SearchRepositoryProtocol,
+        suggestionsStore: SearchSuggestionsStoreProtocol
+    ) {
         self.searchRepository = searchRepository
+        self.suggestionsStore = suggestionsStore
+        let suggestionModels = suggestionsStore.loadSuggestions()
+        let suggestionState = Self.makeSuggestionState(from: suggestionModels)
+        self.suggestionModels = suggestionModels
         self.state = State(
             username: username,
-            suggestions: [
-                L10n.Search.Suggestion.cozyEvening,
-                L10n.Search.Suggestion.darkMystery,
-                L10n.Search.Suggestion.beautifulScifi,
-                L10n.Search.Suggestion.slowSunday
-            ],
+            visibleSuggestions: suggestionState.visibleSuggestions,
+            allSuggestions: suggestionState.allSuggestions,
+            canShowMoreSuggestions: suggestionState.canShowMoreSuggestions,
             recentVibes: [
                 RecentVibe(
                     title: L10n.Search.Recent.rainyEveningTitle,
@@ -58,7 +72,7 @@ final class SearchViewModel {
 
         update(isLoading: true, errorMessage: nil)
         searchRepository.search(query: normalizedQuery) { [weak self] result in
-            self?.completeOnMain {
+            Task {
                 switch result {
                 case let .success(page):
                     self?.update(isLoading: false, errorMessage: nil)
@@ -70,13 +84,49 @@ final class SearchViewModel {
         }
     }
 
+    func addCustomSuggestion(_ suggestion: String) {
+        let normalizedSuggestion = suggestion.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalizedSuggestion.isEmpty else {
+            return
+        }
+
+        guard !state.allSuggestions.contains(where: { displayModel in
+            displayModel.title.caseInsensitiveCompare(normalizedSuggestion) == .orderedSame
+        }) else {
+            return
+        }
+
+        suggestionModels.insert(.custom(title: normalizedSuggestion), at: 0)
+        suggestionsStore.saveSuggestions(suggestionModels)
+        update(suggestionModels: suggestionModels)
+    }
+
+    func deleteSuggestion(id: String) {
+        guard suggestionModels.contains(where: { $0.id == id }) else {
+            return
+        }
+
+        suggestionModels.removeAll { $0.id == id }
+        suggestionsStore.saveSuggestions(suggestionModels)
+        update(suggestionModels: suggestionModels)
+    }
+
+    func restoreDefaultSuggestions() {
+        suggestionModels = suggestionsStore.restoreDefaultSuggestions()
+        update(suggestionModels: suggestionModels)
+    }
+
     private func update(
+        suggestionModels: [SearchSuggestion]? = nil,
         isLoading: Bool? = nil,
         errorMessage: String? = nil
     ) {
+        let suggestionState = suggestionModels.map(Self.makeSuggestionState)
         state = State(
             username: state.username,
-            suggestions: state.suggestions,
+            visibleSuggestions: suggestionState?.visibleSuggestions ?? state.visibleSuggestions,
+            allSuggestions: suggestionState?.allSuggestions ?? state.allSuggestions,
+            canShowMoreSuggestions: suggestionState?.canShowMoreSuggestions ?? state.canShowMoreSuggestions,
             recentVibes: state.recentVibes,
             isLoading: isLoading ?? state.isLoading,
             errorMessage: errorMessage
@@ -84,11 +134,100 @@ final class SearchViewModel {
         onStateChange?(state)
     }
 
-    private func completeOnMain(_ work: @escaping () -> Void) {
-        if Thread.isMainThread {
-            work()
-        } else {
-            DispatchQueue.main.async(execute: work)
+    private static func makeSuggestionState(
+        from suggestions: [SearchSuggestion]
+    ) -> (
+        visibleSuggestions: [SearchSuggestionDisplayModel],
+        allSuggestions: [SearchSuggestionDisplayModel],
+        canShowMoreSuggestions: Bool
+    ) {
+        let allSuggestions = suggestions.compactMap(makeDisplayModel)
+        let currentBuiltInIDs = Set(
+            suggestions
+                .filter { $0.kind == .builtIn }
+                .map(\.id)
+        )
+        let defaultBuiltInIDs = Set(SearchSuggestion.defaults.map(\.id))
+        let hasMissingDefaultSuggestions = !defaultBuiltInIDs.isSubset(of: currentBuiltInIDs)
+        return (
+            visibleSuggestions: Array(allSuggestions.prefix(Constants.visibleSuggestionLimit)),
+            allSuggestions: allSuggestions,
+            canShowMoreSuggestions: allSuggestions.isEmpty
+                || allSuggestions.count > Constants.visibleSuggestionLimit
+                || hasMissingDefaultSuggestions
+        )
+    }
+
+    private static func makeDisplayModel(from suggestion: SearchSuggestion) -> SearchSuggestionDisplayModel? {
+        switch suggestion.kind {
+        case .builtIn:
+            guard let builtInSuggestion = BuiltInSearchSuggestion(rawValue: suggestion.id) else {
+                return suggestion.title.map {
+                    SearchSuggestionDisplayModel(id: suggestion.id, title: $0, isDeletable: true)
+                }
+            }
+            return SearchSuggestionDisplayModel(
+                id: suggestion.id,
+                title: makeDisplayTitle(from: builtInSuggestion),
+                isDeletable: true
+            )
+        case .custom:
+            return suggestion.title.map {
+                SearchSuggestionDisplayModel(id: suggestion.id, title: $0, isDeletable: true)
+            }
+        }
+    }
+
+    private static func makeDisplayTitle(from suggestion: BuiltInSearchSuggestion) -> String {
+        switch suggestion {
+        case .cozyEvening:
+            return L10n.Search.Suggestion.cozyEvening
+        case .darkMystery:
+            return L10n.Search.Suggestion.darkMystery
+        case .beautifulScifi:
+            return L10n.Search.Suggestion.beautifulScifi
+        case .slowSunday:
+            return L10n.Search.Suggestion.slowSunday
+        case .rainyNightMovie:
+            return L10n.Search.Suggestion.rainyNightMovie
+        case .cozyGame:
+            return L10n.Search.Suggestion.cozyGame
+        case .emotionalScifi:
+            return L10n.Search.Suggestion.emotionalScifi
+        case .somethingWeird:
+            return L10n.Search.Suggestion.somethingWeird
+        case .lateNightThriller:
+            return L10n.Search.Suggestion.lateNightThriller
+        case .weekendAdventure:
+            return L10n.Search.Suggestion.weekendAdventure
+        case .comfortBook:
+            return L10n.Search.Suggestion.comfortBook
+        case .mindBendingStory:
+            return L10n.Search.Suggestion.mindBendingStory
+        case .shortIndieGame:
+            return L10n.Search.Suggestion.shortIndieGame
+        case .darkFantasyBook:
+            return L10n.Search.Suggestion.darkFantasyBook
+        case .feelGoodSitcom:
+            return L10n.Search.Suggestion.feelGoodSitcom
+        case .postApocalypticDrama:
+            return L10n.Search.Suggestion.postApocalypticDrama
+        case .spaceOperaNight:
+            return L10n.Search.Suggestion.spaceOperaNight
+        case .couchCoopGame:
+            return L10n.Search.Suggestion.couchCoopGame
+        case .mysticalForestStory:
+            return L10n.Search.Suggestion.mysticalForestStory
+        case .smartHeistMovie:
+            return L10n.Search.Suggestion.smartHeistMovie
+        case .melancholicAnimation:
+            return L10n.Search.Suggestion.melancholicAnimation
+        case .historicalMystery:
+            return L10n.Search.Suggestion.historicalMystery
+        case .cosmicHorror:
+            return L10n.Search.Suggestion.cosmicHorror
+        case .warmRomance:
+            return L10n.Search.Suggestion.warmRomance
         }
     }
 }

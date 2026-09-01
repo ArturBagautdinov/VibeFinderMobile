@@ -22,6 +22,20 @@ final class SearchCoordinator: Coordinator {
         viewController.onResultsReady = { [weak self] page in
             self?.showResults(page)
         }
+        viewController.onMoreSuggestionsSelected = { [weak self, weak viewController] suggestions in
+            self?.showSuggestionsPicker(
+                suggestions: suggestions,
+                onSuggestionSelected: { suggestion in
+                    viewController?.selectSuggestion(suggestion)
+                },
+                onSuggestionDeleted: { suggestion in
+                    viewController?.deleteSuggestion(suggestion) ?? suggestions
+                },
+                onRestoreDefaultsSelected: {
+                    viewController?.restoreDefaultSuggestions() ?? suggestions
+                }
+            )
+        }
         navigationController.setViewControllers([viewController], animated: true)
     }
 
@@ -34,5 +48,18 @@ final class SearchCoordinator: Coordinator {
             self?.navigationController.popViewController(animated: true)
         }
         navigationController.pushViewController(viewController, animated: true)
+    }
+
+    private func showSuggestionsPicker(
+        suggestions: [SearchSuggestionDisplayModel],
+        onSuggestionSelected: @escaping (SearchSuggestionDisplayModel) -> Void,
+        onSuggestionDeleted: @escaping (SearchSuggestionDisplayModel) -> [SearchSuggestionDisplayModel],
+        onRestoreDefaultsSelected: @escaping () -> [SearchSuggestionDisplayModel]
+    ) {
+        let viewController = SearchSuggestionsPickerViewController(suggestions: suggestions)
+        viewController.onSuggestionSelected = onSuggestionSelected
+        viewController.onSuggestionDeleted = onSuggestionDeleted
+        viewController.onRestoreDefaultsSelected = onRestoreDefaultsSelected
+        navigationController.present(viewController, animated: true)
     }
 }

@@ -2,6 +2,7 @@ import Foundation
 import Testing
 @testable import VibeFinderMobile
 
+@Suite(.serialized)
 struct VibeFinderMobileTests {
     @Test
     func registerViewModelShowsPasswordMismatchBeforeNetworkRequest() {
@@ -57,9 +58,15 @@ struct VibeFinderMobileTests {
     }
 
     @Test
+    @MainActor
     func searchViewModelShowsEmptyQueryBeforeNetworkRequest() {
         let repository = SearchRepositorySpy()
-        let viewModel = SearchViewModel(username: "Artur", searchRepository: repository)
+        let suggestionsStore = SearchSuggestionsStoreSpy()
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: suggestionsStore
+        )
         var states: [SearchViewModel.State] = []
         viewModel.onStateChange = { states.append($0) }
 
@@ -71,10 +78,15 @@ struct VibeFinderMobileTests {
 
     @Test
     @MainActor
-    func searchViewModelEmitsSearchResult() {
+    func searchViewModelEmitsSearchResult() async {
         let repository = SearchRepositorySpy()
+        let suggestionsStore = SearchSuggestionsStoreSpy()
         repository.result = .success(.fixture())
-        let viewModel = SearchViewModel(username: "Artur", searchRepository: repository)
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: suggestionsStore
+        )
         var states: [SearchViewModel.State] = []
         var resultPage: SearchPage?
         viewModel.onStateChange = { states.append($0) }
@@ -83,12 +95,195 @@ struct VibeFinderMobileTests {
         }
 
         viewModel.search(query: "cozy movie")
+        await Task.yield()
 
         #expect(repository.searchCallCount == 1)
         #expect(repository.lastQuery == "cozy movie")
         #expect(resultPage?.id == 101)
         #expect(states.last?.isLoading == false)
         #expect(states.last?.errorMessage == nil)
+    }
+
+    @Test
+    @MainActor
+    func searchViewModelStoresCustomSuggestion() {
+        let repository = SearchRepositorySpy()
+        let suggestionsStore = SearchSuggestionsStoreSpy()
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: suggestionsStore
+        )
+        var states: [SearchViewModel.State] = []
+        viewModel.onStateChange = { states.append($0) }
+
+        viewModel.addCustomSuggestion("  Cyberpunk noir  ")
+
+        #expect(suggestionsStore.savedSuggestions.contains { $0.title == "Cyberpunk noir" })
+        #expect(states.last?.allSuggestions.contains { $0.title == "Cyberpunk noir" } == true)
+        #expect(states.last?.visibleSuggestions.contains { $0.title == "Cyberpunk noir" } == true)
+    }
+
+    @Test
+    @MainActor
+    func searchViewModelDeletesCustomSuggestion() {
+        let repository = SearchRepositorySpy()
+        let suggestionsStore = SearchSuggestionsStoreSpy()
+        suggestionsStore.suggestions = [
+            .custom(title: "Cyberpunk noir"),
+            .custom(title: "Quiet mystery")
+        ] + SearchSuggestion.defaults
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: suggestionsStore
+        )
+        let suggestion = viewModel.state.allSuggestions.first { $0.title == "Cyberpunk noir" }
+
+        viewModel.deleteSuggestion(id: suggestion?.id ?? "")
+
+        #expect(suggestionsStore.savedSuggestions.contains { $0.title == "Cyberpunk noir" } == false)
+        #expect(viewModel.state.allSuggestions.contains { $0.title == "Cyberpunk noir" } == false)
+        #expect(viewModel.state.allSuggestions.contains { $0.title == "Quiet mystery" } == true)
+    }
+
+    @Test
+    @MainActor
+    func searchViewModelDeletesBuiltInSuggestion() {
+        let repository = SearchRepositorySpy()
+        let suggestionsStore = SearchSuggestionsStoreSpy()
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: suggestionsStore
+        )
+        let builtInSuggestion = viewModel.state.allSuggestions.first
+
+        viewModel.deleteSuggestion(id: builtInSuggestion?.id ?? "")
+
+        #expect(suggestionsStore.savedSuggestions.contains { $0.id == builtInSuggestion?.id } == false)
+        #expect(viewModel.state.allSuggestions.count == SearchSuggestion.defaults.count - 1)
+    }
+
+    @Test
+    @MainActor
+    func searchViewModelRestoresDefaultSuggestionsWithoutRemovingCustomOnes() {
+        let repository = SearchRepositorySpy()
+        let suggestionsStore = SearchSuggestionsStoreSpy()
+        suggestionsStore.suggestions = [.custom(title: "Cyberpunk noir")]
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: suggestionsStore
+        )
+
+        viewModel.restoreDefaultSuggestions()
+
+        #expect(suggestionsStore.savedSuggestions.contains { $0.title == "Cyberpunk noir" })
+        #expect(SearchSuggestion.defaults.allSatisfy { defaultSuggestion in
+            suggestionsStore.savedSuggestions.contains { $0.id == defaultSuggestion.id }
+        })
+        #expect(viewModel.state.allSuggestions.count == SearchSuggestion.defaults.count + 1)
+        #expect(viewModel.state.allSuggestions.contains { $0.title == "Cyberpunk noir" })
+    }
+
+    @Test
+    @MainActor
+    func searchViewModelKeepsSuggestionsPickerAvailableWhenEmpty() {
+        let repository = SearchRepositorySpy()
+        let suggestionsStore = SearchSuggestionsStoreSpy()
+        suggestionsStore.suggestions = []
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: suggestionsStore
+        )
+
+        #expect(viewModel.state.visibleSuggestions.isEmpty)
+        #expect(viewModel.state.allSuggestions.isEmpty)
+        #expect(viewModel.state.canShowMoreSuggestions == true)
+    }
+
+    @Test
+    @MainActor
+    func searchViewModelKeepsSuggestionsPickerAvailableWhenDefaultsAreMissing() {
+        let repository = SearchRepositorySpy()
+        let suggestionsStore = SearchSuggestionsStoreSpy()
+        suggestionsStore.suggestions = [.custom(title: "Cyberpunk noir")]
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: suggestionsStore
+        )
+
+        #expect(viewModel.state.visibleSuggestions.count == 1)
+        #expect(viewModel.state.allSuggestions.count == 1)
+        #expect(viewModel.state.canShowMoreSuggestions == true)
+    }
+
+    @Test
+    @MainActor
+    func searchViewModelLimitsVisibleSuggestions() {
+        let repository = SearchRepositorySpy()
+        let suggestionsStore = SearchSuggestionsStoreSpy()
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: suggestionsStore
+        )
+
+        #expect(viewModel.state.visibleSuggestions.count == 5)
+        #expect(viewModel.state.allSuggestions.count == SearchSuggestion.defaults.count)
+        #expect(viewModel.state.canShowMoreSuggestions == true)
+    }
+
+    @Test
+    @MainActor
+    func coreDataSearchSuggestionsStorePersistsCustomSuggestions() {
+        let store = CoreDataSearchSuggestionsStore(
+            coreDataStack: CoreDataStack(name: "VibeFinderMobileTests-\(UUID().uuidString)", inMemory: true)
+        )
+        var suggestions = store.loadSuggestions()
+        suggestions.append(.custom(title: "Quiet cyberpunk"))
+
+        store.saveSuggestions(suggestions)
+        let savedSuggestions = store.loadSuggestions()
+
+        #expect(savedSuggestions.contains { $0.title == "Quiet cyberpunk" })
+        #expect(savedSuggestions.count == suggestions.count)
+    }
+
+    @Test
+    @MainActor
+    func coreDataSearchSuggestionsStoreKeepsEmptySuggestionsUntilRestore() {
+        let store = CoreDataSearchSuggestionsStore(
+            coreDataStack: CoreDataStack(name: "VibeFinderMobileTests-\(UUID().uuidString)", inMemory: true)
+        )
+
+        store.saveSuggestions([])
+        #expect(store.loadSuggestions().isEmpty)
+
+        let restoredSuggestions = store.restoreDefaultSuggestions()
+        #expect(restoredSuggestions == SearchSuggestion.defaults)
+        #expect(store.loadSuggestions() == SearchSuggestion.defaults)
+    }
+
+    @Test
+    @MainActor
+    func coreDataSearchSuggestionsStoreRestoresDefaultsWithoutRemovingCustomOnes() {
+        let store = CoreDataSearchSuggestionsStore(
+            coreDataStack: CoreDataStack(name: "VibeFinderMobileTests-\(UUID().uuidString)", inMemory: true)
+        )
+        let customSuggestion = SearchSuggestion.custom(title: "Cyberpunk noir")
+
+        store.saveSuggestions([customSuggestion])
+        let restoredSuggestions = store.restoreDefaultSuggestions()
+
+        #expect(restoredSuggestions.contains(customSuggestion))
+        #expect(SearchSuggestion.defaults.allSatisfy { defaultSuggestion in
+            restoredSuggestions.contains { $0.id == defaultSuggestion.id }
+        })
+        #expect(store.loadSuggestions() == restoredSuggestions)
     }
 
     @Test
@@ -153,6 +348,30 @@ private final class SearchRepositorySpy: SearchRepositoryProtocol {
         searchCallCount += 1
         lastQuery = query
         completion(result)
+    }
+}
+
+private final class SearchSuggestionsStoreSpy: SearchSuggestionsStoreProtocol {
+    private(set) var savedSuggestions: [SearchSuggestion] = []
+    var suggestions: [SearchSuggestion] = SearchSuggestion.defaults
+
+    func loadSuggestions() -> [SearchSuggestion] {
+        suggestions
+    }
+
+    func saveSuggestions(_ suggestions: [SearchSuggestion]) {
+        savedSuggestions = suggestions
+        self.suggestions = suggestions
+    }
+
+    func restoreDefaultSuggestions() -> [SearchSuggestion] {
+        let currentIDs = Set(suggestions.map(\.id))
+        let missingDefaultSuggestions = SearchSuggestion.defaults.filter {
+            !currentIDs.contains($0.id)
+        }
+        let restoredSuggestions = suggestions + missingDefaultSuggestions
+        saveSuggestions(restoredSuggestions)
+        return restoredSuggestions
     }
 }
 
