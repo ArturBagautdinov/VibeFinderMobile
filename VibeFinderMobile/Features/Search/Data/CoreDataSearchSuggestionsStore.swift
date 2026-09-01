@@ -88,27 +88,30 @@ final class CoreDataSearchSuggestionsStore: SearchSuggestionsStoreProtocol {
 
     private func ensureSeedMarker(in context: NSManagedObjectContext) {
         do {
-            let hasSeedMarker = try fetchSuggestionObjects(in: context).contains {
+            guard try fetchSuggestionObjects(in: context).contains(where: {
                 ($0.value(forKey: Field.id) as? String) == SeedMarker.id
-            }
-            guard !hasSeedMarker else {
+            }) == false else {
                 return
             }
 
-            let object = NSManagedObject(
-                entity: NSEntityDescription.entity(
-                    forEntityName: Entity.searchSuggestion,
-                    in: context
-                )!,
-                insertInto: context
-            )
-            object.setValue(SeedMarker.id, forKey: Field.id)
-            object.setValue(SeedMarker.kind, forKey: Field.kind)
-            object.setValue(nil, forKey: Field.title)
-            object.setValue(SeedMarker.order, forKey: Field.order)
+            insertSeedMarker(in: context)
         } catch {
             assertionFailure("Failed to create search suggestions seed marker: \(error.localizedDescription)")
         }
+    }
+
+    private func insertSeedMarker(in context: NSManagedObjectContext) {
+        let object = NSManagedObject(
+            entity: NSEntityDescription.entity(
+                forEntityName: Entity.searchSuggestion,
+                in: context
+            )!,
+            insertInto: context
+        )
+        object.setValue(SeedMarker.id, forKey: Field.id)
+        object.setValue(SeedMarker.kind, forKey: Field.kind)
+        object.setValue(nil, forKey: Field.title)
+        object.setValue(SeedMarker.order, forKey: Field.order)
     }
 
     private func fetchSuggestionObjects(in context: NSManagedObjectContext) throws -> [NSManagedObject] {

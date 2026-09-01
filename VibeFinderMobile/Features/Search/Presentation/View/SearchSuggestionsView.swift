@@ -145,7 +145,7 @@ final class SearchSuggestionsView: UIScrollView {
         configuration.imagePlacement = .trailing
         configuration.imagePadding = 8
         configuration.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 13, weight: .bold)
-        configuration.baseForegroundColor = AppTheme.Color.primary
+        configuration.baseForegroundColor = AppTheme.Color.textPrimary
         configuration.contentInsets = NSDirectionalEdgeInsets(top: 11, leading: 18, bottom: 11, trailing: 18)
         configuration.background.backgroundColor = AppTheme.Color.surface.withAlphaComponent(0.55)
         configuration.background.strokeColor = AppTheme.Color.primary.withAlphaComponent(0.55)
@@ -167,10 +167,10 @@ final class SearchSuggestionsView: UIScrollView {
         var configuration = UIButton.Configuration.plain()
         configuration.image = UIImage(systemName: "plus")
         configuration.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 15, weight: .bold)
-        configuration.baseForegroundColor = AppTheme.Color.primary
+        configuration.baseForegroundColor = AppTheme.Color.textPrimary
         configuration.contentInsets = NSDirectionalEdgeInsets(top: 11, leading: 14, bottom: 11, trailing: 14)
         configuration.background.backgroundColor = AppTheme.Color.surface.withAlphaComponent(0.55)
-        configuration.background.strokeColor = AppTheme.Color.secondaryAccent.withAlphaComponent(0.65)
+        configuration.background.strokeColor = AppTheme.Color.primary.withAlphaComponent(0.55)
         configuration.background.strokeWidth = 1
         configuration.background.cornerRadius = 24
 

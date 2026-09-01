@@ -72,7 +72,7 @@ final class SearchViewModel {
 
         update(isLoading: true, errorMessage: nil)
         searchRepository.search(query: normalizedQuery) { [weak self] result in
-            Task { @MainActor in
+            Task {
                 switch result {
                 case let .success(page):
                     self?.update(isLoading: false, errorMessage: nil)
@@ -204,6 +204,30 @@ final class SearchViewModel {
             return L10n.Search.Suggestion.comfortBook
         case .mindBendingStory:
             return L10n.Search.Suggestion.mindBendingStory
+        case .shortIndieGame:
+            return L10n.Search.Suggestion.shortIndieGame
+        case .darkFantasyBook:
+            return L10n.Search.Suggestion.darkFantasyBook
+        case .feelGoodSitcom:
+            return L10n.Search.Suggestion.feelGoodSitcom
+        case .postApocalypticDrama:
+            return L10n.Search.Suggestion.postApocalypticDrama
+        case .spaceOperaNight:
+            return L10n.Search.Suggestion.spaceOperaNight
+        case .couchCoopGame:
+            return L10n.Search.Suggestion.couchCoopGame
+        case .mysticalForestStory:
+            return L10n.Search.Suggestion.mysticalForestStory
+        case .smartHeistMovie:
+            return L10n.Search.Suggestion.smartHeistMovie
+        case .melancholicAnimation:
+            return L10n.Search.Suggestion.melancholicAnimation
+        case .historicalMystery:
+            return L10n.Search.Suggestion.historicalMystery
+        case .cosmicHorror:
+            return L10n.Search.Suggestion.cosmicHorror
+        case .warmRomance:
+            return L10n.Search.Suggestion.warmRomance
         }
     }
 }
