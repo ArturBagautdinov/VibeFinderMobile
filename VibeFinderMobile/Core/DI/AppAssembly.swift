@@ -83,6 +83,10 @@ final class AppAssembly: Assembly {
         }
         .inObjectScope(.container)
 
+        container.register(SearchHistoryViewModel.self) { resolver in
+            SearchHistoryViewModel(searchRepository: resolver.resolve(SearchRepositoryProtocol.self)!)
+        }
+
         container.register(SearchViewModel.self) { resolver, username in
             SearchViewModel(
                 username: username,

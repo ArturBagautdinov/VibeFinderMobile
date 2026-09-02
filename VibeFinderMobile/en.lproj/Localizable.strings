@@ -46,6 +46,10 @@
 "search.loading.title" = "Finding your vibe";
 "search.recent.detective_series_subtitle" = "11 recommendations · 3 days ago";
 "search.recent.detective_series_title" = "Dark detective series with smart writing";
+"search.recent.empty_subtitle" = "Search for a mood, movie, game or book, and your successful vibes will appear here.";
+"search.recent.empty_title" = "No searches yet";
+"search.recent.full_title" = "Search history";
+"search.recent.item_subtitle" = "%d items · %@";
 "search.recent.rainy_evening_subtitle" = "12 recommendations · Today";
 "search.recent.rainy_evening_title" = "Something atmospheric for a rainy evening";
 "search.recent.see_all" = "See all";

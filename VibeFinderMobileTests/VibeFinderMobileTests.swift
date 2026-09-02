@@ -82,6 +82,7 @@ struct VibeFinderMobileTests {
         let repository = SearchRepositorySpy()
         let suggestionsStore = SearchSuggestionsStoreSpy()
         repository.result = .success(.fixture())
+        repository.historyResult = .success([.fixture(id: 101, originalQuery: "cozy movie", resultCount: 1)])
         let viewModel = SearchViewModel(
             username: "Artur",
             searchRepository: repository,
@@ -96,12 +97,34 @@ struct VibeFinderMobileTests {
 
         viewModel.search(query: "cozy movie")
         await Task.yield()
+        await Task.yield()
 
         #expect(repository.searchCallCount == 1)
         #expect(repository.lastQuery == "cozy movie")
         #expect(resultPage?.id == 101)
         #expect(states.last?.isLoading == false)
         #expect(states.last?.errorMessage == nil)
+    }
+
+    @Test
+    @MainActor
+    func searchViewModelKeepsSuccessfulSearchInRecentHistoryWhenAPIHistoryIsEmpty() async {
+        let repository = SearchRepositorySpy()
+        let suggestionsStore = SearchSuggestionsStoreSpy()
+        repository.result = .success(.fixture(id: 404))
+        repository.historyResult = .success([])
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: suggestionsStore
+        )
+
+        viewModel.search(query: "cozy movie")
+        await Task.yield()
+        await Task.yield()
+
+        #expect(viewModel.state.recentHistory.first?.id == 404)
+        #expect(viewModel.state.recentHistory.first?.query == "cozy movie")
     }
 
     @Test
@@ -239,6 +262,93 @@ struct VibeFinderMobileTests {
 
     @Test
     @MainActor
+    func searchViewModelLoadsRecentHistory() async {
+        let repository = SearchRepositorySpy()
+        let suggestionsStore = SearchSuggestionsStoreSpy()
+        repository.historyResult = .success([
+            .fixture(id: 101, originalQuery: "Rainy movie", resultCount: 3),
+            .fixture(id: 102, originalQuery: "Cozy game", resultCount: 2)
+        ])
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: suggestionsStore
+        )
+
+        viewModel.loadRecentHistory()
+        await Task.yield()
+        await Task.yield()
+
+        #expect(viewModel.state.recentHistory.map(\.query) == ["Rainy movie", "Cozy game"])
+    }
+
+    @Test
+    @MainActor
+    func searchViewModelLoadsResultByHistoryID() async {
+        let repository = SearchRepositorySpy()
+        let suggestionsStore = SearchSuggestionsStoreSpy()
+        repository.pageByIDResult = .success(.fixture(id: 303))
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: suggestionsStore
+        )
+        var resultPage: SearchPage?
+        viewModel.onResultsReady = { page in
+            resultPage = page
+        }
+
+        viewModel.openHistoryResult(.fixture(id: 303, originalQuery: "Rainy movie"))
+        await Task.yield()
+        await Task.yield()
+
+        #expect(repository.searchCallCount == 0)
+        #expect(repository.loadedPageIDs == [303])
+        #expect(resultPage?.id == 303)
+    }
+
+    @Test
+    @MainActor
+    func searchHistoryViewModelLoadsFullHistory() async {
+        let repository = SearchRepositorySpy()
+        repository.historyResult = .success([
+            .fixture(id: 101, originalQuery: "Rainy movie", resultCount: 3),
+            .fixture(id: 102, originalQuery: "Cozy game", resultCount: 2),
+            .fixture(id: 103, originalQuery: "Dark book", resultCount: 4)
+        ])
+        let viewModel = SearchHistoryViewModel(searchRepository: repository)
+        var states: [SearchHistoryViewModel.State] = []
+        viewModel.onStateChange = { states.append($0) }
+
+        viewModel.loadHistory()
+        await Task.yield()
+        await Task.yield()
+
+        #expect(states.last?.history.map(\.query) == ["Rainy movie", "Cozy game", "Dark book"])
+        #expect(states.last?.isEmpty == false)
+    }
+
+    @Test
+    @MainActor
+    func searchHistoryViewModelLoadsResultByHistoryID() async {
+        let repository = SearchRepositorySpy()
+        repository.pageByIDResult = .success(.fixture(id: 202))
+        let viewModel = SearchHistoryViewModel(searchRepository: repository)
+        var resultPage: SearchPage?
+        viewModel.onResultsReady = { page in
+            resultPage = page
+        }
+
+        viewModel.selectHistory(.fixture(id: 202, originalQuery: "Cozy movie"))
+        await Task.yield()
+        await Task.yield()
+
+        #expect(repository.loadedPageIDs == [202])
+        #expect(resultPage?.id == 202)
+    }
+
+    @Test
+    @MainActor
     func coreDataSearchSuggestionsStorePersistsCustomSuggestions() {
         let store = CoreDataSearchSuggestionsStore(
             coreDataStack: CoreDataStack(name: "VibeFinderMobileTests-\(UUID().uuidString)", inMemory: true)
@@ -342,12 +452,24 @@ private final class AuthRepositorySpy: AuthRepositoryProtocol {
 private final class SearchRepositorySpy: SearchRepositoryProtocol {
     private(set) var searchCallCount = 0
     private(set) var lastQuery: String?
+    private(set) var loadedPageIDs: [Int] = []
     var result: Result<SearchPage, APIError> = .failure(.unknown)
+    var historyResult: Result<[SearchHistoryEntry], APIError> = .success([])
+    var pageByIDResult: Result<SearchPage, APIError> = .failure(.unknown)
 
     func search(query: String, completion: @escaping (Result<SearchPage, APIError>) -> Void) {
         searchCallCount += 1
         lastQuery = query
         completion(result)
+    }
+
+    func loadHistory(completion: @escaping (Result<[SearchHistoryEntry], APIError>) -> Void) {
+        completion(historyResult)
+    }
+
+    func loadSearchPage(id: Int, completion: @escaping (Result<SearchPage, APIError>) -> Void) {
+        loadedPageIDs.append(id)
+        completion(pageByIDResult)
     }
 }
 
@@ -376,9 +498,9 @@ private final class SearchSuggestionsStoreSpy: SearchSuggestionsStoreProtocol {
 }
 
 private extension SearchPage {
-    static func fixture() -> SearchPage {
+    static func fixture(id: Int = 101) -> SearchPage {
         SearchPage(
-            id: 101,
+            id: id,
             originalQuery: "cozy movie",
             refinedQuery: nil,
             summary: "A calm selection",
@@ -406,6 +528,39 @@ private extension SearchPage {
                     ]
                 )
             ]
+        )
+    }
+}
+
+private extension SearchHistoryEntry {
+    static func fixture(
+        id: Int = 101,
+        originalQuery: String = "cozy movie",
+        refinedQuery: String? = nil,
+        resultCount: Int = 8,
+        createdAtDisplay: String = "01.09.2026 12:00"
+    ) -> SearchHistoryEntry {
+        SearchHistoryEntry(
+            id: id,
+            originalQuery: originalQuery,
+            refinedQuery: refinedQuery,
+            resultCount: resultCount,
+            createdAtDisplay: createdAtDisplay
+        )
+    }
+}
+
+private extension SearchHistoryEntryDisplayModel {
+    static func fixture(
+        id: Int = 101,
+        originalQuery: String = "cozy movie",
+        title: String? = nil
+    ) -> SearchHistoryEntryDisplayModel {
+        SearchHistoryEntryDisplayModel(
+            id: id,
+            title: title ?? originalQuery,
+            query: originalQuery,
+            subtitle: "8 recommendations · 01.09.2026 12:00"
         )
     }
 }

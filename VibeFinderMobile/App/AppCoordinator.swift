@@ -20,6 +20,7 @@ final class AppCoordinator: Coordinator {
     func start() {
         configureNavigationBar()
         window.rootViewController = navigationController
+        navigationController.setViewControllers([AppLaunchViewController()], animated: false)
         window.makeKeyAndVisible()
         restoreSession()
     }

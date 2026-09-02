@@ -36,6 +36,9 @@ final class SearchCoordinator: Coordinator {
                 }
             )
         }
+        viewController.onHistorySeeAllSelected = { [weak self] in
+            self?.showHistory()
+        }
         navigationController.setViewControllers([viewController], animated: true)
     }
 
@@ -61,5 +64,18 @@ final class SearchCoordinator: Coordinator {
         viewController.onSuggestionDeleted = onSuggestionDeleted
         viewController.onRestoreDefaultsSelected = onRestoreDefaultsSelected
         navigationController.present(viewController, animated: true)
+    }
+
+    private func showHistory() {
+        let viewController = SearchHistoryViewController(
+            viewModel: container.resolve(SearchHistoryViewModel.self)!
+        )
+        viewController.onBackSelected = { [weak self] in
+            self?.navigationController.popViewController(animated: true)
+        }
+        viewController.onResultsReady = { [weak self] page in
+            self?.showResults(page)
+        }
+        navigationController.pushViewController(viewController, animated: true)
     }
 }

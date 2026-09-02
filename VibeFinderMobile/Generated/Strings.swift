@@ -138,6 +138,16 @@ internal enum L10n {
       internal static let detectiveSeriesSubtitle = L10n.tr("Localizable", "search.recent.detective_series_subtitle", fallback: "11 recommendations · 3 days ago")
       /// Dark detective series with smart writing
       internal static let detectiveSeriesTitle = L10n.tr("Localizable", "search.recent.detective_series_title", fallback: "Dark detective series with smart writing")
+      /// Search for a mood, movie, game or book, and your successful vibes will appear here.
+      internal static let emptySubtitle = L10n.tr("Localizable", "search.recent.empty_subtitle", fallback: "Search for a mood, movie, game or book, and your successful vibes will appear here.")
+      /// No searches yet
+      internal static let emptyTitle = L10n.tr("Localizable", "search.recent.empty_title", fallback: "No searches yet")
+      /// Search history
+      internal static let fullTitle = L10n.tr("Localizable", "search.recent.full_title", fallback: "Search history")
+      /// %d items · %@
+      internal static func itemSubtitle(_ p1: Int, _ p2: Any) -> String {
+        return L10n.tr("Localizable", "search.recent.item_subtitle", p1, String(describing: p2), fallback: "%d items · %@")
+      }
       /// 12 recommendations · Today
       internal static let rainyEveningSubtitle = L10n.tr("Localizable", "search.recent.rainy_evening_subtitle", fallback: "12 recommendations · Today")
       /// Something atmospheric for a rainy evening

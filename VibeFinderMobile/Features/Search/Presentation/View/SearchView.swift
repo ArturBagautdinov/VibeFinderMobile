@@ -5,6 +5,8 @@ final class SearchView: UIView {
     var onSuggestionDeleted: ((SearchSuggestionDisplayModel) -> Void)?
     var onCustomSuggestionSubmitted: ((String) -> Void)?
     var onMoreSuggestionsSelected: (() -> Void)?
+    var onHistorySeeAllSelected: (() -> Void)?
+    var onHistorySelected: ((SearchHistoryEntryDisplayModel) -> Void)?
 
     var promptTextView: UITextView {
         promptCardView.textView
@@ -20,6 +22,7 @@ final class SearchView: UIView {
         suggestions: state.visibleSuggestions,
         canShowMoreSuggestions: state.canShowMoreSuggestions
     )
+    private lazy var recentVibesView = RecentVibesView(history: state.recentHistory)
     private let statusView = SearchStatusView()
     private let loadingView = SearchLoadingView()
 
@@ -48,6 +51,12 @@ final class SearchView: UIView {
         suggestionsView.onMoreSuggestionsSelected = { [weak self] in
             self?.onMoreSuggestionsSelected?()
         }
+        recentVibesView.onSeeAllSelected = { [weak self] in
+            self?.onHistorySeeAllSelected?()
+        }
+        recentVibesView.onHistorySelected = { [weak self] history in
+            self?.onHistorySelected?(history)
+        }
         let dismissTapGesture = UITapGestureRecognizer(target: self, action: #selector(backgroundTapped))
         dismissTapGesture.cancelsTouchesInView = false
         dismissTapGesture.delegate = self
@@ -65,7 +74,7 @@ final class SearchView: UIView {
             promptCardView,
             statusView,
             suggestionsView,
-            RecentVibesView(recentVibes: state.recentVibes)
+            recentVibesView
         ])
         contentStack.axis = .vertical
         contentStack.spacing = 20
@@ -116,12 +125,19 @@ final class SearchView: UIView {
             suggestions: state.visibleSuggestions,
             canShowMoreSuggestions: state.canShowMoreSuggestions
         )
+        recentVibesView.render(state.recentHistory)
         loadingView.setVisible(state.isLoading)
     }
 
     func setPromptText(_ text: String) {
+        setPromptText(text, shouldBecomeFirstResponder: true)
+    }
+
+    func setPromptText(_ text: String, shouldBecomeFirstResponder: Bool) {
         promptCardView.setQuery(text, animated: true)
-        promptTextView.becomeFirstResponder()
+        if shouldBecomeFirstResponder {
+            promptTextView.becomeFirstResponder()
+        }
     }
 
     @objc private func backgroundTapped() {

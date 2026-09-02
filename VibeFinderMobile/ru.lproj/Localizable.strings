@@ -46,6 +46,10 @@
 "search.loading.title" = "Ищем ваш вайб";
 "search.recent.detective_series_subtitle" = "11 рекомендаций · 3 дня назад";
 "search.recent.detective_series_title" = "Темный детективный сериал с умным сценарием";
+"search.recent.empty_subtitle" = "Найдите настроение, фильм, игру или книгу, и ваши успешные вайбы появятся здесь.";
+"search.recent.empty_title" = "Истории пока нет";
+"search.recent.full_title" = "История поиска";
+"search.recent.item_subtitle" = "%d рекомендаций · %@";
 "search.recent.rainy_evening_subtitle" = "12 рекомендаций · Сегодня";
 "search.recent.rainy_evening_title" = "Что-то атмосферное для дождливого вечера";
 "search.recent.see_all" = "Все";

@@ -16,6 +16,8 @@ final class CoreDataStack {
 
         let storeDescription = NSPersistentStoreDescription()
         storeDescription.type = inMemory ? NSInMemoryStoreType : NSSQLiteStoreType
+        storeDescription.shouldMigrateStoreAutomatically = true
+        storeDescription.shouldInferMappingModelAutomatically = true
         if !inMemory {
             storeDescription.url = NSPersistentContainer
                 .defaultDirectoryURL()
@@ -41,7 +43,8 @@ final class CoreDataStack {
     private static func makeManagedObjectModel() -> NSManagedObjectModel {
         let model = NSManagedObjectModel()
         model.entities = [
-            makeSearchSuggestionEntity()
+            makeSearchSuggestionEntity(),
+            makeSearchHistoryEntity()
         ]
         return model
     }
@@ -55,6 +58,19 @@ final class CoreDataStack {
             makeAttribute(name: "kind", type: .stringAttributeType, isOptional: false),
             makeAttribute(name: "title", type: .stringAttributeType, isOptional: true),
             makeAttribute(name: "order", type: .integer64AttributeType, isOptional: false)
+        ]
+        return entity
+    }
+
+    private static func makeSearchHistoryEntity() -> NSEntityDescription {
+        let entity = NSEntityDescription()
+        entity.name = "SearchHistoryEntity"
+        entity.managedObjectClassName = NSStringFromClass(NSManagedObject.self)
+        entity.properties = [
+            makeAttribute(name: "id", type: .stringAttributeType, isOptional: false),
+            makeAttribute(name: "query", type: .stringAttributeType, isOptional: false),
+            makeAttribute(name: "recommendationsCount", type: .integer64AttributeType, isOptional: false),
+            makeAttribute(name: "createdAt", type: .dateAttributeType, isOptional: false)
         ]
         return entity
     }
