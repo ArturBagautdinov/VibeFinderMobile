@@ -339,7 +339,7 @@ struct VibeFinderMobileTests {
             resultPage = page
         }
 
-        viewModel.selectHistory(.fixture(id: 202, originalQuery: "Cozy movie"))
+        viewModel.selectHistory(id: 202)
         await Task.yield()
         await Task.yield()
 

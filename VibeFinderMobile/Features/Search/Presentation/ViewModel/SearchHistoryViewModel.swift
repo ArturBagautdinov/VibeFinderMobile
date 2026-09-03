@@ -34,9 +34,9 @@ final class SearchHistoryViewModel {
         }
     }
 
-    func selectHistory(_ history: SearchHistoryEntryDisplayModel) {
+    func selectHistory(id: Int) {
         update(isLoading: true, errorMessage: nil)
-        searchRepository.loadSearchPage(id: history.id) { [weak self] result in
+        searchRepository.loadSearchPage(id: id) { [weak self] result in
             Task {
                 switch result {
                 case let .success(page):

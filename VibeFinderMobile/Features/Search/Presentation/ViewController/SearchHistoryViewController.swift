@@ -34,7 +34,7 @@ final class SearchHistoryViewController: UIViewController {
 
         historyView.backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
         historyView.onHistorySelected = { [weak self] history in
-            self?.viewModel.selectHistory(history)
+            self?.viewModel.selectHistory(id: history.id)
         }
     }
 
