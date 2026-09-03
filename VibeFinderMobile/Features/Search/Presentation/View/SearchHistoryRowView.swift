@@ -3,16 +3,28 @@ import UIKit
 final class SearchHistoryRowView: UIView {
     var onSelected: (() -> Void)?
 
-    private let history: SearchHistoryEntryDisplayModel
+    private let titleLabel = UILabel()
+    private let subtitleLabel = UILabel()
 
     init(history: SearchHistoryEntryDisplayModel) {
-        self.history = history
         super.init(frame: .zero)
+        configure()
+        configure(with: history)
+    }
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
         configure()
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    func configure(with history: SearchHistoryEntryDisplayModel) {
+        titleLabel.text = history.title
+        subtitleLabel.text = history.subtitle
+        accessibilityLabel = history.title
     }
 
     private func configure() {
@@ -24,7 +36,6 @@ final class SearchHistoryRowView: UIView {
         accessibilityIdentifier = "search.history.row"
         isAccessibilityElement = true
         accessibilityTraits = .button
-        accessibilityLabel = history.title
 
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(rowTapped))
         addGestureRecognizer(tapGesture)
@@ -79,14 +90,10 @@ final class SearchHistoryRowView: UIView {
     }
 
     private func makeTextStack() -> UIStackView {
-        let titleLabel = UILabel()
-        titleLabel.text = history.title
         titleLabel.font = .preferredFont(forTextStyle: .headline)
         titleLabel.textColor = AppTheme.Color.textPrimary
         titleLabel.numberOfLines = 1
 
-        let subtitleLabel = UILabel()
-        subtitleLabel.text = history.subtitle
         subtitleLabel.font = .preferredFont(forTextStyle: .subheadline)
         subtitleLabel.textColor = AppTheme.Color.textSecondary
         subtitleLabel.numberOfLines = 1

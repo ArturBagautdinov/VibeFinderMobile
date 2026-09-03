@@ -1,6 +1,6 @@
 import Foundation
 
-struct SearchHistoryEntryDisplayModel: Hashable {
+nonisolated struct SearchHistoryEntryDisplayModel: Hashable, Sendable {
     let id: Int
     let title: String
     let query: String

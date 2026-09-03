@@ -89,7 +89,6 @@ final class SearchViewController: UIViewController {
 
     func selectHistory(_ history: SearchHistoryEntryDisplayModel) {
         view.endEditing(true)
-        searchView.setPromptText(history.query, shouldBecomeFirstResponder: false)
         viewModel.openHistoryResult(history)
     }
 }
