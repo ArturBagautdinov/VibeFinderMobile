@@ -15,6 +15,8 @@ final class SearchHistoryView: UIView {
         collectionViewLayout: makeCollectionViewLayout()
     )
     private lazy var dataSource = makeDataSource()
+    private var hasAnimatedInitialHistoryAppearance = false
+    private var isInitialHistoryAppearancePending = false
 
     private typealias DataSource = UICollectionViewDiffableDataSource<Section, SearchHistoryEntryDisplayModel>
     private typealias Snapshot = NSDiffableDataSourceSnapshot<Section, SearchHistoryEntryDisplayModel>
@@ -78,6 +80,9 @@ final class SearchHistoryView: UIView {
         clearHistoryButton.isEnabled = !state.isMutating
         statusView.setMessage(state.errorMessage)
         loadingView.setVisible(state.isInitialLoading)
+        if !state.isInitialLoading {
+            animateInitialHistoryAppearanceIfNeeded()
+        }
     }
 
     private func makeHeader() -> UIView {
@@ -208,6 +213,54 @@ final class SearchHistoryView: UIView {
         var snapshot = Snapshot()
         snapshot.appendSections([.main])
         snapshot.appendItems(history, toSection: .main)
-        dataSource.apply(snapshot, animatingDifferences: true)
+        if !hasAnimatedInitialHistoryAppearance && !history.isEmpty {
+            isInitialHistoryAppearancePending = true
+            hasAnimatedInitialHistoryAppearance = true
+            collectionView.alpha = 0
+        }
+        dataSource.apply(snapshot, animatingDifferences: !isInitialHistoryAppearancePending)
+    }
+
+    private func animateInitialHistoryAppearanceIfNeeded() {
+        guard isInitialHistoryAppearancePending else {
+            return
+        }
+
+        isInitialHistoryAppearancePending = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.32) { [weak self] in
+            guard let self else {
+                return
+            }
+
+            self.collectionView.layoutIfNeeded()
+            let visibleCells = self.collectionView.indexPathsForVisibleItems
+                .sorted()
+                .compactMap { self.collectionView.cellForItem(at: $0) }
+
+            visibleCells.enumerated().forEach { index, cell in
+                cell.alpha = 0
+                cell.transform = CGAffineTransform(translationX: 0, y: 26)
+                    .scaledBy(x: 0.94, y: 0.94)
+
+                UIView.animate(
+                    withDuration: 0.62,
+                    delay: 0.09 * Double(index),
+                    usingSpringWithDamping: 0.76,
+                    initialSpringVelocity: 0.4,
+                    options: [.curveEaseOut, .allowUserInteraction]
+                ) {
+                    cell.alpha = 1
+                    cell.transform = .identity
+                }
+            }
+
+            UIView.animate(
+                withDuration: 0.18,
+                delay: 0,
+                options: [.curveEaseOut, .allowUserInteraction]
+            ) {
+                self.collectionView.alpha = 1
+            }
+        }
     }
 }

@@ -14,6 +14,8 @@ final class SearchHistoryRowCell: UICollectionViewCell {
 
     override func prepareForReuse() {
         super.prepareForReuse()
+        alpha = 1
+        transform = .identity
         rowView.onSelected = nil
     }
 
