@@ -40,6 +40,23 @@ final class SearchRepository: SearchRepositoryProtocol {
         Self.loadSearchPage(id: id, apiClient: apiClient, completion: completion)
     }
 
+    func deleteHistoryItem(
+        id: Int,
+        completion: @escaping (Result<Void, APIError>) -> Void
+    ) {
+        apiClient.request(.deleteSearchHistoryItem(id: id)) { (result: Result<EmptyResponse, APIError>) in
+            completion(result.map { _ in () })
+        }
+    }
+
+    func clearHistory(
+        completion: @escaping (Result<Void, APIError>) -> Void
+    ) {
+        apiClient.request(.clearSearchHistory) { (result: Result<EmptyResponse, APIError>) in
+            completion(result.map { _ in () })
+        }
+    }
+
     private static func loadSearchPage(
         id: Int,
         apiClient: APIClientProtocol,

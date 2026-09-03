@@ -8,6 +8,7 @@ final class SearchViewModel {
         let allSuggestions: [SearchSuggestionDisplayModel]
         let canShowMoreSuggestions: Bool
         let recentHistory: [SearchHistoryEntryDisplayModel]
+        let recentHistoryInsertionID: Int?
         let isLoading: Bool
         let errorMessage: String?
     }
@@ -16,6 +17,7 @@ final class SearchViewModel {
     private let suggestionsStore: SearchSuggestionsStoreProtocol
     private var suggestionModels: [SearchSuggestion]
     private var optimisticRecentHistory: [SearchHistoryEntryDisplayModel] = []
+    private var pendingRecentHistoryInsertionID: Int?
     private(set) var state: State
 
     var onStateChange: ((State) -> Void)?
@@ -42,6 +44,7 @@ final class SearchViewModel {
             allSuggestions: suggestionState.allSuggestions,
             canShowMoreSuggestions: suggestionState.canShowMoreSuggestions,
             recentHistory: [],
+            recentHistoryInsertionID: nil,
             isLoading: false,
             errorMessage: nil
         )
@@ -115,6 +118,20 @@ final class SearchViewModel {
         update(suggestionModels: suggestionModels)
     }
 
+    func markRecentHistoryInsertionAnimationHandled() {
+        pendingRecentHistoryInsertionID = nil
+        state = State(
+            username: state.username,
+            visibleSuggestions: state.visibleSuggestions,
+            allSuggestions: state.allSuggestions,
+            canShowMoreSuggestions: state.canShowMoreSuggestions,
+            recentHistory: state.recentHistory,
+            recentHistoryInsertionID: nil,
+            isLoading: state.isLoading,
+            errorMessage: state.errorMessage
+        )
+    }
+
     func openHistoryResult(_ history: SearchHistoryEntryDisplayModel) {
         update(isLoading: true, errorMessage: nil)
         searchRepository.loadSearchPage(id: history.id) { [weak self] result in
@@ -133,6 +150,7 @@ final class SearchViewModel {
     private func update(
         suggestionModels: [SearchSuggestion]? = nil,
         recentHistory: [SearchHistoryEntryDisplayModel]? = nil,
+        recentHistoryInsertionID: Int? = nil,
         isLoading: Bool? = nil,
         errorMessage: String? = nil
     ) {
@@ -143,6 +161,7 @@ final class SearchViewModel {
             allSuggestions: suggestionState?.allSuggestions ?? state.allSuggestions,
             canShowMoreSuggestions: suggestionState?.canShowMoreSuggestions ?? state.canShowMoreSuggestions,
             recentHistory: recentHistory ?? state.recentHistory,
+            recentHistoryInsertionID: recentHistoryInsertionID ?? state.recentHistoryInsertionID,
             isLoading: isLoading ?? state.isLoading,
             errorMessage: errorMessage
         )
@@ -151,17 +170,26 @@ final class SearchViewModel {
 
     private func prependOptimisticHistory(from page: SearchPage) {
         let history = SearchHistoryDisplayModelMapper.makeDisplayModel(from: page)
+        pendingRecentHistoryInsertionID = history.id
         optimisticRecentHistory.removeAll { $0.id == history.id }
         optimisticRecentHistory.insert(history, at: 0)
         optimisticRecentHistory = Array(optimisticRecentHistory.prefix(Constants.visibleHistoryLimit))
-        update(recentHistory: mergeRecentHistory([]), errorMessage: nil)
+        update(
+            recentHistory: mergeRecentHistory([]),
+            recentHistoryInsertionID: history.id,
+            errorMessage: nil
+        )
     }
 
     private func updateWithLoadedHistory(_ history: [SearchHistoryEntry]) {
         let recentHistory = SearchHistoryDisplayModelMapper.makeDisplayModels(
             from: Array(history.prefix(Constants.visibleHistoryLimit))
         )
-        update(recentHistory: mergeRecentHistory(recentHistory), errorMessage: nil)
+        update(
+            recentHistory: mergeRecentHistory(recentHistory),
+            recentHistoryInsertionID: pendingRecentHistoryInsertionID,
+            errorMessage: nil
+        )
     }
 
     private func mergeRecentHistory(

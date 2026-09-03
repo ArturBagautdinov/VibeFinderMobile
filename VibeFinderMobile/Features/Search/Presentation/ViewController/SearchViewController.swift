@@ -32,6 +32,13 @@ final class SearchViewController: UIViewController {
         viewModel.loadRecentHistory()
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        searchView.animatePendingHistoryInsertion(after: 0.25) { [weak self] in
+            self?.viewModel.markRecentHistoryInsertionAnimationHandled()
+        }
+    }
+
     private func configure() {
         navigationItem.title = nil
         navigationItem.hidesBackButton = true

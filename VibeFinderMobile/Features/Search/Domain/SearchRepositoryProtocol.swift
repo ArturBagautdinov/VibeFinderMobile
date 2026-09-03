@@ -14,4 +14,13 @@ protocol SearchRepositoryProtocol {
         id: Int,
         completion: @escaping (Result<SearchPage, APIError>) -> Void
     )
+
+    func deleteHistoryItem(
+        id: Int,
+        completion: @escaping (Result<Void, APIError>) -> Void
+    )
+
+    func clearHistory(
+        completion: @escaping (Result<Void, APIError>) -> Void
+    )
 }

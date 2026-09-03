@@ -26,15 +26,16 @@ final class SearchHistoryRowCell: UICollectionViewCell {
     }
 
     private func configure() {
+        backgroundConfiguration = .clear()
         contentView.backgroundColor = .clear
         rowView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(rowView)
 
         NSLayoutConstraint.activate([
-            rowView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            rowView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 7),
             rowView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             rowView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            rowView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+            rowView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -7)
         ])
     }
 }

@@ -36,6 +36,12 @@ final class SearchHistoryViewController: UIViewController {
         historyView.onHistorySelected = { [weak self] history in
             self?.viewModel.selectHistory(id: history.id)
         }
+        historyView.onHistoryDeleted = { [weak self] history in
+            self?.viewModel.deleteHistoryItem(id: history.id)
+        }
+        historyView.onClearHistorySelected = { [weak self] in
+            self?.showClearHistoryConfirmation()
+        }
     }
 
     private func bindViewModel() {
@@ -50,5 +56,23 @@ final class SearchHistoryViewController: UIViewController {
 
     @objc private func backTapped() {
         onBackSelected?()
+    }
+
+    private func showClearHistoryConfirmation() {
+        let alertController = UIAlertController(
+            title: L10n.Search.History.Clear.title,
+            message: L10n.Search.History.Clear.message,
+            preferredStyle: .alert
+        )
+        alertController.addAction(UIAlertAction(title: L10n.Common.cancel, style: .cancel))
+        alertController.addAction(
+            UIAlertAction(
+                title: L10n.Search.History.Clear.button,
+                style: .destructive
+            ) { [weak self] _ in
+                self?.viewModel.clearHistory()
+            }
+        )
+        present(alertController, animated: true)
     }
 }

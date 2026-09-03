@@ -25,6 +25,7 @@ final class SearchView: UIView {
     private lazy var recentVibesView = RecentVibesView(history: state.recentHistory)
     private let statusView = SearchStatusView()
     private let loadingView = SearchLoadingView()
+    private var pendingHistoryInsertionID: Int?
 
     init(state: SearchViewModel.State) {
         self.state = state
@@ -125,8 +126,27 @@ final class SearchView: UIView {
             suggestions: state.visibleSuggestions,
             canShowMoreSuggestions: state.canShowMoreSuggestions
         )
-        recentVibesView.render(state.recentHistory)
+        pendingHistoryInsertionID = state.recentHistoryInsertionID
+        recentVibesView.render(
+            state.recentHistory,
+            pendingInsertionID: state.recentHistoryInsertionID
+        )
         loadingView.setVisible(state.isLoading)
+    }
+
+    func animatePendingHistoryInsertion(
+        after delay: TimeInterval,
+        completion: @escaping () -> Void
+    ) {
+        guard pendingHistoryInsertionID != nil else {
+            completion()
+            return
+        }
+
+        recentVibesView.animatePendingInsertion(after: delay) { [weak self] in
+            self?.pendingHistoryInsertionID = nil
+            completion()
+        }
     }
 
     func setPromptText(_ text: String) {

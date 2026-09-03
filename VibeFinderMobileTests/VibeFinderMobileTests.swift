@@ -349,6 +349,87 @@ struct VibeFinderMobileTests {
 
     @Test
     @MainActor
+    func searchHistoryViewModelDeletesHistoryItem() async {
+        let repository = SearchRepositorySpy()
+        repository.historyResult = .success([
+            .fixture(id: 101, originalQuery: "Rainy movie", resultCount: 3),
+            .fixture(id: 102, originalQuery: "Cozy game", resultCount: 2)
+        ])
+        repository.deleteHistoryItemResult = .success(())
+        let viewModel = SearchHistoryViewModel(searchRepository: repository)
+
+        viewModel.loadHistory()
+        await Task.yield()
+        await Task.yield()
+        var states: [SearchHistoryViewModel.State] = []
+        viewModel.onStateChange = { states.append($0) }
+        viewModel.deleteHistoryItem(id: 101)
+        await Task.yield()
+        await Task.yield()
+
+        #expect(repository.deletedHistoryItemIDs == [101])
+        #expect(states.first?.history.map(\.id) == [102])
+        #expect(states.first?.isInitialLoading == false)
+        #expect(states.first?.isMutating == true)
+        #expect(viewModel.state.history.map(\.id) == [102])
+        #expect(viewModel.state.isEmpty == false)
+        #expect(viewModel.state.isMutating == false)
+    }
+
+    @Test
+    @MainActor
+    func searchHistoryViewModelRestoresHistoryItemWhenDeleteFails() async {
+        let repository = SearchRepositorySpy()
+        repository.historyResult = .success([
+            .fixture(id: 101, originalQuery: "Rainy movie", resultCount: 3),
+            .fixture(id: 102, originalQuery: "Cozy game", resultCount: 2)
+        ])
+        repository.deleteHistoryItemResult = .failure(.unknown)
+        let viewModel = SearchHistoryViewModel(searchRepository: repository)
+
+        viewModel.loadHistory()
+        await Task.yield()
+        await Task.yield()
+        viewModel.deleteHistoryItem(id: 101)
+        await Task.yield()
+        await Task.yield()
+
+        #expect(repository.deletedHistoryItemIDs == [101])
+        #expect(viewModel.state.history.map(\.id) == [101, 102])
+        #expect(viewModel.state.errorMessage == L10n.Error.unknown)
+        #expect(viewModel.state.isMutating == false)
+    }
+
+    @Test
+    @MainActor
+    func searchHistoryViewModelClearsHistory() async {
+        let repository = SearchRepositorySpy()
+        repository.historyResult = .success([
+            .fixture(id: 101, originalQuery: "Rainy movie", resultCount: 3)
+        ])
+        repository.clearHistoryResult = .success(())
+        let viewModel = SearchHistoryViewModel(searchRepository: repository)
+
+        viewModel.loadHistory()
+        await Task.yield()
+        await Task.yield()
+        var states: [SearchHistoryViewModel.State] = []
+        viewModel.onStateChange = { states.append($0) }
+        viewModel.clearHistory()
+        await Task.yield()
+        await Task.yield()
+
+        #expect(repository.clearHistoryCallCount == 1)
+        #expect(states.first?.history.isEmpty == true)
+        #expect(states.first?.isInitialLoading == false)
+        #expect(states.first?.isMutating == true)
+        #expect(viewModel.state.history.isEmpty)
+        #expect(viewModel.state.isEmpty)
+        #expect(viewModel.state.isMutating == false)
+    }
+
+    @Test
+    @MainActor
     func coreDataSearchSuggestionsStorePersistsCustomSuggestions() {
         let store = CoreDataSearchSuggestionsStore(
             coreDataStack: CoreDataStack(name: "VibeFinderMobileTests-\(UUID().uuidString)", inMemory: true)
@@ -453,9 +534,13 @@ private final class SearchRepositorySpy: SearchRepositoryProtocol {
     private(set) var searchCallCount = 0
     private(set) var lastQuery: String?
     private(set) var loadedPageIDs: [Int] = []
+    private(set) var deletedHistoryItemIDs: [Int] = []
+    private(set) var clearHistoryCallCount = 0
     var result: Result<SearchPage, APIError> = .failure(.unknown)
     var historyResult: Result<[SearchHistoryEntry], APIError> = .success([])
     var pageByIDResult: Result<SearchPage, APIError> = .failure(.unknown)
+    var deleteHistoryItemResult: Result<Void, APIError> = .success(())
+    var clearHistoryResult: Result<Void, APIError> = .success(())
 
     func search(query: String, completion: @escaping (Result<SearchPage, APIError>) -> Void) {
         searchCallCount += 1
@@ -470,6 +555,16 @@ private final class SearchRepositorySpy: SearchRepositoryProtocol {
     func loadSearchPage(id: Int, completion: @escaping (Result<SearchPage, APIError>) -> Void) {
         loadedPageIDs.append(id)
         completion(pageByIDResult)
+    }
+
+    func deleteHistoryItem(id: Int, completion: @escaping (Result<Void, APIError>) -> Void) {
+        deletedHistoryItemIDs.append(id)
+        completion(deleteHistoryItemResult)
+    }
+
+    func clearHistory(completion: @escaping (Result<Void, APIError>) -> Void) {
+        clearHistoryCallCount += 1
+        completion(clearHistoryResult)
     }
 }
 

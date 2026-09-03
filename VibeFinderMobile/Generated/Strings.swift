@@ -91,6 +91,8 @@ internal enum L10n {
   internal enum Common {
     /// Back
     internal static let back = L10n.tr("Localizable", "common.back", fallback: "Back")
+    /// Cancel
+    internal static let cancel = L10n.tr("Localizable", "common.cancel", fallback: "Cancel")
     /// OK
     internal static let ok = L10n.tr("Localizable", "common.ok", fallback: "OK")
   }
@@ -119,6 +121,20 @@ internal enum L10n {
     internal static let brand = L10n.tr("Localizable", "search.brand", fallback: "VibeFinder")
     /// What are you in the mood for?
     internal static let title = L10n.tr("Localizable", "search.title", fallback: "What are you in the mood for?")
+    internal enum History {
+      internal enum Clear {
+        /// Clear
+        internal static let button = L10n.tr("Localizable", "search.history.clear.button", fallback: "Clear")
+        /// This will remove all search prompts from your history. You can delete search prompts one by one by swiping left.
+        internal static let message = L10n.tr("Localizable", "search.history.clear.message", fallback: "This will remove all search prompts from your history. You can delete search prompts one by one by swiping left.")
+        /// Clear search history?
+        internal static let title = L10n.tr("Localizable", "search.history.clear.title", fallback: "Clear search history?")
+      }
+      internal enum Delete {
+        /// Delete
+        internal static let action = L10n.tr("Localizable", "search.history.delete.action", fallback: "Delete")
+      }
+    }
     internal enum Loading {
       /// Tuning the mood, genres and hidden signals.
       internal static let subtitle = L10n.tr("Localizable", "search.loading.subtitle", fallback: "Tuning the mood, genres and hidden signals.")

@@ -31,6 +31,7 @@
 "auth.validation.password_mismatch" = "Пароли не совпадают.";
 "auth.validation.required_fields" = "Заполните все обязательные поля.";
 "common.back" = "Назад";
+"common.cancel" = "Отмена";
 "common.ok" = "ОК";
 "error.decoding" = "Не удалось прочитать ответ сервера.";
 "error.http_status" = "Запрос завершился с кодом %d.";
@@ -56,6 +57,10 @@
 "search.recent.title" = "Недавние вайбы";
 "search.recent.weekend_game_subtitle" = "9 рекомендаций · Вчера";
 "search.recent.weekend_game_title" = "Игра, которую можно пройти за выходные";
+"search.history.clear.button" = "Очистить";
+"search.history.clear.message" = "Все запросы будут удалены из вашей истории поиска. Вы можете удалить поисковый запрос свайпом влево.";
+"search.history.clear.title" = "Очистить историю поиска?";
+"search.history.delete.action" = "Удалить";
 "search.suggestion.beautiful_scifi" = "Красивая sci-fi";
 "search.suggestion.comfort_book" = "Комфортная книга";
 "search.suggestion.cosmic_horror" = "Космический хоррор";

@@ -31,6 +31,7 @@
 "auth.validation.password_mismatch" = "Passwords do not match.";
 "auth.validation.required_fields" = "Fill in all required fields.";
 "common.back" = "Back";
+"common.cancel" = "Cancel";
 "common.ok" = "OK";
 "error.decoding" = "We could not read the server response.";
 "error.http_status" = "Request failed with status code %d.";
@@ -56,6 +57,10 @@
 "search.recent.title" = "Recent vibes";
 "search.recent.weekend_game_subtitle" = "9 recommendations · Yesterday";
 "search.recent.weekend_game_title" = "A game I can finish this weekend";
+"search.history.clear.button" = "Clear";
+"search.history.clear.message" = "This will remove all search prompts from your history. You can delete search prompts one by one by swiping left.";
+"search.history.clear.title" = "Clear search history?";
+"search.history.delete.action" = "Delete";
 "search.suggestion.beautiful_scifi" = "Beautiful sci-fi";
 "search.suggestion.comfort_book" = "Comfort book";
 "search.suggestion.cosmic_horror" = "Cosmic horror";
