@@ -44,6 +44,8 @@
 "search.prompt.submit" = "Search";
 "search.prompt.title" = "Describe a feeling";
 "search.loading.subtitle" = "Tuning the mood, genres and hidden signals.";
+"search.loading.subtitleMood" = "Reading the shape of your mood.";
+"search.loading.subtitleSignals" = "Tuning into hidden genre signals.";
 "search.loading.title" = "Finding your vibe";
 "search.recent.detective_series_subtitle" = "11 recommendations · 3 days ago";
 "search.recent.detective_series_title" = "Dark detective series with smart writing";

@@ -138,6 +138,10 @@ internal enum L10n {
     internal enum Loading {
       /// Tuning the mood, genres and hidden signals.
       internal static let subtitle = L10n.tr("Localizable", "search.loading.subtitle", fallback: "Tuning the mood, genres and hidden signals.")
+      /// Reading the shape of your mood.
+      internal static let subtitleMood = L10n.tr("Localizable", "search.loading.subtitleMood", fallback: "Reading the shape of your mood.")
+      /// Tuning into hidden genre signals.
+      internal static let subtitleSignals = L10n.tr("Localizable", "search.loading.subtitleSignals", fallback: "Tuning into hidden genre signals.")
       /// Finding your vibe
       internal static let title = L10n.tr("Localizable", "search.loading.title", fallback: "Finding your vibe")
     }
