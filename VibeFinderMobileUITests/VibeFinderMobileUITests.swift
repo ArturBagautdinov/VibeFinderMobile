@@ -90,9 +90,10 @@ final class VibeFinderMobileUITests: XCTestCase {
         XCTAssertFalse(errorLabel.label.isEmpty)
         XCTAssertTrue(app.otherElements["auth.login.screen"].exists)
         XCTAssertFalse(app.otherElements["home.screen"].exists)
+        XCTAssertFalse(app.otherElements["search.screen"].exists)
     }
 
-    func testSuccessfulLoginOpensHomeScreen() {
+    func testSuccessfulLoginOpensSearchScreen() {
         app.launch()
         openLogin()
 
@@ -103,9 +104,10 @@ final class VibeFinderMobileUITests: XCTestCase {
         dismissKeyboardIfNeeded()
         app.buttons["auth.login.submitButton"].tap()
 
-        XCTAssertTrue(app.otherElements["home.screen"].waitForExistence(timeout: 2))
-        XCTAssertTrue(app.staticTexts["home.welcomeLabel"].exists)
-        XCTAssertTrue(app.images["home.logo.image"].exists)
+        XCTAssertTrue(app.otherElements["search.screen"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["search.titleLabel"].exists)
+        XCTAssertTrue(app.otherElements["search.promptCard"].exists)
+        XCTAssertTrue(app.buttons["search.submitButton"].exists)
         XCTAssertFalse(app.navigationBars.buttons["Back"].exists)
         XCTAssertFalse(app.navigationBars.buttons["Назад"].exists)
     }
@@ -151,6 +153,7 @@ final class VibeFinderMobileUITests: XCTestCase {
         XCTAssertTrue(app.otherElements["auth.register.screen"].exists)
         XCTAssertFalse(app.otherElements["auth.login.screen"].exists)
         XCTAssertFalse(app.otherElements["home.screen"].exists)
+        XCTAssertFalse(app.otherElements["search.screen"].exists)
     }
 
     func testKeyboardCanBeDismissedOnLoginWithReturnKey() {

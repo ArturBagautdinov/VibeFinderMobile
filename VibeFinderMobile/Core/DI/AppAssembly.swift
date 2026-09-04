@@ -62,5 +62,37 @@ final class AppAssembly: Assembly {
         container.register(RegisterViewModel.self) { resolver in
             RegisterViewModel(authRepository: resolver.resolve(AuthRepositoryProtocol.self)!)
         }
+
+        container.register(SearchRepositoryProtocol.self) { resolver in
+            SearchRepository(apiClient: resolver.resolve(APIClientProtocol.self)!)
+        }
+        .inObjectScope(.container)
+
+        container.register(CoreDataStack.self) { _ in
+            CoreDataStack()
+        }
+        .inObjectScope(.container)
+
+        container.register(SearchSuggestionsStoreProtocol.self) { resolver in
+            CoreDataSearchSuggestionsStore(coreDataStack: resolver.resolve(CoreDataStack.self)!)
+        }
+        .inObjectScope(.container)
+
+        container.register(SearchResultImageLoading.self) { _ in
+            SearchResultImageLoader()
+        }
+        .inObjectScope(.container)
+
+        container.register(SearchHistoryViewModel.self) { resolver in
+            SearchHistoryViewModel(searchRepository: resolver.resolve(SearchRepositoryProtocol.self)!)
+        }
+
+        container.register(SearchViewModel.self) { resolver, username in
+            SearchViewModel(
+                username: username,
+                searchRepository: resolver.resolve(SearchRepositoryProtocol.self)!,
+                suggestionsStore: resolver.resolve(SearchSuggestionsStoreProtocol.self)!
+            )
+        }
     }
 }

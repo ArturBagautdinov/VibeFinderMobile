@@ -91,6 +91,8 @@ internal enum L10n {
   internal enum Common {
     /// Back
     internal static let back = L10n.tr("Localizable", "common.back", fallback: "Back")
+    /// Cancel
+    internal static let cancel = L10n.tr("Localizable", "common.cancel", fallback: "Cancel")
     /// OK
     internal static let ok = L10n.tr("Localizable", "common.ok", fallback: "OK")
   }
@@ -112,6 +114,142 @@ internal enum L10n {
     /// Welcome, %@.
     internal static func welcome(_ p1: Any) -> String {
       return L10n.tr("Localizable", "home.welcome", String(describing: p1), fallback: "Welcome, %@.")
+    }
+  }
+  internal enum Search {
+    /// VibeFinder
+    internal static let brand = L10n.tr("Localizable", "search.brand", fallback: "VibeFinder")
+    /// What are you in the mood for?
+    internal static let title = L10n.tr("Localizable", "search.title", fallback: "What are you in the mood for?")
+    internal enum History {
+      internal enum Clear {
+        /// Clear
+        internal static let button = L10n.tr("Localizable", "search.history.clear.button", fallback: "Clear")
+        /// This will remove all search prompts from your history. You can delete search prompts one by one by swiping left.
+        internal static let message = L10n.tr("Localizable", "search.history.clear.message", fallback: "This will remove all search prompts from your history. You can delete search prompts one by one by swiping left.")
+        /// Clear search history?
+        internal static let title = L10n.tr("Localizable", "search.history.clear.title", fallback: "Clear search history?")
+      }
+      internal enum Delete {
+        /// Delete
+        internal static let action = L10n.tr("Localizable", "search.history.delete.action", fallback: "Delete")
+      }
+    }
+    internal enum Loading {
+      /// Tuning the mood, genres and hidden signals.
+      internal static let subtitle = L10n.tr("Localizable", "search.loading.subtitle", fallback: "Tuning the mood, genres and hidden signals.")
+      /// Finding your vibe
+      internal static let title = L10n.tr("Localizable", "search.loading.title", fallback: "Finding your vibe")
+    }
+    internal enum Prompt {
+      /// Describe a movie, series, game, book or just a feeling...
+      internal static let placeholder = L10n.tr("Localizable", "search.prompt.placeholder", fallback: "Describe a movie, series, game, book or just a feeling...")
+      /// Search
+      internal static let submit = L10n.tr("Localizable", "search.prompt.submit", fallback: "Search")
+      /// Describe a feeling
+      internal static let title = L10n.tr("Localizable", "search.prompt.title", fallback: "Describe a feeling")
+    }
+    internal enum Recent {
+      /// 11 recommendations · 3 days ago
+      internal static let detectiveSeriesSubtitle = L10n.tr("Localizable", "search.recent.detective_series_subtitle", fallback: "11 recommendations · 3 days ago")
+      /// Dark detective series with smart writing
+      internal static let detectiveSeriesTitle = L10n.tr("Localizable", "search.recent.detective_series_title", fallback: "Dark detective series with smart writing")
+      /// Search for a mood, movie, game or book, and your successful vibes will appear here.
+      internal static let emptySubtitle = L10n.tr("Localizable", "search.recent.empty_subtitle", fallback: "Search for a mood, movie, game or book, and your successful vibes will appear here.")
+      /// No searches yet
+      internal static let emptyTitle = L10n.tr("Localizable", "search.recent.empty_title", fallback: "No searches yet")
+      /// Search history
+      internal static let fullTitle = L10n.tr("Localizable", "search.recent.full_title", fallback: "Search history")
+      /// %d items · %@
+      internal static func itemSubtitle(_ p1: Int, _ p2: Any) -> String {
+        return L10n.tr("Localizable", "search.recent.item_subtitle", p1, String(describing: p2), fallback: "%d items · %@")
+      }
+      /// 12 recommendations · Today
+      internal static let rainyEveningSubtitle = L10n.tr("Localizable", "search.recent.rainy_evening_subtitle", fallback: "12 recommendations · Today")
+      /// Something atmospheric for a rainy evening
+      internal static let rainyEveningTitle = L10n.tr("Localizable", "search.recent.rainy_evening_title", fallback: "Something atmospheric for a rainy evening")
+      /// See all
+      internal static let seeAll = L10n.tr("Localizable", "search.recent.see_all", fallback: "See all")
+      /// Recent vibes
+      internal static let title = L10n.tr("Localizable", "search.recent.title", fallback: "Recent vibes")
+      /// 9 recommendations · Yesterday
+      internal static let weekendGameSubtitle = L10n.tr("Localizable", "search.recent.weekend_game_subtitle", fallback: "9 recommendations · Yesterday")
+      /// A game I can finish this weekend
+      internal static let weekendGameTitle = L10n.tr("Localizable", "search.recent.weekend_game_title", fallback: "A game I can finish this weekend")
+    }
+    internal enum Results {
+      /// Your matches
+      internal static let title = L10n.tr("Localizable", "search.results.title", fallback: "Your matches")
+    }
+    internal enum Suggestion {
+      /// Beautiful sci-fi
+      internal static let beautifulScifi = L10n.tr("Localizable", "search.suggestion.beautiful_scifi", fallback: "Beautiful sci-fi")
+      /// Comfort book
+      internal static let comfortBook = L10n.tr("Localizable", "search.suggestion.comfort_book", fallback: "Comfort book")
+      /// Cosmic horror
+      internal static let cosmicHorror = L10n.tr("Localizable", "search.suggestion.cosmic_horror", fallback: "Cosmic horror")
+      /// Couch co-op game
+      internal static let couchCoopGame = L10n.tr("Localizable", "search.suggestion.couch_coop_game", fallback: "Couch co-op game")
+      /// Cozy evening
+      internal static let cozyEvening = L10n.tr("Localizable", "search.suggestion.cozy_evening", fallback: "Cozy evening")
+      /// Cozy game
+      internal static let cozyGame = L10n.tr("Localizable", "search.suggestion.cozy_game", fallback: "Cozy game")
+      /// Your vibe
+      internal static let customPlaceholder = L10n.tr("Localizable", "search.suggestion.custom_placeholder", fallback: "Your vibe")
+      /// Dark fantasy book
+      internal static let darkFantasyBook = L10n.tr("Localizable", "search.suggestion.dark_fantasy_book", fallback: "Dark fantasy book")
+      /// Dark mystery
+      internal static let darkMystery = L10n.tr("Localizable", "search.suggestion.dark_mystery", fallback: "Dark mystery")
+      /// Delete
+      internal static let delete = L10n.tr("Localizable", "search.suggestion.delete", fallback: "Delete")
+      /// Emotional sci-fi
+      internal static let emotionalScifi = L10n.tr("Localizable", "search.suggestion.emotional_scifi", fallback: "Emotional sci-fi")
+      /// Feel-good sitcom
+      internal static let feelGoodSitcom = L10n.tr("Localizable", "search.suggestion.feel_good_sitcom", fallback: "Feel-good sitcom")
+      /// Historical mystery
+      internal static let historicalMystery = L10n.tr("Localizable", "search.suggestion.historical_mystery", fallback: "Historical mystery")
+      /// Late-night thriller
+      internal static let lateNightThriller = L10n.tr("Localizable", "search.suggestion.late_night_thriller", fallback: "Late-night thriller")
+      /// Melancholic animation
+      internal static let melancholicAnimation = L10n.tr("Localizable", "search.suggestion.melancholic_animation", fallback: "Melancholic animation")
+      /// Mind-bending story
+      internal static let mindBendingStory = L10n.tr("Localizable", "search.suggestion.mind_bending_story", fallback: "Mind-bending story")
+      /// More
+      internal static let more = L10n.tr("Localizable", "search.suggestion.more", fallback: "More")
+      /// Mystical forest story
+      internal static let mysticalForestStory = L10n.tr("Localizable", "search.suggestion.mystical_forest_story", fallback: "Mystical forest story")
+      /// Post-apocalyptic drama
+      internal static let postApocalypticDrama = L10n.tr("Localizable", "search.suggestion.post_apocalyptic_drama", fallback: "Post-apocalyptic drama")
+      /// Rainy night movie
+      internal static let rainyNightMovie = L10n.tr("Localizable", "search.suggestion.rainy_night_movie", fallback: "Rainy night movie")
+      /// Restore default suggestions
+      internal static let restoreDefaults = L10n.tr("Localizable", "search.suggestion.restore_defaults", fallback: "Restore default suggestions")
+      /// Short indie game
+      internal static let shortIndieGame = L10n.tr("Localizable", "search.suggestion.short_indie_game", fallback: "Short indie game")
+      /// Slow Sunday
+      internal static let slowSunday = L10n.tr("Localizable", "search.suggestion.slow_sunday", fallback: "Slow Sunday")
+      /// Smart heist movie
+      internal static let smartHeistMovie = L10n.tr("Localizable", "search.suggestion.smart_heist_movie", fallback: "Smart heist movie")
+      /// Something weird
+      internal static let somethingWeird = L10n.tr("Localizable", "search.suggestion.something_weird", fallback: "Something weird")
+      /// Space opera night
+      internal static let spaceOperaNight = L10n.tr("Localizable", "search.suggestion.space_opera_night", fallback: "Space opera night")
+      /// Warm romance
+      internal static let warmRomance = L10n.tr("Localizable", "search.suggestion.warm_romance", fallback: "Warm romance")
+      /// Weekend adventure
+      internal static let weekendAdventure = L10n.tr("Localizable", "search.suggestion.weekend_adventure", fallback: "Weekend adventure")
+    }
+    internal enum Suggestions {
+      internal enum All {
+        /// Choose a prompt to start searching.
+        internal static let subtitle = L10n.tr("Localizable", "search.suggestions.all.subtitle", fallback: "Choose a prompt to start searching.")
+        /// All vibes
+        internal static let title = L10n.tr("Localizable", "search.suggestions.all.title", fallback: "All vibes")
+      }
+    }
+    internal enum Validation {
+      /// Describe what you are in the mood for.
+      internal static let emptyQuery = L10n.tr("Localizable", "search.validation.empty_query", fallback: "Describe what you are in the mood for.")
     }
   }
 }

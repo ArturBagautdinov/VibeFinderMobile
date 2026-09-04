@@ -10,6 +10,7 @@ final class AppCoordinator: Coordinator {
     private let container: Container
     private let navigationController = UINavigationController()
     private var childCoordinator: Coordinator?
+    private var searchCoordinator: SearchCoordinator?
 
     init(window: UIWindow, container: Container) {
         self.window = window
@@ -19,8 +20,9 @@ final class AppCoordinator: Coordinator {
     func start() {
         configureNavigationBar()
         window.rootViewController = navigationController
+        navigationController.setViewControllers([AppLaunchViewController()], animated: false)
         window.makeKeyAndVisible()
-        showAuthFlow()
+        restoreSession()
     }
 
     private func configureNavigationBar() {
@@ -42,16 +44,36 @@ final class AppCoordinator: Coordinator {
             container: container
         )
         authCoordinator.onAuthenticated = { [weak self] username in
-            self?.showHome(username: username)
+            self?.showSearch(username: username)
         }
         childCoordinator = authCoordinator
         authCoordinator.start()
     }
 
-    private func showHome(username: String) {
+    private func restoreSession() {
+        let authRepository = container.resolve(AuthRepositoryProtocol.self)!
+        authRepository.refreshSession { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case let .success(session):
+                    let username = session.displayName.isEmpty ? session.username : session.displayName
+                    self?.showSearch(username: username)
+                case .failure:
+                    self?.showAuthFlow()
+                }
+            }
+        }
+    }
+
+    private func showSearch(username: String) {
+        navigationController.setNavigationBarHidden(true, animated: true)
         childCoordinator = nil
-        navigationController.setNavigationBarHidden(false, animated: true)
-        let viewController = HomeViewController(username: username)
-        navigationController.setViewControllers([viewController], animated: true)
+        let searchCoordinator = SearchCoordinator(
+            navigationController: navigationController,
+            container: container,
+            username: username
+        )
+        self.searchCoordinator = searchCoordinator
+        searchCoordinator.start()
     }
 }

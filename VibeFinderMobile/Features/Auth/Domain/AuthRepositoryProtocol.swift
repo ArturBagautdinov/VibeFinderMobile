@@ -31,28 +31,3 @@ protocol AuthRepositoryProtocol {
         completion: @escaping (Result<EmailVerification, APIError>) -> Void
     )
 }
-
-struct AuthSession {
-    let username: String
-    let displayName: String
-    let roles: [String]
-
-    init(username: String, displayName: String, roles: [String] = []) {
-        self.username = username
-        self.displayName = displayName
-        self.roles = roles
-    }
-}
-
-struct FormSubmission {
-    let message: String
-}
-
-struct EmailVerification {
-    let success: Bool
-    let status: String
-    let type: String
-    let email: String
-    let userId: Int
-    let message: String
-}
