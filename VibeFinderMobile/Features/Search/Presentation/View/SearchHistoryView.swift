@@ -45,7 +45,7 @@ final class SearchHistoryView: UIView {
             collectionView
         ])
         contentStackView.axis = .vertical
-        contentStackView.spacing = 24
+        contentStackView.spacing = 16
         contentStackView.translatesAutoresizingMaskIntoConstraints = false
 
         addSubview(contentStackView)
