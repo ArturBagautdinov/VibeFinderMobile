@@ -105,9 +105,17 @@ final class APIClient: APIClientProtocol {
         decoder: JSONDecoder,
         completion: @escaping (Result<Response, APIError>) -> Void
     ) {
-        if data.isEmpty, Response.self == EmptyResponse.self {
-            completion(.success(EmptyResponse() as! Response))
-            return
+        if data.isEmpty || data.isJSONNull {
+            if Response.self == EmptyResponse.self {
+                completion(.success(EmptyResponse() as! Response))
+                return
+            }
+
+            if let responseType = Response.self as? EmptyDecodableResponse.Type,
+               let emptyResponse = responseType.emptyValue as? Response {
+                completion(.success(emptyResponse))
+                return
+            }
         }
 
         do {
@@ -132,6 +140,23 @@ final class APIClient: APIClientProtocol {
 
 struct EmptyResponse: Decodable {
     init() {}
+}
+
+private protocol EmptyDecodableResponse {
+    static var emptyValue: Any { get }
+}
+
+extension Array: EmptyDecodableResponse where Element: Decodable {
+    static var emptyValue: Any {
+        [] as [Element]
+    }
+}
+
+private extension Data {
+    var isJSONNull: Bool {
+        String(data: self, encoding: .utf8)?
+            .trimmingCharacters(in: .whitespacesAndNewlines) == "null"
+    }
 }
 
 private enum APILanguage {

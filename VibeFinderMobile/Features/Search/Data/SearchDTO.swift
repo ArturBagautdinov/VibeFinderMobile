@@ -17,6 +17,31 @@ struct SearchPageResponse: Decodable {
     let buckets: [SearchBucketResponse]
 }
 
+struct SearchHistoryEntryResponse: Decodable {
+    let id: Int
+    let originalQuery: String
+    let refinedQuery: String?
+    let resultCount: Int
+    let createdAtDisplay: String
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case originalQuery
+        case refinedQuery
+        case resultCount
+        case createdAtDisplay
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(Int.self, forKey: .id)
+        originalQuery = try container.decodeIfPresent(String.self, forKey: .originalQuery) ?? ""
+        refinedQuery = try container.decodeIfPresent(String.self, forKey: .refinedQuery)
+        resultCount = try container.decodeIfPresent(Int.self, forKey: .resultCount) ?? 0
+        createdAtDisplay = try container.decodeIfPresent(String.self, forKey: .createdAtDisplay) ?? ""
+    }
+}
+
 struct SearchBucketResponse: Decodable {
     let code: String
     let title: String
@@ -49,6 +74,18 @@ extension SearchPageResponse {
             summary: summary,
             quickRefinements: quickRefinements,
             buckets: buckets.map { $0.toDomain() }
+        )
+    }
+}
+
+extension SearchHistoryEntryResponse {
+    func toDomain() -> SearchHistoryEntry {
+        SearchHistoryEntry(
+            id: id,
+            originalQuery: originalQuery,
+            refinedQuery: refinedQuery,
+            resultCount: resultCount,
+            createdAtDisplay: createdAtDisplay
         )
     }
 }

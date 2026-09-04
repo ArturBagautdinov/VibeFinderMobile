@@ -6,6 +6,7 @@ final class SearchViewController: UIViewController {
 
     var onResultsReady: ((SearchPage) -> Void)?
     var onMoreSuggestionsSelected: (([SearchSuggestionDisplayModel]) -> Void)?
+    var onHistorySeeAllSelected: (() -> Void)?
 
     init(viewModel: SearchViewModel) {
         self.viewModel = viewModel
@@ -26,6 +27,18 @@ final class SearchViewController: UIViewController {
         bindViewModel()
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        viewModel.loadRecentHistory()
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        searchView.animatePendingHistoryInsertion(after: 0.25) { [weak self] in
+            self?.viewModel.markRecentHistoryInsertionAnimationHandled()
+        }
+    }
+
     private func configure() {
         navigationItem.title = nil
         navigationItem.hidesBackButton = true
@@ -43,6 +56,12 @@ final class SearchViewController: UIViewController {
         searchView.onMoreSuggestionsSelected = { [weak self] in
             guard let self else { return }
             self.onMoreSuggestionsSelected?(self.viewModel.state.allSuggestions)
+        }
+        searchView.onHistorySeeAllSelected = { [weak self] in
+            self?.onHistorySeeAllSelected?()
+        }
+        searchView.onHistorySelected = { [weak self] history in
+            self?.selectHistory(history)
         }
     }
 
@@ -73,5 +92,10 @@ final class SearchViewController: UIViewController {
     func restoreDefaultSuggestions() -> [SearchSuggestionDisplayModel] {
         viewModel.restoreDefaultSuggestions()
         return viewModel.state.allSuggestions
+    }
+
+    func selectHistory(_ history: SearchHistoryEntryDisplayModel) {
+        view.endEditing(true)
+        viewModel.openHistoryResult(history)
     }
 }

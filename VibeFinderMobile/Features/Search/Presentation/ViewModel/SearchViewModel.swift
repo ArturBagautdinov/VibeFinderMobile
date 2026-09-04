@@ -7,19 +7,17 @@ final class SearchViewModel {
         let visibleSuggestions: [SearchSuggestionDisplayModel]
         let allSuggestions: [SearchSuggestionDisplayModel]
         let canShowMoreSuggestions: Bool
-        let recentVibes: [RecentVibe]
+        let recentHistory: [SearchHistoryEntryDisplayModel]
+        let recentHistoryInsertionID: Int?
         let isLoading: Bool
         let errorMessage: String?
-    }
-
-    struct RecentVibe {
-        let title: String
-        let subtitle: String
     }
 
     private let searchRepository: SearchRepositoryProtocol
     private let suggestionsStore: SearchSuggestionsStoreProtocol
     private var suggestionModels: [SearchSuggestion]
+    private var optimisticRecentHistory: [SearchHistoryEntryDisplayModel] = []
+    private var pendingRecentHistoryInsertionID: Int?
     private(set) var state: State
 
     var onStateChange: ((State) -> Void)?
@@ -27,6 +25,7 @@ final class SearchViewModel {
 
     private enum Constants {
         static let visibleSuggestionLimit = 5
+        static let visibleHistoryLimit = 3
     }
 
     init(
@@ -44,23 +43,24 @@ final class SearchViewModel {
             visibleSuggestions: suggestionState.visibleSuggestions,
             allSuggestions: suggestionState.allSuggestions,
             canShowMoreSuggestions: suggestionState.canShowMoreSuggestions,
-            recentVibes: [
-                RecentVibe(
-                    title: L10n.Search.Recent.rainyEveningTitle,
-                    subtitle: L10n.Search.Recent.rainyEveningSubtitle
-                ),
-                RecentVibe(
-                    title: L10n.Search.Recent.weekendGameTitle,
-                    subtitle: L10n.Search.Recent.weekendGameSubtitle
-                ),
-                RecentVibe(
-                    title: L10n.Search.Recent.detectiveSeriesTitle,
-                    subtitle: L10n.Search.Recent.detectiveSeriesSubtitle
-                )
-            ],
+            recentHistory: [],
+            recentHistoryInsertionID: nil,
             isLoading: false,
             errorMessage: nil
         )
+    }
+
+    func loadRecentHistory() {
+        searchRepository.loadHistory { [weak self] result in
+            Task {
+                switch result {
+                case let .success(history):
+                    self?.updateWithLoadedHistory(history)
+                case let .failure(error):
+                    self?.update(errorMessage: error.userMessage)
+                }
+            }
+        }
     }
 
     func search(query: String) {
@@ -75,7 +75,9 @@ final class SearchViewModel {
             Task {
                 switch result {
                 case let .success(page):
+                    self?.prependOptimisticHistory(from: page)
                     self?.update(isLoading: false, errorMessage: nil)
+                    self?.loadRecentHistory()
                     self?.onResultsReady?(page)
                 case let .failure(error):
                     self?.update(isLoading: false, errorMessage: error.userMessage)
@@ -116,8 +118,39 @@ final class SearchViewModel {
         update(suggestionModels: suggestionModels)
     }
 
+    func markRecentHistoryInsertionAnimationHandled() {
+        pendingRecentHistoryInsertionID = nil
+        state = State(
+            username: state.username,
+            visibleSuggestions: state.visibleSuggestions,
+            allSuggestions: state.allSuggestions,
+            canShowMoreSuggestions: state.canShowMoreSuggestions,
+            recentHistory: state.recentHistory,
+            recentHistoryInsertionID: nil,
+            isLoading: state.isLoading,
+            errorMessage: state.errorMessage
+        )
+    }
+
+    func openHistoryResult(_ history: SearchHistoryEntryDisplayModel) {
+        update(isLoading: true, errorMessage: nil)
+        searchRepository.loadSearchPage(id: history.id) { [weak self] result in
+            Task {
+                switch result {
+                case let .success(page):
+                    self?.update(isLoading: false, errorMessage: nil)
+                    self?.onResultsReady?(page)
+                case let .failure(error):
+                    self?.update(isLoading: false, errorMessage: error.userMessage)
+                }
+            }
+        }
+    }
+
     private func update(
         suggestionModels: [SearchSuggestion]? = nil,
+        recentHistory: [SearchHistoryEntryDisplayModel]? = nil,
+        recentHistoryInsertionID: Int? = nil,
         isLoading: Bool? = nil,
         errorMessage: String? = nil
     ) {
@@ -127,11 +160,46 @@ final class SearchViewModel {
             visibleSuggestions: suggestionState?.visibleSuggestions ?? state.visibleSuggestions,
             allSuggestions: suggestionState?.allSuggestions ?? state.allSuggestions,
             canShowMoreSuggestions: suggestionState?.canShowMoreSuggestions ?? state.canShowMoreSuggestions,
-            recentVibes: state.recentVibes,
+            recentHistory: recentHistory ?? state.recentHistory,
+            recentHistoryInsertionID: recentHistoryInsertionID ?? state.recentHistoryInsertionID,
             isLoading: isLoading ?? state.isLoading,
             errorMessage: errorMessage
         )
         onStateChange?(state)
+    }
+
+    private func prependOptimisticHistory(from page: SearchPage) {
+        let history = SearchHistoryDisplayModelMapper.makeDisplayModel(from: page)
+        pendingRecentHistoryInsertionID = history.id
+        optimisticRecentHistory.removeAll { $0.id == history.id }
+        optimisticRecentHistory.insert(history, at: 0)
+        optimisticRecentHistory = Array(optimisticRecentHistory.prefix(Constants.visibleHistoryLimit))
+        update(
+            recentHistory: mergeRecentHistory([]),
+            recentHistoryInsertionID: history.id,
+            errorMessage: nil
+        )
+    }
+
+    private func updateWithLoadedHistory(_ history: [SearchHistoryEntry]) {
+        let recentHistory = SearchHistoryDisplayModelMapper.makeDisplayModels(
+            from: Array(history.prefix(Constants.visibleHistoryLimit))
+        )
+        update(
+            recentHistory: mergeRecentHistory(recentHistory),
+            recentHistoryInsertionID: pendingRecentHistoryInsertionID,
+            errorMessage: nil
+        )
+    }
+
+    private func mergeRecentHistory(
+        _ loadedHistory: [SearchHistoryEntryDisplayModel]
+    ) -> [SearchHistoryEntryDisplayModel] {
+        var seenIDs = Set<Int>()
+        let mergedHistory = (optimisticRecentHistory + loadedHistory).filter { history in
+            seenIDs.insert(history.id).inserted
+        }
+        return Array(mergedHistory.prefix(Constants.visibleHistoryLimit))
     }
 
     private static func makeSuggestionState(

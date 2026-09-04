@@ -30,9 +30,25 @@ extension APIEndpoint {
     static let register = APIEndpoint(path: "api/auth/register", method: .post)
     static let resendEmailVerification = APIEndpoint(path: "api/auth/email-verification/resend", method: .post)
     static let startSearch = APIEndpoint(path: "api/search", method: .post, requiresAuthorization: true)
+    static let searchHistory = APIEndpoint(
+        path: "api/search/history",
+        method: .get,
+        headers: [.accept("application/json")],
+        requiresAuthorization: true
+    )
+    static let clearSearchHistory = APIEndpoint(
+        path: "api/search/history",
+        method: .delete,
+        headers: [.accept("application/json")],
+        requiresAuthorization: true
+    )
 
     static func searchPage(id: Int) -> APIEndpoint {
         APIEndpoint(path: "api/search/\(id)", method: .get, headers: [.accept("application/json")], requiresAuthorization: true)
+    }
+
+    static func deleteSearchHistoryItem(id: Int) -> APIEndpoint {
+        APIEndpoint(path: "api/search/\(id)", method: .delete, headers: [.accept("application/json")], requiresAuthorization: true)
     }
 
     static func confirmEmailVerification(token: String) -> APIEndpoint {

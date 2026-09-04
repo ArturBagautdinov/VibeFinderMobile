@@ -1,12 +1,19 @@
 import UIKit
 
 final class RecentVibesView: UIView {
-    private let recentVibes: [SearchViewModel.RecentVibe]
+    var onSeeAllSelected: (() -> Void)?
+    var onHistorySelected: ((SearchHistoryEntryDisplayModel) -> Void)?
 
-    init(recentVibes: [SearchViewModel.RecentVibe]) {
-        self.recentVibes = recentVibes
+    private let listStackView = UIStackView()
+    private let emptyView = SearchHistoryEmptyView()
+    private var rowViewsByID: [Int: SearchHistoryRowView] = [:]
+    private var preparedInsertionID: Int?
+    private var animatedInsertionIDs = Set<Int>()
+
+    init(history: [SearchHistoryEntryDisplayModel]) {
         super.init(frame: .zero)
         configure()
+        render(history)
     }
 
     required init?(coder: NSCoder) {
@@ -14,9 +21,15 @@ final class RecentVibesView: UIView {
     }
 
     private func configure() {
+        listStackView.axis = .vertical
+        listStackView.spacing = 16
+
+        emptyView.isHidden = true
+
         let stackView = UIStackView(arrangedSubviews: [
             makeHeader(),
-            makeList()
+            listStackView,
+            emptyView
         ])
         stackView.axis = .vertical
         stackView.spacing = 20
@@ -32,6 +45,52 @@ final class RecentVibesView: UIView {
         ])
     }
 
+    func render(
+        _ history: [SearchHistoryEntryDisplayModel],
+        pendingInsertionID: Int? = nil
+    ) {
+        listStackView.arrangedSubviews.forEach { view in
+            listStackView.removeArrangedSubview(view)
+            view.removeFromSuperview()
+        }
+        rowViewsByID.removeAll()
+        preparedInsertionID = pendingInsertionID
+
+        isHidden = false
+        emptyView.isHidden = !history.isEmpty
+
+        history.map { makeRow($0, pendingInsertionID: pendingInsertionID) }
+            .forEach(listStackView.addArrangedSubview)
+    }
+
+    func animatePendingInsertion(
+        after delay: TimeInterval,
+        completion: @escaping () -> Void
+    ) {
+        guard
+            let insertionID = preparedInsertionID,
+            !animatedInsertionIDs.contains(insertionID),
+            let row = rowViewsByID[insertionID]
+        else {
+            completion()
+            return
+        }
+
+        animatedInsertionIDs.insert(insertionID)
+        UIView.animate(
+            withDuration: 0.55,
+            delay: delay,
+            usingSpringWithDamping: 0.78,
+            initialSpringVelocity: 0.45,
+            options: [.curveEaseOut, .allowUserInteraction]
+        ) {
+            row.alpha = 1
+            row.transform = .identity
+        } completion: { _ in
+            completion()
+        }
+    }
+
     private func makeHeader() -> UIView {
         let titleLabel = UILabel()
         titleLabel.text = L10n.Search.Recent.title
@@ -43,6 +102,12 @@ final class RecentVibesView: UIView {
         seeAllButton.tintColor = AppTheme.Color.primary
         seeAllButton.titleLabel?.font = .preferredFont(forTextStyle: .headline)
         seeAllButton.accessibilityIdentifier = "search.seeAllButton"
+        seeAllButton.addAction(
+            UIAction { [weak self] _ in
+                self?.onSeeAllSelected?()
+            },
+            for: .touchUpInside
+        )
 
         let stackView = UIStackView(arrangedSubviews: [titleLabel, seeAllButton])
         stackView.axis = .horizontal
@@ -51,102 +116,20 @@ final class RecentVibesView: UIView {
         return stackView
     }
 
-    private func makeList() -> UIStackView {
-        let rows = recentVibes.map { vibe in
-            RecentVibeRowView(vibe: vibe)
+    private func makeRow(
+        _ history: SearchHistoryEntryDisplayModel,
+        pendingInsertionID: Int?
+    ) -> SearchHistoryRowView {
+        let row = SearchHistoryRowView(history: history)
+        rowViewsByID[history.id] = row
+        if pendingInsertionID == history.id, !animatedInsertionIDs.contains(history.id) {
+            row.alpha = 0
+            row.transform = CGAffineTransform(translationX: 0, y: -14)
+                .scaledBy(x: 0.96, y: 0.96)
         }
-        let stackView = UIStackView(arrangedSubviews: rows)
-        stackView.axis = .vertical
-        stackView.spacing = 16
-        return stackView
-    }
-}
-
-private final class RecentVibeRowView: UIView {
-    private let vibe: SearchViewModel.RecentVibe
-
-    init(vibe: SearchViewModel.RecentVibe) {
-        self.vibe = vibe
-        super.init(frame: .zero)
-        configure()
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    private func configure() {
-        backgroundColor = AppTheme.Color.surface.withAlphaComponent(0.7)
-        layer.cornerRadius = 20
-        layer.cornerCurve = .continuous
-        layer.borderWidth = 1
-        layer.borderColor = AppTheme.Color.border.cgColor
-
-        let clockContainer = makeClockContainer()
-        let textStack = makeTextStack()
-
-        let chevronView = UIImageView(image: UIImage(systemName: "chevron.right"))
-        chevronView.tintColor = AppTheme.Color.textSecondary
-        chevronView.contentMode = .scaleAspectFit
-        chevronView.widthAnchor.constraint(equalToConstant: 16).isActive = true
-
-        let rowStack = UIStackView(arrangedSubviews: [clockContainer, textStack, chevronView])
-        rowStack.axis = .horizontal
-        rowStack.alignment = .center
-        rowStack.spacing = 16
-        rowStack.translatesAutoresizingMaskIntoConstraints = false
-
-        addSubview(rowStack)
-
-        NSLayoutConstraint.activate([
-            rowStack.topAnchor.constraint(equalTo: topAnchor, constant: 16),
-            rowStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 22),
-            rowStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -18),
-            rowStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -16)
-        ])
-    }
-
-    private func makeClockContainer() -> UIView {
-        let container = UIView()
-        container.backgroundColor = AppTheme.Color.primary.withAlphaComponent(0.18)
-        container.layer.cornerRadius = 14
-        container.layer.cornerCurve = .continuous
-        container.translatesAutoresizingMaskIntoConstraints = false
-
-        let clockView = UIImageView(image: UIImage(systemName: "clock"))
-        clockView.tintColor = AppTheme.Color.primary
-        clockView.contentMode = .scaleAspectFit
-        clockView.translatesAutoresizingMaskIntoConstraints = false
-        container.addSubview(clockView)
-
-        NSLayoutConstraint.activate([
-            container.widthAnchor.constraint(equalToConstant: 48),
-            container.heightAnchor.constraint(equalToConstant: 48),
-            clockView.centerXAnchor.constraint(equalTo: container.centerXAnchor),
-            clockView.centerYAnchor.constraint(equalTo: container.centerYAnchor),
-            clockView.widthAnchor.constraint(equalToConstant: 18),
-            clockView.heightAnchor.constraint(equalToConstant: 18)
-        ])
-
-        return container
-    }
-
-    private func makeTextStack() -> UIStackView {
-        let titleLabel = UILabel()
-        titleLabel.text = vibe.title
-        titleLabel.font = .preferredFont(forTextStyle: .headline)
-        titleLabel.textColor = AppTheme.Color.textPrimary
-        titleLabel.numberOfLines = 1
-
-        let subtitleLabel = UILabel()
-        subtitleLabel.text = vibe.subtitle
-        subtitleLabel.font = .preferredFont(forTextStyle: .subheadline)
-        subtitleLabel.textColor = AppTheme.Color.textSecondary
-        subtitleLabel.numberOfLines = 1
-
-        let stackView = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
-        stackView.axis = .vertical
-        stackView.spacing = 4
-        return stackView
+        row.onSelected = { [weak self] in
+            self?.onHistorySelected?(history)
+        }
+        return row
     }
 }
