@@ -8,7 +8,9 @@ final class SearchLoadingView: UIView {
     private let subtitleLabel = UILabel()
     private let orbitLayer = CAShapeLayer()
     private let secondaryOrbitLayer = CAShapeLayer()
-
+    private var subtitleIndex = 0
+    private var subtitleTimer: Timer?
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         configure()
@@ -28,6 +30,7 @@ final class SearchLoadingView: UIView {
             startAnimating()
             animateContentAppearance()
             startIconBreathing()
+            startSubtitleRotation()
         }
 
         UIView.animate(
@@ -103,7 +106,7 @@ final class SearchLoadingView: UIView {
         iconContainer.layer.shadowRadius = 24
         iconContainer.layer.shadowOffset = CGSize(width: 0, height: 12)
 
-        orbitLayer.strokeColor = AppTheme.Color.secondaryAccent.withAlphaComponent(0.75).cgColor
+        orbitLayer.strokeColor = AppTheme.Color.primary.withAlphaComponent(0.75).cgColor
         orbitLayer.fillColor = UIColor.clear.cgColor
         orbitLayer.lineWidth = 2
         orbitLayer.lineCap = .round
@@ -115,14 +118,14 @@ final class SearchLoadingView: UIView {
         orbitLayer.shadowOffset = .zero
         iconContainer.layer.addSublayer(orbitLayer)
         
-        secondaryOrbitLayer.strokeColor = AppTheme.Color.secondaryAccent.withAlphaComponent(0.9).cgColor
+        secondaryOrbitLayer.strokeColor = AppTheme.Color.primary.withAlphaComponent(0.9).cgColor
         secondaryOrbitLayer.fillColor = UIColor.clear.cgColor
         secondaryOrbitLayer.lineWidth = 3.5
         secondaryOrbitLayer.lineCap = .round
         secondaryOrbitLayer.strokeStart = 0.25
         secondaryOrbitLayer.strokeEnd = 0.75
         secondaryOrbitLayer.shadowColor = AppTheme.Color.secondaryAccent.cgColor
-        secondaryOrbitLayer.shadowOpacity = 0.9
+        secondaryOrbitLayer.shadowOpacity = 0.7
         secondaryOrbitLayer.shadowRadius = 12
         secondaryOrbitLayer.shadowOffset = .zero
         iconContainer.layer.addSublayer(secondaryOrbitLayer)
@@ -158,7 +161,7 @@ final class SearchLoadingView: UIView {
 
     private func updateOrbitPath() {
         orbitLayer.frame = iconContainer.bounds
-        let rect = iconContainer.bounds.insetBy(dx: 9, dy: 9)
+        let rect = iconContainer.bounds.insetBy(dx: 5, dy: 5)
         orbitLayer.path = UIBezierPath(ovalIn: rect).cgPath
         
         secondaryOrbitLayer.frame = iconContainer.bounds
@@ -166,6 +169,10 @@ final class SearchLoadingView: UIView {
     }
 
     private func startAnimating() {
+        layoutIfNeeded()
+        iconContainer.layoutIfNeeded()
+        updateOrbitPath()
+        
         let pulse = CABasicAnimation(keyPath: "transform.scale")
         pulse.fromValue = 0.92
         pulse.toValue = 1.08
@@ -224,6 +231,31 @@ final class SearchLoadingView: UIView {
                 self.iconContainer.transform = CGAffineTransform(scaleX: 1.3, y: 1.3)
             }
     }
+    
+    private func startSubtitleRotation() {
+        
+        let subtitles = [
+            L10n.Search.Loading.subtitle,
+            L10n.Search.Loading.subtitleMood,
+            L10n.Search.Loading.subtitleSignals
+        ]
+        
+        subtitleTimer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
+            
+            guard let self else { return }
+            
+            self.subtitleIndex = (self.subtitleIndex + 1) % subtitles.count
+            
+            UIView.transition(
+                with: self.subtitleLabel,
+                duration: 0.28,
+                options: [.transitionCrossDissolve, .allowUserInteraction]
+            ) {
+                    self.subtitleLabel.text = subtitles[self.subtitleIndex]
+                }
+        }
+        
+    }
 
     private func stopAnimating() {
         glowView.layer.removeAnimation(forKey: "loading.pulse")
@@ -231,6 +263,11 @@ final class SearchLoadingView: UIView {
         secondaryOrbitLayer.removeAnimation(forKey: "loading.secondaryOrbit")
         iconView.layer.removeAllAnimations()
         iconView.transform = .identity
+        
+        subtitleTimer?.invalidate()
+        subtitleTimer = nil
+        subtitleIndex = 0
+        subtitleLabel.text = L10n.Search.Loading.subtitle
     }
 }
 

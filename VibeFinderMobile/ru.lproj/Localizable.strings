@@ -44,6 +44,8 @@
 "search.prompt.submit" = "Поиск";
 "search.prompt.title" = "Опишите настроение";
 "search.loading.subtitle" = "Настраиваем настроение, жанры и скрытые сигналы.";
+"search.loading.subtitleMood" = "Считываем оттенки твоего настроения.";
+"search.loading.subtitleSignals" = "Настраиваемся на скрытые жанровые сигналы.";
 "search.loading.title" = "Ищем ваш вайб";
 "search.recent.detective_series_subtitle" = "11 рекомендаций · 3 дня назад";
 "search.recent.detective_series_title" = "Темный детективный сериал с умным сценарием";
