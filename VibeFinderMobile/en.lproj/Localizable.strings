@@ -96,3 +96,28 @@
 "search.results.title" = "Your matches";
 "search.title" = "What are you in the mood for?";
 "search.validation.empty_query" = "Describe what you are in the mood for.";
+
+"tab.search" = "Search";
+"tab.profile" = "Profile";
+
+"profile.verified" = "Email verified";
+"profile.notVerified" = "Email not verified";
+"profile.tasteTitle" = "Taste profile";
+
+"profile.stats.completed" = "Completed";
+"profile.stats.inProgress" = "In progress";
+"profile.stats.hidden" = "Hidden";
+
+"profile.section.genres" = "Genres";
+"profile.section.themes" = "Themes";
+"profile.section.atmospheres" = "Atmospheres";
+"profile.section.settings" = "Settings";
+"profile.section.disliked" = "Avoids";
+
+"profile.logout.title" = "Log out?";
+"profile.logout.message" = "You will need to sign in again to use VibeFinder.";
+"profile.logout.action" = "Log out";
+
+"profile.summaryTitle" = "Your vibe summary";
+
+"common.retry" = "Retry";

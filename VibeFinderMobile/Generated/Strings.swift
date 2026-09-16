@@ -95,6 +95,8 @@ internal enum L10n {
     internal static let cancel = L10n.tr("Localizable", "common.cancel", fallback: "Cancel")
     /// OK
     internal static let ok = L10n.tr("Localizable", "common.ok", fallback: "OK")
+    /// Retry
+    internal static let retry = L10n.tr("Localizable", "common.retry", fallback: "Retry")
   }
   internal enum Error {
     /// We could not read the server response.
@@ -114,6 +116,44 @@ internal enum L10n {
     /// Welcome, %@.
     internal static func welcome(_ p1: Any) -> String {
       return L10n.tr("Localizable", "home.welcome", String(describing: p1), fallback: "Welcome, %@.")
+    }
+  }
+  internal enum Profile {
+    /// Email not verified
+    internal static let notVerified = L10n.tr("Localizable", "profile.notVerified", fallback: "Email not verified")
+    /// Your vibe summary
+    internal static let summaryTitle = L10n.tr("Localizable", "profile.summaryTitle", fallback: "Your vibe summary")
+    /// Taste profile
+    internal static let tasteTitle = L10n.tr("Localizable", "profile.tasteTitle", fallback: "Taste profile")
+    /// Email verified
+    internal static let verified = L10n.tr("Localizable", "profile.verified", fallback: "Email verified")
+    internal enum Logout {
+      /// Log out
+      internal static let action = L10n.tr("Localizable", "profile.logout.action", fallback: "Log out")
+      /// You will need to sign in again to use VibeFinder.
+      internal static let message = L10n.tr("Localizable", "profile.logout.message", fallback: "You will need to sign in again to use VibeFinder.")
+      /// Log out?
+      internal static let title = L10n.tr("Localizable", "profile.logout.title", fallback: "Log out?")
+    }
+    internal enum Section {
+      /// Atmospheres
+      internal static let atmospheres = L10n.tr("Localizable", "profile.section.atmospheres", fallback: "Atmospheres")
+      /// Avoids
+      internal static let disliked = L10n.tr("Localizable", "profile.section.disliked", fallback: "Avoids")
+      /// Genres
+      internal static let genres = L10n.tr("Localizable", "profile.section.genres", fallback: "Genres")
+      /// Settings
+      internal static let settings = L10n.tr("Localizable", "profile.section.settings", fallback: "Settings")
+      /// Themes
+      internal static let themes = L10n.tr("Localizable", "profile.section.themes", fallback: "Themes")
+    }
+    internal enum Stats {
+      /// Completed
+      internal static let completed = L10n.tr("Localizable", "profile.stats.completed", fallback: "Completed")
+      /// Hidden
+      internal static let hidden = L10n.tr("Localizable", "profile.stats.hidden", fallback: "Hidden")
+      /// In progress
+      internal static let inProgress = L10n.tr("Localizable", "profile.stats.inProgress", fallback: "In progress")
     }
   }
   internal enum Search {
@@ -255,6 +295,12 @@ internal enum L10n {
       /// Describe what you are in the mood for.
       internal static let emptyQuery = L10n.tr("Localizable", "search.validation.empty_query", fallback: "Describe what you are in the mood for.")
     }
+  }
+  internal enum Tab {
+    /// Profile
+    internal static let profile = L10n.tr("Localizable", "tab.profile", fallback: "Profile")
+    /// Search
+    internal static let search = L10n.tr("Localizable", "tab.search", fallback: "Search")
   }
 }
 // swiftlint:enable explicit_type_interface function_parameter_count identifier_name line_length

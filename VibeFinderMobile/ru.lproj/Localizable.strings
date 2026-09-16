@@ -96,3 +96,28 @@
 "search.results.title" = "Ваши совпадения";
 "search.title" = "Что вам сейчас по настроению?";
 "search.validation.empty_query" = "Опишите, что вам сейчас по настроению.";
+
+"tab.search" = "Поиск";
+"tab.profile" = "Профиль";
+
+"profile.verified" = "Почта подтверждена";
+"profile.notVerified" = "Почта не подтверждена";
+"profile.tasteTitle" = "Профиль вкусов";
+
+"profile.stats.completed" = "Завершено";
+"profile.stats.inProgress" = "В процессе";
+"profile.stats.hidden" = "Скрыто";
+
+"profile.section.genres" = "Жанры";
+"profile.section.themes" = "Темы";
+"profile.section.atmospheres" = "Атмосфера";
+"profile.section.settings" = "Места";
+"profile.section.disliked" = "Не нравится";
+
+"profile.logout.title" = "Выйти?";
+"profile.logout.message" = "Чтобы снова пользоваться VibeFinder, нужно будет войти.";
+"profile.logout.action" = "Выйти";
+
+"profile.summaryTitle" = "Твое описание вайба";
+
+"common.retry" = "Повторить";

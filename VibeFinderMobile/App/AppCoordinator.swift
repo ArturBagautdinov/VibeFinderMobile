@@ -11,6 +11,7 @@ final class AppCoordinator: Coordinator {
     private let navigationController = UINavigationController()
     private var childCoordinator: Coordinator?
     private var searchCoordinator: SearchCoordinator?
+    private var mainTabBarCoordinator: MainTabBarCoordinator?
 
     init(window: UIWindow, container: Container) {
         self.window = window
@@ -44,7 +45,7 @@ final class AppCoordinator: Coordinator {
             container: container
         )
         authCoordinator.onAuthenticated = { [weak self] username in
-            self?.showSearch(username: username)
+            self?.showMain(username: username)
         }
         childCoordinator = authCoordinator
         authCoordinator.start()
@@ -57,23 +58,29 @@ final class AppCoordinator: Coordinator {
                 switch result {
                 case let .success(session):
                     let username = session.displayName.isEmpty ? session.username : session.displayName
-                    self?.showSearch(username: username)
+                    self?.showMain(username: username)
                 case .failure:
                     self?.showAuthFlow()
                 }
             }
         }
     }
-
-    private func showSearch(username: String) {
+    
+    private func showMain(username: String) {
         navigationController.setNavigationBarHidden(true, animated: true)
         childCoordinator = nil
-        let searchCoordinator = SearchCoordinator(
+        
+        let coordinator = MainTabBarCoordinator(
             navigationController: navigationController,
             container: container,
-            username: username
-        )
-        self.searchCoordinator = searchCoordinator
-        searchCoordinator.start()
+            username: username)
+        
+        coordinator.onLogout = { [weak self] in
+            self?.mainTabBarCoordinator = nil
+            self?.showAuthFlow()
+        }
+        
+        mainTabBarCoordinator = coordinator
+        mainTabBarCoordinator?.start()
     }
 }
