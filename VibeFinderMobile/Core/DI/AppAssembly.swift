@@ -94,5 +94,20 @@ final class AppAssembly: Assembly {
                 suggestionsStore: resolver.resolve(SearchSuggestionsStoreProtocol.self)!
             )
         }
+        
+        container.register(ProfileRepositoryProtocol.self) { resolver in
+            ProfileRepository(apiClient: resolver.resolve(APIClientProtocol.self)!,
+                              authRepository: resolver.resolve(AuthRepositoryProtocol.self)!
+            )
+            
+        }
+        .inObjectScope(.container)
+        
+        container.register(ProfileViewModel.self) { resolver in
+            ProfileViewModel(
+                profileRepository: resolver.resolve(ProfileRepositoryProtocol.self)!
+            )
+        }
+        .inObjectScope(.container)
     }
 }
