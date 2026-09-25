@@ -18,10 +18,17 @@ struct UserProfileResponse: Decodable {
     let firstName: String
     let lastName: String
     let displayName: String
-    let avatarUrl: URL?
+    let avatar: AvatarResponse?
     let emailVerified: Bool
     let pendingEmail: String?
     let createdAt: String
+}
+
+struct AvatarResponse: Decodable {
+    let style: String
+    let symbol: String?
+    let backgroundColor: String?
+    let foregroundColor: String?
 }
 
 struct TasteProfileResponse: Decodable {
@@ -46,7 +53,7 @@ extension ProfileResponse {
                 firstName: profile.firstName,
                 lastName: profile.lastName,
                 displayName: profile.displayName,
-                avatarUrl: profile.avatarUrl,
+                avatar: profile.avatar?.toDomain(),
                 emailVerified: profile.emailVerified,
                 pendingEmail: profile.pendingEmail,
                 createdAt: profile.createdAt
@@ -63,6 +70,25 @@ extension ProfileResponse {
                 inProgressCount: tasteProfile.inProgressCount,
                 hiddenCount: tasteProfile.hiddenCount
             )
+        )
+    }
+}
+
+private extension AvatarResponse {
+    func toDomain() -> ProfileAvatar? {
+        guard let style = ProfileAvatarStyle(rawValue: style) else {
+            return nil
+        }
+
+        guard style != .none else {
+            return nil
+        }
+
+        return ProfileAvatar(
+            style: style,
+            symbol: symbol,
+            backgroundHex: backgroundColor,
+            foregroundHex: foregroundColor
         )
     }
 }

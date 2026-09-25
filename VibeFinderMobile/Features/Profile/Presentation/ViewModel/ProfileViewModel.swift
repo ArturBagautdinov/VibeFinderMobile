@@ -96,6 +96,7 @@ final class ProfileViewModel {
         
         return ProfileDisplayModel(
             initials: makeInitials(from: profile),
+            avatar: profile.avatar,
             displayName: fullName.isEmpty ? profile.displayName : fullName,
             username: "@\(profile.username)",
             email: profile.email,

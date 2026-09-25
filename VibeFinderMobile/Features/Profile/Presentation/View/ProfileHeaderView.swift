@@ -23,23 +23,9 @@ final class ProfileHeaderView: UIView {
     
     private func configure(_ profile: ProfileDisplayModel) {
         
-        let avatarLabel = UILabel()
-        avatarLabel.text = profile.initials
-        avatarLabel.font = .systemFont(ofSize: 28, weight: .black)
-        avatarLabel.textColor = AppTheme.Color.textPrimary
-        avatarLabel.textAlignment = .center
-        
-        let avatarView = UIView()
-        avatarView.backgroundColor = AppTheme.Color.secondaryAccent.withAlphaComponent(0.8)
-        avatarView.layer.cornerRadius = 34
-        avatarView.layer.cornerCurve = .continuous
-        avatarView.addSubview(avatarLabel)
-        avatarView.layer.borderColor = AppTheme.Color.border.cgColor
-        avatarView.layer.borderWidth = 4
-        
-        
+        let avatarView = ProfileAvatarView()
+        avatarView.render(avatar: profile.avatar, initials: profile.initials)
         avatarView.translatesAutoresizingMaskIntoConstraints = false
-        avatarLabel.translatesAutoresizingMaskIntoConstraints = false
         
         let nameLabel = UILabel()
         nameLabel.text = profile.displayName
@@ -98,9 +84,6 @@ final class ProfileHeaderView: UIView {
         NSLayoutConstraint.activate([
             avatarView.widthAnchor.constraint(equalToConstant: 68),
             avatarView.heightAnchor.constraint(equalTo: avatarView.widthAnchor),
-            
-            avatarLabel.centerXAnchor.constraint(equalTo: avatarView.centerXAnchor),
-            avatarView.centerYAnchor.constraint(equalTo: avatarLabel.centerYAnchor),
             
             rootStack.topAnchor.constraint(equalTo: topAnchor),
             rootStack.leadingAnchor.constraint(equalTo: leadingAnchor),

@@ -13,7 +13,7 @@ struct UserProfile: Equatable {
     let firstName: String
     let lastName: String
     let displayName: String
-    let avatarUrl: URL?
+    let avatar: ProfileAvatar?
     let emailVerified: Bool
     let pendingEmail: String?
     let createdAt: String

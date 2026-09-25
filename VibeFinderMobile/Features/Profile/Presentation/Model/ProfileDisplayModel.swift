@@ -9,6 +9,7 @@ import Foundation
 
 struct ProfileDisplayModel {
     let initials: String
+    let avatar: ProfileAvatar?
     let displayName: String
     let username: String
     let email: String
