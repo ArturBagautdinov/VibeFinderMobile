@@ -3,8 +3,8 @@ import UIKit
 final class EditProfileViewController: UIViewController {
     private let viewModel: EditProfileViewModel
     private lazy var editView = EditProfileView(
-        symbols: viewModel.availableSymbols,
-        colors: viewModel.availableColors
+        symbols: EditProfileAvatarSymbols.names,
+        colors: EditProfileAvatarColors.hexValues
     )
     private var wasPopGestureEnabled = true
 

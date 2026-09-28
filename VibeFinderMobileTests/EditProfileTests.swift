@@ -1,9 +1,28 @@
 import Foundation
 import Testing
+import UIKit
 @testable import VibeFinderMobile
 
 @Suite(.serialized)
 struct EditProfileTests {
+    @Test
+    @MainActor
+    func avatarChoicesAreRenderable() {
+        let symbols = EditProfileAvatarSymbols.names
+        let colors = EditProfileAvatarColors.hexValues
+
+        #expect(symbols.count == 32)
+        #expect(colors.count == 20)
+        #expect(Set(symbols).count == symbols.count)
+        #expect(Set(colors).count == colors.count)
+        for symbol in symbols {
+            #expect(UIImage(systemName: symbol) != nil)
+        }
+        for color in colors {
+            #expect(UIColor(hex: color) != nil)
+        }
+    }
+
     @Test
     @MainActor
     func avatarRequestFollowsContract() throws {

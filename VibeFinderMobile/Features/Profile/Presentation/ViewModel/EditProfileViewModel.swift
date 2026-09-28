@@ -36,16 +36,6 @@ final class EditProfileViewModel {
         }
     }
 
-    let availableSymbols = [
-        "sparkles", "gamecontroller.fill", "music.note", "book.fill",
-        "film.fill", "star.fill", "heart.fill", "bolt.fill",
-        "moon.stars.fill", "leaf.fill", "flame.fill", "paintpalette.fill"
-    ]
-    let availableColors = [
-        "#4F46E5", "#7C3AED", "#DB2777", "#E11D48", "#EA580C",
-        "#EAB308", "#22C55E", "#0D9488", "#0284C7", "#334155"
-    ]
-
     private let repository: ProfileRepositoryProtocol
     private(set) var state: State
     var onStateChange: ((State) -> Void)?

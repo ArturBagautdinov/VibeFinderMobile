@@ -21,15 +21,15 @@ final class EditProfileColorPickerView: UIView {
             let row = UIStackView()
             row.axis = .horizontal
             row.distribution = .equalSpacing
-            row.spacing = 10
+            row.spacing = 8
             for hex in colors[group..<min(group + 5, colors.count)] {
                 let button = UIButton(type: .system)
                 button.backgroundColor = UIColor(hex: hex)
-                button.layer.cornerRadius = 20
+                button.layer.cornerRadius = 22
                 button.layer.cornerCurve = .continuous
                 button.layer.borderColor = AppTheme.Color.textPrimary.cgColor
-                button.widthAnchor.constraint(equalToConstant: 40).isActive = true
-                button.heightAnchor.constraint(equalToConstant: 40).isActive = true
+                button.widthAnchor.constraint(equalToConstant: 44).isActive = true
+                button.heightAnchor.constraint(equalToConstant: 44).isActive = true
                 button.accessibilityLabel = hex
                 button.accessibilityIdentifier = "profile.edit.color.\(hex)"
                 button.addAction(UIAction { [weak self] _ in self?.onSelect?(hex) }, for: .touchUpInside)
