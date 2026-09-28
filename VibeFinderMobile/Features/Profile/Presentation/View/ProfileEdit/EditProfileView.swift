@@ -20,10 +20,22 @@ final class EditProfileView: UIView {
         accessibilityIdentifier = "profile.edit.screen"
 
         let backButton = UIButton(type: .system)
-        backButton.setImage(UIImage(systemName: "chevron.left"), for: .normal)
-        backButton.tintColor = AppTheme.Color.textPrimary
-        backButton.accessibilityLabel = L10n.Common.cancel
-        backButton.widthAnchor.constraint(equalToConstant: 44).isActive = true
+        var backConfiguration = UIButton.Configuration.filled()
+        backConfiguration.image = UIImage(systemName: "chevron.left")
+        backConfiguration.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(
+            pointSize: 17,
+            weight: .bold
+        )
+        backConfiguration.baseBackgroundColor = AppTheme.Color.surface
+        backConfiguration.baseForegroundColor = AppTheme.Color.primary
+        backConfiguration.cornerStyle = .capsule
+        backButton.configuration = backConfiguration
+        backButton.layer.borderWidth = 1
+        backButton.layer.borderColor = AppTheme.Color.border.cgColor
+        backButton.accessibilityLabel = L10n.Common.back
+        backButton.accessibilityIdentifier = "profile.edit.backButton"
+        backButton.widthAnchor.constraint(equalToConstant: 42).isActive = true
+        backButton.heightAnchor.constraint(equalTo: backButton.widthAnchor).isActive = true
         backButton.addAction(UIAction { [weak self] _ in self?.onBack?() }, for: .touchUpInside)
         let title = UILabel()
         title.text = L10n.Profile.Edit.title
@@ -31,7 +43,7 @@ final class EditProfileView: UIView {
         title.textColor = AppTheme.Color.textPrimary
         title.textAlignment = .center
         let spacer = UIView()
-        spacer.widthAnchor.constraint(equalToConstant: 44).isActive = true
+        spacer.widthAnchor.constraint(equalToConstant: 42).isActive = true
         let header = UIStackView(arrangedSubviews: [backButton, title, spacer])
         header.axis = .horizontal
         header.alignment = .center
@@ -58,9 +70,9 @@ final class EditProfileView: UIView {
 
         NSLayoutConstraint.activate([
             header.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 8),
-            header.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
-            header.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
-            header.heightAnchor.constraint(equalToConstant: 44),
+            header.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
+            header.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
+            header.heightAnchor.constraint(equalToConstant: 42),
 
             scroll.topAnchor.constraint(equalTo: header.bottomAnchor, constant: 12),
             scroll.leadingAnchor.constraint(equalTo: leadingAnchor),
