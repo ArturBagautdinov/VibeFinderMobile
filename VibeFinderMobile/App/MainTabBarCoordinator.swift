@@ -48,6 +48,9 @@ final class MainTabBarCoordinator: Coordinator {
         profileCoordinator.onLogout = { [weak self] in
             self?.onLogout?()
         }
+        profileCoordinator.onAppearanceChanged = { [weak self] avatar, initials in
+            self?.searchCoordinator?.updateProfileAppearance(avatar: avatar, initials: initials)
+        }
         
         self.searchCoordinator = searchCoordinator
         self.profileCoordinator = profileCoordinator

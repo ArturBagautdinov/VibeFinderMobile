@@ -22,10 +22,16 @@ final class ProfileViewModel {
     var editableProfile: UserProfile? { currentPage?.profile }
     
     var onStateChange: ((State) -> Void)?
+    var onProfileChanged: ((UserProfile) -> Void)?
     var onLogout: (() -> Void)?
     
     init (profileRepository: ProfileRepositoryProtocol) {
         self.profileRepository = profileRepository
+    }
+
+    func loadProfileIfNeeded() {
+        guard currentPage == nil, !state.isLoading else { return }
+        loadProfile()
     }
     
     func loadProfile() {
@@ -43,6 +49,7 @@ final class ProfileViewModel {
                         isLoading: false,
                         errorMessage: nil
                     )
+                    self?.onProfileChanged?(page.profile)
                 case let .failure(error):
                     guard let self else { return }
                     self.setState(
@@ -66,6 +73,7 @@ final class ProfileViewModel {
             errorMessage: nil
         )
         onStateChange?(state)
+        onProfileChanged?(profile)
     }
 
     func logout() {
@@ -109,7 +117,7 @@ final class ProfileViewModel {
             .joined(separator: " ")
         
         return ProfileDisplayModel(
-            initials: makeInitials(from: profile),
+            initials: profile.initials,
             avatar: profile.avatar,
             displayName: fullName.isEmpty ? profile.displayName : fullName,
             username: "@\(profile.username)",
@@ -132,9 +140,4 @@ final class ProfileViewModel {
         
     }
     
-    private static func makeInitials(from profile: UserProfile) -> String {
-        let source = [profile.firstName, profile.lastName].filter { !$0.isEmpty }
-        let initials = source.compactMap(\.first).map(String.init).joined()
-        return initials.isEmpty ? String(profile.username.prefix(1)).uppercased() : initials.uppercased()
-    }
 }

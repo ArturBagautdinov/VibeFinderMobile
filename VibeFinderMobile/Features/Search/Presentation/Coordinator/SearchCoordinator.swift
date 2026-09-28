@@ -5,6 +5,7 @@ final class SearchCoordinator: Coordinator {
     private let navigationController: UINavigationController
     private let container: Container
     private let username: String
+    private weak var searchViewModel: SearchViewModel?
 
     init(
         navigationController: UINavigationController,
@@ -18,6 +19,7 @@ final class SearchCoordinator: Coordinator {
 
     func start() {
         let viewModel = container.resolve(SearchViewModel.self, argument: username)!
+        searchViewModel = viewModel
         let viewController = SearchViewController(viewModel: viewModel)
         viewController.onResultsReady = { [weak self] page in
             self?.showResults(page)
@@ -40,6 +42,10 @@ final class SearchCoordinator: Coordinator {
             self?.showHistory()
         }
         navigationController.setViewControllers([viewController], animated: true)
+    }
+
+    func updateProfileAppearance(avatar: ProfileAvatar?, initials: String) {
+        searchViewModel?.updateProfileAppearance(avatar: avatar, initials: initials)
     }
 
     private func showResults(_ page: SearchPage) {

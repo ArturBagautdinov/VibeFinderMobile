@@ -108,7 +108,6 @@ final class AppAssembly: Assembly {
                 profileRepository: resolver.resolve(ProfileRepositoryProtocol.self)!
             )
         }
-        .inObjectScope(.container)
 
         container.register(EditProfileViewModel.self) { resolver, profile in
             EditProfileViewModel(

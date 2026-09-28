@@ -34,7 +34,7 @@ final class ProfileViewController: UIViewController {
         bind()
         configureActions()
         configureNavigation()
-        viewModel.loadProfile()
+        viewModel.loadProfileIfNeeded()
     }
     
     private func bind() {

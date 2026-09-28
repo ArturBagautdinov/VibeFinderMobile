@@ -107,6 +107,62 @@ struct EditProfileTests {
         }
     }
 
+    @Test
+    @MainActor
+    func profilePublishesAppearanceAfterLoadAndSave() async {
+        let repository = EditProfileRepositorySpy()
+        let original = profileFixture(avatar: nil)
+        repository.loadPage = ProfilePage(
+            profile: original,
+            tasteProfile: TasteProfile(
+                profileSummary: "",
+                preferredPace: "",
+                favoriteGenres: [],
+                favoriteThemes: [],
+                favoriteAtmospheres: [],
+                favoriteSettings: [],
+                dislikedElements: [],
+                completedCount: 0,
+                inProgressCount: 0,
+                hiddenCount: 0
+            )
+        )
+        let viewModel = ProfileViewModel(profileRepository: repository)
+        var observedProfiles: [UserProfile] = []
+        viewModel.onProfileChanged = { observedProfiles.append($0) }
+
+        viewModel.loadProfileIfNeeded()
+        viewModel.loadProfileIfNeeded()
+        await Task.yield()
+        await Task.yield()
+
+        #expect(repository.loadCallCount == 1)
+        #expect(observedProfiles == [original])
+
+        let avatar = ProfileAvatar(
+            style: .symbol,
+            symbol: "star.fill",
+            backgroundHex: "#4F46E5",
+            foregroundHex: "#FFFFFF"
+        )
+        let updated = UserProfile(
+            email: original.email,
+            username: original.username,
+            firstName: "New",
+            lastName: "Name",
+            displayName: "New Name",
+            avatar: avatar,
+            emailVerified: original.emailVerified,
+            pendingEmail: original.pendingEmail,
+            createdAt: original.createdAt
+        )
+        viewModel.applyUpdatedProfile(updated)
+
+        #expect(observedProfiles == [original, updated])
+        #expect(viewModel.state.profile?.avatar == avatar)
+        #expect(updated.initials == "NN")
+    }
+
     @MainActor
     private func json(for change: ProfileAvatarChange) throws -> [String: Any] {
         let update = ProfileUpdate(firstName: "Artur", lastName: "Bagautdinov", avatarChange: change)
@@ -132,8 +188,13 @@ struct EditProfileTests {
 
 private final class EditProfileRepositorySpy: ProfileRepositoryProtocol {
     var lastUpdate: ProfileUpdate?
+    var loadPage: ProfilePage?
+    private(set) var loadCallCount = 0
 
-    func loadProfile(completion: @escaping (Result<ProfilePage, APIError>) -> Void) {}
+    func loadProfile(completion: @escaping (Result<ProfilePage, APIError>) -> Void) {
+        loadCallCount += 1
+        if let loadPage { completion(.success(loadPage)) }
+    }
     func logout(completion: @escaping (Result<Void, APIError>) -> Void) {}
     func updateProfile(
         _ update: ProfileUpdate,

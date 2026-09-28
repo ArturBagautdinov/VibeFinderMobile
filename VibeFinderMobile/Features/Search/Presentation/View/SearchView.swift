@@ -17,6 +17,7 @@ final class SearchView: UIView {
     }
 
     private let state: SearchViewModel.State
+    private let headerView: SearchHeaderView
     private let promptCardView = SearchPromptCardView()
     private lazy var suggestionsView = SearchSuggestionsView(
         suggestions: state.visibleSuggestions,
@@ -29,6 +30,7 @@ final class SearchView: UIView {
 
     init(state: SearchViewModel.State) {
         self.state = state
+        headerView = SearchHeaderView(username: state.username)
         super.init(frame: .zero)
         configure()
     }
@@ -70,7 +72,7 @@ final class SearchView: UIView {
 
         let titleLabel = makeTitleLabel()
         let contentStack = UIStackView(arrangedSubviews: [
-            SearchHeaderView(username: state.username),
+            headerView,
             titleLabel,
             promptCardView,
             statusView,
@@ -120,6 +122,7 @@ final class SearchView: UIView {
     }
 
     func render(_ state: SearchViewModel.State) {
+        headerView.render(avatar: state.avatar, initials: state.avatarInitials)
         promptCardView.setLoading(state.isLoading)
         statusView.setMessage(state.errorMessage)
         suggestionsView.render(

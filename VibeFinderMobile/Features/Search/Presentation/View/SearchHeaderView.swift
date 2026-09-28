@@ -1,6 +1,8 @@
 import UIKit
 
 final class SearchHeaderView: UIView {
+    private let avatarView = ProfileAvatarView()
+
     init(username: String) {
         super.init(frame: .zero)
         configure(username: username)
@@ -10,27 +12,24 @@ final class SearchHeaderView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    func render(avatar: ProfileAvatar?, initials: String) {
+        avatarView.render(avatar: avatar, initials: initials)
+    }
+
     private func configure(username: String) {
         let brandTitleView = makeBrandTitleView()
 
-        let avatarLabel = UILabel()
-        avatarLabel.text = String(username.prefix(1)).uppercased()
-        avatarLabel.font = .systemFont(ofSize: 17, weight: .black)
-        avatarLabel.textColor = .white
-        avatarLabel.textAlignment = .center
-        avatarLabel.backgroundColor = AppTheme.Color.secondaryAccent
-        avatarLabel.layer.cornerRadius = 18
-        avatarLabel.layer.cornerCurve = .continuous
-        avatarLabel.clipsToBounds = true
-        avatarLabel.accessibilityIdentifier = "search.avatar"
-        avatarLabel.translatesAutoresizingMaskIntoConstraints = false
+        avatarView.useCompactAppearance()
+        avatarView.render(avatar: nil, initials: String(username.prefix(1)).uppercased())
+        avatarView.accessibilityIdentifier = "search.avatar"
+        avatarView.translatesAutoresizingMaskIntoConstraints = false
 
         let avatarContainer = UIView()
         avatarContainer.backgroundColor = AppTheme.Color.primary.withAlphaComponent(0.18)
         avatarContainer.layer.cornerRadius = 23
         avatarContainer.layer.cornerCurve = .continuous
         avatarContainer.translatesAutoresizingMaskIntoConstraints = false
-        avatarContainer.addSubview(avatarLabel)
+        avatarContainer.addSubview(avatarView)
 
         let stackView = UIStackView(arrangedSubviews: [brandTitleView, avatarContainer])
         stackView.axis = .horizontal
@@ -43,10 +42,10 @@ final class SearchHeaderView: UIView {
         NSLayoutConstraint.activate([
             avatarContainer.widthAnchor.constraint(equalToConstant: 46),
             avatarContainer.heightAnchor.constraint(equalToConstant: 46),
-            avatarLabel.widthAnchor.constraint(equalToConstant: 36),
-            avatarLabel.heightAnchor.constraint(equalToConstant: 36),
-            avatarLabel.centerXAnchor.constraint(equalTo: avatarContainer.centerXAnchor),
-            avatarLabel.centerYAnchor.constraint(equalTo: avatarContainer.centerYAnchor),
+            avatarView.widthAnchor.constraint(equalToConstant: 36),
+            avatarView.heightAnchor.constraint(equalToConstant: 36),
+            avatarView.centerXAnchor.constraint(equalTo: avatarContainer.centerXAnchor),
+            avatarView.centerYAnchor.constraint(equalTo: avatarContainer.centerYAnchor),
 
             stackView.topAnchor.constraint(equalTo: topAnchor),
             stackView.leadingAnchor.constraint(equalTo: leadingAnchor),

@@ -46,6 +46,15 @@ final class ProfileAvatarView: UIView {
         }
     }
 
+    func useCompactAppearance() {
+        layer.borderWidth = 0
+        imageView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(
+            pointSize: 18,
+            weight: .bold
+        )
+        initialsLabel.font = .systemFont(ofSize: 17, weight: .black)
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
         layer.cornerRadius = min(bounds.width, bounds.height) / 2

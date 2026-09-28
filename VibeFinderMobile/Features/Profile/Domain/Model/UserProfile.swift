@@ -17,4 +17,13 @@ struct UserProfile: Equatable {
     let emailVerified: Bool
     let pendingEmail: String?
     let createdAt: String
+
+    var initials: String {
+        let value = [firstName, lastName]
+            .filter { !$0.isEmpty }
+            .compactMap(\.first)
+            .map(String.init)
+            .joined()
+        return value.isEmpty ? String(username.prefix(1)).uppercased() : value.uppercased()
+    }
 }
