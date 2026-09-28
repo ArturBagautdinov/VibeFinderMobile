@@ -34,7 +34,7 @@ final class AuthTextField: UITextField {
         )
         layer.cornerRadius = 24
         layer.cornerCurve = .continuous
-        layer.borderColor = AppTheme.Color.border.cgColor
+        layer.borderColor = AppTheme.Color.primary.withAlphaComponent(0.5).cgColor
         layer.borderWidth = 1
         heightAnchor.constraint(equalToConstant: 52).isActive = true
         leftView = UIView(frame: CGRect(x: 0, y: 0, width: 24, height: 1))

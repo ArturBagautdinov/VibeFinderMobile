@@ -31,6 +31,20 @@ final class ProfileCoordinator: Coordinator {
         viewController.onLogout = { [weak self] in
             self?.onLogout?()
         }
+        viewController.onEditProfileSelected = { [weak self, weak viewController] profile in
+            guard let self, let viewController else { return }
+            let editor = EditProfileViewController(
+                viewModel: self.container.resolve(EditProfileViewModel.self, argument: profile)!
+            )
+            editor.onClose = { [weak self] in
+                self?.navigationController.popViewController(animated: true)
+            }
+            editor.onSaved = { [weak self, weak viewController] updatedProfile in
+                viewController?.applyUpdatedProfile(updatedProfile)
+                self?.navigationController.popViewController(animated: true)
+            }
+            self.navigationController.pushViewController(editor, animated: true)
+        }
         navigationController.setViewControllers([viewController], animated: true)
     }
 }

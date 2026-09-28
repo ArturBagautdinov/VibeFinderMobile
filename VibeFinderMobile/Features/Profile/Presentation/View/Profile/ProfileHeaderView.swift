@@ -75,7 +75,7 @@ final class ProfileHeaderView: UIView {
         rootStack.layer.shadowColor = AppTheme.Color.primary.cgColor
         rootStack.layer.shadowOpacity = 0.18
         rootStack.layer.shadowRadius = 4
-        rootStack.layer.shadowOffset = CGSize(width: 6, height: 6)
+        rootStack.layer.shadowOffset = CGSize(width: 3, height: 3)
         
         rootStack.translatesAutoresizingMaskIntoConstraints = false
         

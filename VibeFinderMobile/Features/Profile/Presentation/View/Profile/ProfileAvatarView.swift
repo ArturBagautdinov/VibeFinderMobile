@@ -14,9 +14,9 @@ final class ProfileAvatarView: UIView {
     }
 
     func render(avatar: ProfileAvatar?, initials: String) {
-        let backgroundColor = avatar?.backgroundHex.flatMap(UIColor.init(hex:))
+        let backgroundColor = UIColor(hex: avatar?.backgroundHex ?? "")
             ?? AppTheme.Color.secondaryAccent
-        let foregroundColor = avatar?.foregroundHex.flatMap(UIColor.init(hex:))
+        let foregroundColor = UIColor(hex: avatar?.foregroundHex ?? "")
             ?? (avatar == nil ? AppTheme.Color.textPrimary : .white)
 
         self.backgroundColor = backgroundColor

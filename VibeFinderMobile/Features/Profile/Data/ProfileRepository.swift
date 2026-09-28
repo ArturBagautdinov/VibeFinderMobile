@@ -31,4 +31,16 @@ final class ProfileRepository: ProfileRepositoryProtocol {
         authRepository.logout(completion: completion)
     }
     
+    func updateProfile(
+        _ update: ProfileUpdate,
+        completion: @escaping (Result<UserProfile, APIError>) -> Void
+    ) {
+        apiClient.request(
+            .updateProfile,
+            body: ProfileUpdateRequest(update: update)
+        ) { (result: Result<UserProfileResponse, APIError>) in
+            completion(result.map { $0.toDomain() })
+        }
+    }
+
 }

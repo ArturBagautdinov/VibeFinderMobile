@@ -47,17 +47,7 @@ struct TasteProfileResponse: Decodable {
 extension ProfileResponse {
     func toDomain() -> ProfilePage {
         ProfilePage(
-            profile: UserProfile(
-                email: profile.email,
-                username: profile.username,
-                firstName: profile.firstName,
-                lastName: profile.lastName,
-                displayName: profile.displayName,
-                avatar: profile.avatar?.toDomain(),
-                emailVerified: profile.emailVerified,
-                pendingEmail: profile.pendingEmail,
-                createdAt: profile.createdAt
-            ),
+            profile: profile.toDomain(),
             tasteProfile: TasteProfile(
                 profileSummary: tasteProfile.profileSummary,
                 preferredPace: tasteProfile.preferredPace,
@@ -89,6 +79,22 @@ private extension AvatarResponse {
             symbol: symbol,
             backgroundHex: backgroundColor,
             foregroundHex: foregroundColor
+        )
+    }
+}
+
+extension UserProfileResponse {
+    func toDomain() -> UserProfile {
+        UserProfile(
+            email: email,
+            username: username,
+            firstName: firstName,
+            lastName: lastName,
+            displayName: displayName,
+            avatar: avatar?.toDomain(),
+            emailVerified: emailVerified,
+            pendingEmail: pendingEmail,
+            createdAt: createdAt
         )
     }
 }
