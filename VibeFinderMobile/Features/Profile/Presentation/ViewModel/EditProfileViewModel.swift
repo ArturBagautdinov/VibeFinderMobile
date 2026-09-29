@@ -37,12 +37,18 @@ final class EditProfileViewModel {
     }
 
     private let repository: ProfileRepositoryProtocol
+    private let analyticsTracker: AnalyticsTrackerProtocol
     private(set) var state: State
     var onStateChange: ((State) -> Void)?
     var onSaved: ((UserProfile) -> Void)?
 
-    init(profile: UserProfile, repository: ProfileRepositoryProtocol) {
+    init(
+        profile: UserProfile,
+        repository: ProfileRepositoryProtocol,
+        analyticsTracker: AnalyticsTrackerProtocol
+    ) {
         self.repository = repository
+        self.analyticsTracker = analyticsTracker
         state = State(original: profile, draft: EditProfileDraft(profile: profile))
     }
 
@@ -111,6 +117,16 @@ final class EditProfileViewModel {
         } else {
             change = .clear
         }
+        
+        analyticsTracker.track(
+            ProfileEditAnalyticsEvent.saveRequested(
+                firstNameChanged: firstName != state.original.firstName,
+                lastNameChanged: lastName != state.original.lastName,
+                avatarChange: change,
+                avatarStyle: state.draft.avatar?.style ?? .none
+            )
+        )
+        
         state.isSaving = true
         state.errorMessage = nil
         publish()

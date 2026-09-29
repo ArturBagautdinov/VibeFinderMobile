@@ -112,8 +112,14 @@ final class AppAssembly: Assembly {
         container.register(EditProfileViewModel.self) { resolver, profile in
             EditProfileViewModel(
                 profile: profile,
-                repository: resolver.resolve(ProfileRepositoryProtocol.self)!
+                repository: resolver.resolve(ProfileRepositoryProtocol.self)!,
+                analyticsTracker: resolver.resolve(AnalyticsTrackerProtocol.self)!
             )
         }
+        
+        container.register(AnalyticsTrackerProtocol.self) { _ in
+            FirebaseAnalyticsTracker()
+        }
+        .inObjectScope(.container)
     }
 }
