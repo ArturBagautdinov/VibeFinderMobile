@@ -91,7 +91,8 @@ final class AppAssembly: Assembly {
             SearchViewModel(
                 username: username,
                 searchRepository: resolver.resolve(SearchRepositoryProtocol.self)!,
-                suggestionsStore: resolver.resolve(SearchSuggestionsStoreProtocol.self)!
+                suggestionsStore: resolver.resolve(SearchSuggestionsStoreProtocol.self)!,
+                analyticsTracker: resolver.resolve(AnalyticsTrackerProtocol.self)!
             )
         }
         

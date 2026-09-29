@@ -17,6 +17,7 @@ final class SearchViewModel {
 
     private let searchRepository: SearchRepositoryProtocol
     private let suggestionsStore: SearchSuggestionsStoreProtocol
+    private let analyticsTracker: AnalyticsTrackerProtocol
     private var suggestionModels: [SearchSuggestion]
     private var optimisticRecentHistory: [SearchHistoryEntryDisplayModel] = []
     private var pendingRecentHistoryInsertionID: Int?
@@ -33,10 +34,12 @@ final class SearchViewModel {
     init(
         username: String,
         searchRepository: SearchRepositoryProtocol,
-        suggestionsStore: SearchSuggestionsStoreProtocol
+        suggestionsStore: SearchSuggestionsStoreProtocol,
+        analyticsTracker: AnalyticsTrackerProtocol
     ) {
         self.searchRepository = searchRepository
         self.suggestionsStore = suggestionsStore
+        self.analyticsTracker = analyticsTracker
         let suggestionModels = suggestionsStore.loadSuggestions()
         let suggestionState = Self.makeSuggestionState(from: suggestionModels)
         self.suggestionModels = suggestionModels
@@ -90,16 +93,20 @@ final class SearchViewModel {
             return
         }
 
+        analyticsTracker.track(SearchAnalyticsEvent.requested())
         update(isLoading: true, errorMessage: nil)
-        searchRepository.search(query: normalizedQuery) { [weak self] result in
+        let tracker = analyticsTracker
+        searchRepository.search(query: normalizedQuery) { [weak self, tracker] result in
             Task {
                 switch result {
                 case let .success(page):
+                    tracker.track(SearchAnalyticsEvent.succeeded(page: page))
                     self?.prependOptimisticHistory(from: page)
                     self?.update(isLoading: false, errorMessage: nil)
                     self?.loadRecentHistory()
                     self?.onResultsReady?(page)
                 case let .failure(error):
+                    tracker.track(SearchAnalyticsEvent.failed(error: error))
                     self?.update(isLoading: false, errorMessage: error.userMessage)
                 }
             }

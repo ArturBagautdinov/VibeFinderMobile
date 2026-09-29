@@ -140,6 +140,77 @@ struct VibeFinderMobileTests {
 
     @Test
     @MainActor
+    func searchTracksRequestAndSuccessWithoutQueryText() async {
+        let repository = SearchRepositorySpy()
+        repository.result = .success(.fixture())
+        let analytics = SearchAnalyticsSpy()
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: SearchSuggestionsStoreSpy(),
+            analyticsTracker: analytics
+        )
+
+        viewModel.search(query: " private search text ")
+        await Task.yield()
+        await Task.yield()
+
+        #expect(repository.lastQuery == "private search text")
+        #expect(analytics.events == [
+            AnalyticsEvent(name: "search_requested"),
+            AnalyticsEvent(
+                name: "search_succeeded",
+                parameters: ["result_count": .integer(1)]
+            )
+        ])
+    }
+
+    @Test
+    @MainActor
+    func searchTracksFailureCategoryButNotErrorMessage() async {
+        let repository = SearchRepositorySpy()
+        repository.result = .failure(.unknown)
+        let analytics = SearchAnalyticsSpy()
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: SearchSuggestionsStoreSpy(),
+            analyticsTracker: analytics
+        )
+
+        viewModel.search(query: "private search text")
+        await Task.yield()
+        await Task.yield()
+
+        #expect(analytics.events == [
+            AnalyticsEvent(name: "search_requested"),
+            AnalyticsEvent(
+                name: "search_failed",
+                parameters: ["error_category": .string("unknown")]
+            )
+        ])
+    }
+
+    @Test
+    @MainActor
+    func emptySearchDoesNotTrackNetworkRequest() {
+        let repository = SearchRepositorySpy()
+        let analytics = SearchAnalyticsSpy()
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: SearchSuggestionsStoreSpy(),
+            analyticsTracker: analytics
+        )
+
+        viewModel.search(query: "  ")
+
+        #expect(repository.searchCallCount == 0)
+        #expect(analytics.events.isEmpty)
+    }
+
+    @Test
+    @MainActor
     func searchViewModelKeepsSuccessfulSearchInRecentHistoryWhenAPIHistoryIsEmpty() async {
         let repository = SearchRepositorySpy()
         let suggestionsStore = SearchSuggestionsStoreSpy()
@@ -621,6 +692,29 @@ private final class SearchSuggestionsStoreSpy: SearchSuggestionsStoreProtocol {
         let restoredSuggestions = suggestions + missingDefaultSuggestions
         saveSuggestions(restoredSuggestions)
         return restoredSuggestions
+    }
+}
+
+private final class SearchAnalyticsSpy: AnalyticsTrackerProtocol {
+    private(set) var events: [AnalyticsEvent] = []
+
+    func track(_ event: AnalyticsEvent) {
+        events.append(event)
+    }
+}
+
+private extension SearchViewModel {
+    convenience init(
+        username: String,
+        searchRepository: SearchRepositoryProtocol,
+        suggestionsStore: SearchSuggestionsStoreProtocol
+    ) {
+        self.init(
+            username: username,
+            searchRepository: searchRepository,
+            suggestionsStore: suggestionsStore,
+            analyticsTracker: SearchAnalyticsSpy()
+        )
     }
 }
 
