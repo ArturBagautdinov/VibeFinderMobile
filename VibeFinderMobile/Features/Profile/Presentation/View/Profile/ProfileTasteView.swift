@@ -84,7 +84,7 @@ final class ProfileTasteView: UIView {
         cardView.layer.shadowColor = AppTheme.Color.primary.cgColor
         cardView.layer.shadowOpacity = 0.18
         cardView.layer.shadowRadius = 4
-        cardView.layer.shadowOffset = CGSize(width: 6, height: 6)
+        cardView.layer.shadowOffset = CGSize(width: 3, height: 3)
         
         contentStack.translatesAutoresizingMaskIntoConstraints = false
         cardView.addSubview(contentStack)

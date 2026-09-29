@@ -15,6 +15,7 @@ final class ProfileViewController: UIViewController {
     private lazy var profileView = ProfileView()
     
     var onLogout: (() -> Void)?
+    var onEditProfileSelected: ((UserProfile) -> Void)?
     init(viewModel: ProfileViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -33,7 +34,7 @@ final class ProfileViewController: UIViewController {
         bind()
         configureActions()
         configureNavigation()
-        viewModel.loadProfile()
+        viewModel.loadProfileIfNeeded()
     }
     
     private func bind() {
@@ -56,6 +57,15 @@ final class ProfileViewController: UIViewController {
         profileView.onLogoutSelected = { [weak self] in
             self?.showLogoutConfirmation()
         }
+
+        profileView.onEditProfileSelected = { [weak self] in
+            guard let profile = self?.viewModel.editableProfile else { return }
+            self?.onEditProfileSelected?(profile)
+        }
+    }
+
+    func applyUpdatedProfile(_ profile: UserProfile) {
+        viewModel.applyUpdatedProfile(profile)
     }
     
     private func showLogoutConfirmation() {

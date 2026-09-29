@@ -127,6 +127,36 @@ internal enum L10n {
     internal static let tasteTitle = L10n.tr("Localizable", "profile.tasteTitle", fallback: "Taste profile")
     /// Email verified
     internal static let verified = L10n.tr("Localizable", "profile.verified", fallback: "Email verified")
+    internal enum Edit {
+      /// Avatar
+      internal static let avatar = L10n.tr("Localizable", "profile.edit.avatar", fallback: "Avatar")
+      /// Choose a background
+      internal static let chooseColor = L10n.tr("Localizable", "profile.edit.chooseColor", fallback: "Choose a background")
+      /// Choose a symbol
+      internal static let chooseSymbol = L10n.tr("Localizable", "profile.edit.chooseSymbol", fallback: "Choose a symbol")
+      /// Color
+      internal static let color = L10n.tr("Localizable", "profile.edit.color", fallback: "Color")
+      /// Discard
+      internal static let discardAction = L10n.tr("Localizable", "profile.edit.discardAction", fallback: "Discard")
+      /// Your profile changes have not been saved.
+      internal static let discardMessage = L10n.tr("Localizable", "profile.edit.discardMessage", fallback: "Your profile changes have not been saved.")
+      /// Discard changes?
+      internal static let discardTitle = L10n.tr("Localizable", "profile.edit.discardTitle", fallback: "Discard changes?")
+      /// None
+      internal static let `none` = L10n.tr("Localizable", "profile.edit.none", fallback: "None")
+      /// Personal details
+      internal static let personal = L10n.tr("Localizable", "profile.edit.personal", fallback: "Personal details")
+      /// Save changes
+      internal static let save = L10n.tr("Localizable", "profile.edit.save", fallback: "Save changes")
+      /// Symbol
+      internal static let symbol = L10n.tr("Localizable", "profile.edit.symbol", fallback: "Symbol")
+      /// Edit profile
+      internal static let title = L10n.tr("Localizable", "profile.edit.title", fallback: "Edit profile")
+      /// First and last name must contain 2–80 characters.
+      internal static let validationLength = L10n.tr("Localizable", "profile.edit.validationLength", fallback: "First and last name must contain 2–80 characters.")
+      /// Enter your first and last name.
+      internal static let validationRequired = L10n.tr("Localizable", "profile.edit.validationRequired", fallback: "Enter your first and last name.")
+    }
     internal enum Logout {
       /// Log out
       internal static let action = L10n.tr("Localizable", "profile.logout.action", fallback: "Log out")

@@ -50,6 +50,12 @@ extension APIEndpoint {
         requiresAuthorization: true
     )
 
+    static let updateProfile = APIEndpoint(
+        path: "api/profile",
+        method: .put,
+        requiresAuthorization: true
+    )
+
     static func searchPage(id: Int) -> APIEndpoint {
         APIEndpoint(path: "api/search/\(id)", method: .get, headers: [.accept("application/json")], requiresAuthorization: true)
     }

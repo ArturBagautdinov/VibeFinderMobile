@@ -121,3 +121,18 @@
 "profile.summaryTitle" = "Your vibe summary";
 
 "common.retry" = "Retry";
+
+"profile.edit.title" = "Edit profile";
+"profile.edit.personal" = "Personal details";
+"profile.edit.avatar" = "Avatar";
+"profile.edit.symbol" = "Symbol";
+"profile.edit.color" = "Color";
+"profile.edit.none" = "None";
+"profile.edit.chooseSymbol" = "Choose a symbol";
+"profile.edit.chooseColor" = "Choose a background";
+"profile.edit.save" = "Save changes";
+"profile.edit.discardTitle" = "Discard changes?";
+"profile.edit.discardMessage" = "Your profile changes have not been saved.";
+"profile.edit.discardAction" = "Discard";
+"profile.edit.validationRequired" = "Enter your first and last name.";
+"profile.edit.validationLength" = "First and last name must contain 2–80 characters.";

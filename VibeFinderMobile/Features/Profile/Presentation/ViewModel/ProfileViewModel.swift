@@ -18,29 +18,42 @@ final class ProfileViewModel {
     
     private let profileRepository: ProfileRepositoryProtocol
     private(set) var state = State(profile: nil, isLoading: false, errorMessage: nil)
+    private var currentPage: ProfilePage?
+    var editableProfile: UserProfile? { currentPage?.profile }
     
     var onStateChange: ((State) -> Void)?
+    var onProfileChanged: ((UserProfile) -> Void)?
     var onLogout: (() -> Void)?
     
     init (profileRepository: ProfileRepositoryProtocol) {
         self.profileRepository = profileRepository
     }
+
+    func loadProfileIfNeeded() {
+        guard currentPage == nil, !state.isLoading else { return }
+        loadProfile()
+    }
     
     func loadProfile() {
-        update(isLoading: true, errorMessage: nil)
+        state = State(profile: state.profile, isLoading: true, errorMessage: nil)
+        onStateChange?(state)
         
         profileRepository.loadProfile { [weak self] result in
             Task { @MainActor in
                 
                 switch result {
                 case let .success(page):
-                    self?.update(
+                    self?.currentPage = page
+                    self?.setState(
                         profile: Self.makeDisplayModel(from: page),
                         isLoading: false,
                         errorMessage: nil
                     )
+                    self?.onProfileChanged?(page.profile)
                 case let .failure(error):
-                    self?.update(
+                    guard let self else { return }
+                    self.setState(
+                        profile: self.state.profile,
                         isLoading: false,
                         errorMessage: error.userMessage
                     )
@@ -49,12 +62,23 @@ final class ProfileViewModel {
             }
         }
     }
-    
-    func logout() {
-        update(
-            isLoading: true,
+
+    func applyUpdatedProfile(_ profile: UserProfile) {
+        guard let currentPage else { return }
+        let updatedPage = ProfilePage(profile: profile, tasteProfile: currentPage.tasteProfile)
+        self.currentPage = updatedPage
+        state = State(
+            profile: Self.makeDisplayModel(from: updatedPage),
+            isLoading: false,
             errorMessage: nil
         )
+        onStateChange?(state)
+        onProfileChanged?(profile)
+    }
+
+    func logout() {
+        state = State(profile: state.profile, isLoading: true, errorMessage: nil)
+        onStateChange?(state)
         
         profileRepository.logout { [weak self] result in
             Task { @MainActor in
@@ -65,7 +89,9 @@ final class ProfileViewModel {
                     self?.onLogout?()
                     
                 case let .failure(error):
-                    self?.update(
+                    guard let self else { return }
+                    self.setState(
+                        profile: self.state.profile,
                         isLoading: false,
                         errorMessage: error.userMessage
                     )
@@ -74,16 +100,12 @@ final class ProfileViewModel {
         }
     }
     
-    private func update(
-        profile: ProfileDisplayModel? = nil,
-        isLoading: Bool? = nil,
-        errorMessage: String? = nil
+    private func setState(
+        profile: ProfileDisplayModel?,
+        isLoading: Bool,
+        errorMessage: String?
     ) {
-        state = State(
-            profile: profile ?? state.profile,
-            isLoading: isLoading ?? state.isLoading,
-            errorMessage: errorMessage ?? state.errorMessage
-        )
+        state = State(profile: profile, isLoading: isLoading, errorMessage: errorMessage)
         onStateChange?(state)
     }
     
@@ -95,7 +117,8 @@ final class ProfileViewModel {
             .joined(separator: " ")
         
         return ProfileDisplayModel(
-            initials: makeInitials(from: profile),
+            initials: profile.initials,
+            avatar: profile.avatar,
             displayName: fullName.isEmpty ? profile.displayName : fullName,
             username: "@\(profile.username)",
             email: profile.email,
@@ -117,9 +140,4 @@ final class ProfileViewModel {
         
     }
     
-    private static func makeInitials(from profile: UserProfile) -> String {
-        let source = [profile.firstName, profile.lastName].filter { !$0.isEmpty }
-        let initials = source.compactMap(\.first).map(String.init).joined()
-        return initials.isEmpty ? String(profile.username.prefix(1)).uppercased() : initials.uppercased()
-    }
 }

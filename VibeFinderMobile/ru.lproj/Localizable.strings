@@ -121,3 +121,18 @@
 "profile.summaryTitle" = "Твое описание вайба";
 
 "common.retry" = "Повторить";
+
+"profile.edit.title" = "Редактирование профиля";
+"profile.edit.personal" = "Личные данные";
+"profile.edit.avatar" = "Аватар";
+"profile.edit.symbol" = "Символ";
+"profile.edit.color" = "Цвет";
+"profile.edit.none" = "Без аватара";
+"profile.edit.chooseSymbol" = "Выберите символ";
+"profile.edit.chooseColor" = "Выберите фон";
+"profile.edit.save" = "Сохранить";
+"profile.edit.discardTitle" = "Отменить изменения?";
+"profile.edit.discardMessage" = "Изменения профиля не сохранены.";
+"profile.edit.discardAction" = "Не сохранять";
+"profile.edit.validationRequired" = "Введите имя и фамилию.";
+"profile.edit.validationLength" = "Имя и фамилия должны содержать от 2 до 80 символов.";

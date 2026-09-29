@@ -10,4 +10,8 @@ import Foundation
 protocol ProfileRepositoryProtocol {
     func loadProfile(completion: @escaping (Result<ProfilePage, APIError>) -> Void)
     func logout(completion: @escaping (Result<Void, APIError>) -> Void)
+    func updateProfile(
+        _ update: ProfileUpdate,
+        completion: @escaping (Result<UserProfile, APIError>) -> Void
+    )
 }

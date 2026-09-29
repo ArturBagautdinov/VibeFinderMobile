@@ -78,6 +78,38 @@ struct VibeFinderMobileTests {
 
     @Test
     @MainActor
+    func searchViewModelUpdatesAvatarAndKeepsItAfterHistoryRefresh() async {
+        let repository = SearchRepositorySpy()
+        let viewModel = SearchViewModel(
+            username: "artur",
+            searchRepository: repository,
+            suggestionsStore: SearchSuggestionsStoreSpy()
+        )
+        let avatar = ProfileAvatar(
+            style: .symbol,
+            symbol: "gamecontroller.fill",
+            backgroundHex: "#4F46E5",
+            foregroundHex: "#FFFFFF"
+        )
+        var observedAvatar: ProfileAvatar?
+        viewModel.onStateChange = { observedAvatar = $0.avatar }
+
+        viewModel.updateProfileAppearance(avatar: avatar, initials: "AB")
+        #expect(observedAvatar == avatar)
+        #expect(viewModel.state.avatarInitials == "AB")
+
+        viewModel.loadRecentHistory()
+        await Task.yield()
+        await Task.yield()
+        #expect(viewModel.state.avatar == avatar)
+        #expect(viewModel.state.avatarInitials == "AB")
+
+        viewModel.updateProfileAppearance(avatar: nil, initials: "AB")
+        #expect(viewModel.state.avatar == nil)
+    }
+
+    @Test
+    @MainActor
     func searchViewModelEmitsSearchResult() async {
         let repository = SearchRepositorySpy()
         let suggestionsStore = SearchSuggestionsStoreSpy()

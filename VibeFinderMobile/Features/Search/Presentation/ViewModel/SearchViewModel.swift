@@ -4,6 +4,8 @@ import Foundation
 final class SearchViewModel {
     struct State {
         let username: String
+        let avatar: ProfileAvatar?
+        let avatarInitials: String
         let visibleSuggestions: [SearchSuggestionDisplayModel]
         let allSuggestions: [SearchSuggestionDisplayModel]
         let canShowMoreSuggestions: Bool
@@ -40,6 +42,8 @@ final class SearchViewModel {
         self.suggestionModels = suggestionModels
         self.state = State(
             username: username,
+            avatar: nil,
+            avatarInitials: String(username.prefix(1)).uppercased(),
             visibleSuggestions: suggestionState.visibleSuggestions,
             allSuggestions: suggestionState.allSuggestions,
             canShowMoreSuggestions: suggestionState.canShowMoreSuggestions,
@@ -61,6 +65,22 @@ final class SearchViewModel {
                 }
             }
         }
+    }
+
+    func updateProfileAppearance(avatar: ProfileAvatar?, initials: String) {
+        state = State(
+            username: state.username,
+            avatar: avatar,
+            avatarInitials: initials,
+            visibleSuggestions: state.visibleSuggestions,
+            allSuggestions: state.allSuggestions,
+            canShowMoreSuggestions: state.canShowMoreSuggestions,
+            recentHistory: state.recentHistory,
+            recentHistoryInsertionID: state.recentHistoryInsertionID,
+            isLoading: state.isLoading,
+            errorMessage: state.errorMessage
+        )
+        onStateChange?(state)
     }
 
     func search(query: String) {
@@ -122,6 +142,8 @@ final class SearchViewModel {
         pendingRecentHistoryInsertionID = nil
         state = State(
             username: state.username,
+            avatar: state.avatar,
+            avatarInitials: state.avatarInitials,
             visibleSuggestions: state.visibleSuggestions,
             allSuggestions: state.allSuggestions,
             canShowMoreSuggestions: state.canShowMoreSuggestions,
@@ -157,6 +179,8 @@ final class SearchViewModel {
         let suggestionState = suggestionModels.map(Self.makeSuggestionState)
         state = State(
             username: state.username,
+            avatar: state.avatar,
+            avatarInitials: state.avatarInitials,
             visibleSuggestions: suggestionState?.visibleSuggestions ?? state.visibleSuggestions,
             allSuggestions: suggestionState?.allSuggestions ?? state.allSuggestions,
             canShowMoreSuggestions: suggestionState?.canShowMoreSuggestions ?? state.canShowMoreSuggestions,

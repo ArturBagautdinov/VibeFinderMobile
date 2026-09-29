@@ -32,4 +32,3 @@ final class ProfileChipLabel: UILabel {
         layer.cornerRadius = bounds.height / 2
     }
 }
-

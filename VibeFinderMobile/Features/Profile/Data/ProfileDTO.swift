@@ -18,10 +18,17 @@ struct UserProfileResponse: Decodable {
     let firstName: String
     let lastName: String
     let displayName: String
-    let avatarUrl: URL?
+    let avatar: AvatarResponse?
     let emailVerified: Bool
     let pendingEmail: String?
     let createdAt: String
+}
+
+struct AvatarResponse: Decodable {
+    let style: String
+    let symbol: String?
+    let backgroundColor: String?
+    let foregroundColor: String?
 }
 
 struct TasteProfileResponse: Decodable {
@@ -40,17 +47,7 @@ struct TasteProfileResponse: Decodable {
 extension ProfileResponse {
     func toDomain() -> ProfilePage {
         ProfilePage(
-            profile: UserProfile(
-                email: profile.email,
-                username: profile.username,
-                firstName: profile.firstName,
-                lastName: profile.lastName,
-                displayName: profile.displayName,
-                avatarUrl: profile.avatarUrl,
-                emailVerified: profile.emailVerified,
-                pendingEmail: profile.pendingEmail,
-                createdAt: profile.createdAt
-            ),
+            profile: profile.toDomain(),
             tasteProfile: TasteProfile(
                 profileSummary: tasteProfile.profileSummary,
                 preferredPace: tasteProfile.preferredPace,
@@ -63,6 +60,41 @@ extension ProfileResponse {
                 inProgressCount: tasteProfile.inProgressCount,
                 hiddenCount: tasteProfile.hiddenCount
             )
+        )
+    }
+}
+
+private extension AvatarResponse {
+    func toDomain() -> ProfileAvatar? {
+        guard let style = ProfileAvatarStyle(rawValue: style) else {
+            return nil
+        }
+
+        guard style != .none else {
+            return nil
+        }
+
+        return ProfileAvatar(
+            style: style,
+            symbol: symbol,
+            backgroundHex: backgroundColor,
+            foregroundHex: foregroundColor
+        )
+    }
+}
+
+extension UserProfileResponse {
+    func toDomain() -> UserProfile {
+        UserProfile(
+            email: email,
+            username: username,
+            firstName: firstName,
+            lastName: lastName,
+            displayName: displayName,
+            avatar: avatar?.toDomain(),
+            emailVerified: emailVerified,
+            pendingEmail: pendingEmail,
+            createdAt: createdAt
         )
     }
 }
