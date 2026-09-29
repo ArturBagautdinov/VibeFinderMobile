@@ -139,11 +139,15 @@ final class EditProfileViewModel {
                 self.state.isSaving = false
                 switch result {
                 case let .success(profile):
+                    self.analyticsTracker.track(ProfileEditAnalyticsEvent.saveSucceeded())
                     self.state.original = profile
                     self.state.draft = EditProfileDraft(profile: profile)
                     self.publish()
                     self.onSaved?(profile)
                 case let .failure(error):
+                    self.analyticsTracker.track(
+                        ProfileEditAnalyticsEvent.saveFailed(error: error)
+                    )
                     self.state.errorMessage = error.userMessage
                     self.publish()
                 }
