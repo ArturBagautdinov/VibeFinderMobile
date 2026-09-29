@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		B99B9DE9306B9D5100D41CA6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B99B9DE8306B9D5100D41CA6 /* GoogleService-Info.plist */; };
+		B99F1378306BA2FB00614973 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = B99F1377306BA2FB00614973 /* FirebaseAnalytics */; };
+		B99F137A306BA2FB00614973 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = B99F1379306BA2FB00614973 /* FirebaseCrashlytics */; };
+		B99F137C306BA2FB00614973 /* FirebasePerformance in Frameworks */ = {isa = PBXBuildFile; productRef = B99F137B306BA2FB00614973 /* FirebasePerformance */; };
 		B9B199F4302D8D9B0021A532 /* Swinject in Frameworks */ = {isa = PBXBuildFile; productRef = B9B199F3302D8D9B0021A532 /* Swinject */; };
 		B9B199F7302D8E190021A532 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = B9B199F6302D8E190021A532 /* Alamofire */; };
 /* End PBXBuildFile section */
@@ -73,7 +76,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				B9B199F7302D8E190021A532 /* Alamofire in Frameworks */,
+				B99F137A306BA2FB00614973 /* FirebaseCrashlytics in Frameworks */,
+				B99F137C306BA2FB00614973 /* FirebasePerformance in Frameworks */,
 				B9B199F4302D8D9B0021A532 /* Swinject in Frameworks */,
+				B99F1378306BA2FB00614973 /* FirebaseAnalytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -139,6 +145,9 @@
 			packageProductDependencies = (
 				B9B199F3302D8D9B0021A532 /* Swinject */,
 				B9B199F6302D8E190021A532 /* Alamofire */,
+				B99F1377306BA2FB00614973 /* FirebaseAnalytics */,
+				B99F1379306BA2FB00614973 /* FirebaseCrashlytics */,
+				B99F137B306BA2FB00614973 /* FirebasePerformance */,
 			);
 			productName = VibeFinderMobile;
 			productReference = B9B199A1302D89B70021A532 /* VibeFinderMobile.app */;
@@ -226,6 +235,7 @@
 			packageReferences = (
 				B9B199F2302D8D9B0021A532 /* XCRemoteSwiftPackageReference "Swinject" */,
 				B9B199F5302D8E190021A532 /* XCRemoteSwiftPackageReference "Alamofire" */,
+				B99F1376306BA2FB00614973 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B9B199A2302D89B70021A532 /* Products */;
@@ -662,6 +672,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		B99F1376306BA2FB00614973 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.19.2;
+			};
+		};
 		B9B199F2302D8D9B0021A532 /* XCRemoteSwiftPackageReference "Swinject" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Swinject/Swinject.git";
@@ -681,6 +699,21 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		B99F1377306BA2FB00614973 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B99F1376306BA2FB00614973 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		B99F1379306BA2FB00614973 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B99F1376306BA2FB00614973 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
+		B99F137B306BA2FB00614973 /* FirebasePerformance */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B99F1376306BA2FB00614973 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebasePerformance;
+		};
 		B9B199F3302D8D9B0021A532 /* Swinject */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = B9B199F2302D8D9B0021A532 /* XCRemoteSwiftPackageReference "Swinject" */;
