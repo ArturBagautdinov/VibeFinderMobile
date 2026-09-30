@@ -390,11 +390,13 @@ struct VibeFinderMobileTests {
     func searchViewModelLoadsResultByHistoryID() async {
         let repository = SearchRepositorySpy()
         let suggestionsStore = SearchSuggestionsStoreSpy()
+        let analytics = SearchAnalyticsSpy()
         repository.pageByIDResult = .success(.fixture(id: 303))
         let viewModel = SearchViewModel(
             username: "Artur",
             searchRepository: repository,
-            suggestionsStore: suggestionsStore
+            suggestionsStore: suggestionsStore,
+            analyticsTracker: analytics
         )
         var resultPage: SearchPage?
         viewModel.onResultsReady = { page in
@@ -408,6 +410,48 @@ struct VibeFinderMobileTests {
         #expect(repository.searchCallCount == 0)
         #expect(repository.loadedPageIDs == [303])
         #expect(resultPage?.id == 303)
+        #expect(analytics.events == [
+            AnalyticsEvent(
+                name: "search_history_open_requested",
+                parameters: ["source": .string("recent")]
+            ),
+            AnalyticsEvent(
+                name: "search_history_open_succeeded",
+                parameters: ["source": .string("recent")]
+            )
+        ])
+    }
+
+    @Test
+    @MainActor
+    func recentHistoryOpenTracksFailureWithoutQueryOrID() async {
+        let repository = SearchRepositorySpy()
+        repository.pageByIDResult = .failure(.unknown)
+        let analytics = SearchAnalyticsSpy()
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: SearchSuggestionsStoreSpy(),
+            analyticsTracker: analytics
+        )
+
+        viewModel.openHistoryResult(.fixture(id: 303, originalQuery: "private query"))
+        await Task.yield()
+        await Task.yield()
+
+        #expect(analytics.events == [
+            AnalyticsEvent(
+                name: "search_history_open_requested",
+                parameters: ["source": .string("recent")]
+            ),
+            AnalyticsEvent(
+                name: "search_history_open_failed",
+                parameters: [
+                    "source": .string("recent"),
+                    "error_category": .string("unknown")
+                ]
+            )
+        ])
     }
 
     @Test
@@ -419,7 +463,10 @@ struct VibeFinderMobileTests {
             .fixture(id: 102, originalQuery: "Cozy game", resultCount: 2),
             .fixture(id: 103, originalQuery: "Dark book", resultCount: 4)
         ])
-        let viewModel = SearchHistoryViewModel(searchRepository: repository)
+        let viewModel = SearchHistoryViewModel(
+            searchRepository: repository,
+            analyticsTracker: SearchAnalyticsSpy()
+        )
         var states: [SearchHistoryViewModel.State] = []
         viewModel.onStateChange = { states.append($0) }
 
@@ -436,7 +483,11 @@ struct VibeFinderMobileTests {
     func searchHistoryViewModelLoadsResultByHistoryID() async {
         let repository = SearchRepositorySpy()
         repository.pageByIDResult = .success(.fixture(id: 202))
-        let viewModel = SearchHistoryViewModel(searchRepository: repository)
+        let analytics = SearchAnalyticsSpy()
+        let viewModel = SearchHistoryViewModel(
+            searchRepository: repository,
+            analyticsTracker: analytics
+        )
         var resultPage: SearchPage?
         viewModel.onResultsReady = { page in
             resultPage = page
@@ -448,6 +499,46 @@ struct VibeFinderMobileTests {
 
         #expect(repository.loadedPageIDs == [202])
         #expect(resultPage?.id == 202)
+        #expect(analytics.events == [
+            AnalyticsEvent(
+                name: "search_history_open_requested",
+                parameters: ["source": .string("full")]
+            ),
+            AnalyticsEvent(
+                name: "search_history_open_succeeded",
+                parameters: ["source": .string("full")]
+            )
+        ])
+    }
+
+    @Test
+    @MainActor
+    func fullHistoryOpenTracksFailureWithoutID() async {
+        let repository = SearchRepositorySpy()
+        repository.pageByIDResult = .failure(.unknown)
+        let analytics = SearchAnalyticsSpy()
+        let viewModel = SearchHistoryViewModel(
+            searchRepository: repository,
+            analyticsTracker: analytics
+        )
+
+        viewModel.selectHistory(id: 202)
+        await Task.yield()
+        await Task.yield()
+
+        #expect(analytics.events == [
+            AnalyticsEvent(
+                name: "search_history_open_requested",
+                parameters: ["source": .string("full")]
+            ),
+            AnalyticsEvent(
+                name: "search_history_open_failed",
+                parameters: [
+                    "source": .string("full"),
+                    "error_category": .string("unknown")
+                ]
+            )
+        ])
     }
 
     @Test
@@ -459,7 +550,10 @@ struct VibeFinderMobileTests {
             .fixture(id: 102, originalQuery: "Cozy game", resultCount: 2)
         ])
         repository.deleteHistoryItemResult = .success(())
-        let viewModel = SearchHistoryViewModel(searchRepository: repository)
+        let viewModel = SearchHistoryViewModel(
+            searchRepository: repository,
+            analyticsTracker: SearchAnalyticsSpy()
+        )
 
         viewModel.loadHistory()
         await Task.yield()
@@ -488,7 +582,10 @@ struct VibeFinderMobileTests {
             .fixture(id: 102, originalQuery: "Cozy game", resultCount: 2)
         ])
         repository.deleteHistoryItemResult = .failure(.unknown)
-        let viewModel = SearchHistoryViewModel(searchRepository: repository)
+        let viewModel = SearchHistoryViewModel(
+            searchRepository: repository,
+            analyticsTracker: SearchAnalyticsSpy()
+        )
 
         viewModel.loadHistory()
         await Task.yield()
@@ -511,7 +608,10 @@ struct VibeFinderMobileTests {
             .fixture(id: 101, originalQuery: "Rainy movie", resultCount: 3)
         ])
         repository.clearHistoryResult = .success(())
-        let viewModel = SearchHistoryViewModel(searchRepository: repository)
+        let viewModel = SearchHistoryViewModel(
+            searchRepository: repository,
+            analyticsTracker: SearchAnalyticsSpy()
+        )
 
         viewModel.loadHistory()
         await Task.yield()

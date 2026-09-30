@@ -162,14 +162,18 @@ final class SearchViewModel {
     }
 
     func openHistoryResult(_ history: SearchHistoryEntryDisplayModel) {
+        analyticsTracker.track(SearchHistoryAnalyticsEvent.openRequested(source: .recent))
         update(isLoading: true, errorMessage: nil)
-        searchRepository.loadSearchPage(id: history.id) { [weak self] result in
+        let tracker = analyticsTracker
+        searchRepository.loadSearchPage(id: history.id) { [weak self, tracker] result in
             Task {
                 switch result {
                 case let .success(page):
+                    tracker.track(SearchHistoryAnalyticsEvent.openSucceeded(source: .recent))
                     self?.update(isLoading: false, errorMessage: nil)
                     self?.onResultsReady?(page)
                 case let .failure(error):
+                    tracker.track(SearchHistoryAnalyticsEvent.openFailed(source: .recent, error: error))
                     self?.update(isLoading: false, errorMessage: error.userMessage)
                 }
             }
