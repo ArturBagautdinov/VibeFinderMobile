@@ -44,6 +44,8 @@ This repository contains the **mobile client**. The server is developed separate
 ### 01 · Onboarding
 
 
+
+
 ### 02 · Search by mood
 
 Choose a suggested vibe or write your own description, submit the request, and explore the results.
