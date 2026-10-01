@@ -1,3 +1,7 @@
+<p align="center">
+<img width="200" height="200" alt="image" src="https://github.com/user-attachments/assets/c47b6f2e-10b0-4c42-b991-cf5507bc67ef" />
+</p>
+
 <h1 align="center">VibeFinder</h1>
 <p align="center"><em>Find your next story, follow your mood.</em></p>
 
