@@ -43,7 +43,7 @@ This repository contains the **mobile client**. The server is developed separate
 
 ### 01 · Onboarding
 
-
+<img width="420" height="913" alt="01-onboarding" src="https://github.com/user-attachments/assets/59c3a7f7-dc6e-4602-a92a-239b05f5e23f" />
 
 
 ### 02 · Search by mood
