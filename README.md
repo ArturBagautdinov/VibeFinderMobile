@@ -41,32 +41,49 @@ This repository contains the **mobile client**. The server is developed separate
 ## 🎬 Demos
 
 
-### 01 · Onboarding
+### 01 · Onboarding and Authorization
 
-<img width="420" height="913" alt="01-onboarding" src="https://github.com/user-attachments/assets/59c3a7f7-dc6e-4602-a92a-239b05f5e23f" />
+<p align="center">
+  <img src="./docs/media/01-onboarding.gif" alt="Onboarding" width="280" />
+  &nbsp;&nbsp;
+  <img src="./docs/media/08-auth.gif" alt="Authorization" width="280" />
+</p>
 
 
 ### 02 · Search by mood
 
-Choose a suggested vibe or write your own description, submit the request, and explore the results.
+<p align="center">
+  <img src="./docs/media/02-search_by_mood.gif" alt="Search by mood" width="280" />
+</p>
 
 ### 03 · Recommendation results
 
-Media cards, match percentages, recommendation groups, and a sticky summary while scrolling.
+<p align="center">
+  <img src="./docs/media/03-recommendation_results.gif" alt="Recommendation results" width="280" />
+</p>
 
 ### 04 · Custom suggestions
 
-Add a personal prompt, browse the full list, remove a suggestion, and restore the built-in options.
+<p align="center">
+  <img src="./docs/media/04-custom_suggestions.gif" alt="Custom suggestions" width="280" />
+</p>
 
 
 ### 05 · Vibe history
 
-Recent prompts, the complete search history, and reopening a saved recommendation session.
+<p align="center">
+  <img src="./docs/media/05-vibe_history.gif" alt="Vibe history" width="280" />
+</p>
 
 
 ### 06 · Profile and avatar
 
-Taste preferences, statistics, name editing, and avatar customization with a live preview.
+<p align="center">
+  <img src="./docs/media/06-profile.gif" alt="Profile" width="280" />
+  &nbsp;&nbsp;
+  <img src="./docs/media/07-avavtar.gif" alt="Avatar" width="280" />
+</p>
+
 
 
 ## 💜 Features
