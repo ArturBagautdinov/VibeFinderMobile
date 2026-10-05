@@ -113,6 +113,14 @@ final class SearchViewModel {
         }
     }
 
+    func suggestionSelected(id: String) {
+        guard let suggestion = suggestionModels.first(where: { $0.id == id }) else {
+            return
+        }
+
+        analyticsTracker.track(SearchSuggestionAnalyticsEvent.selected(kind: suggestion.kind))
+    }
+
     func addCustomSuggestion(_ suggestion: String) {
         let normalizedSuggestion = suggestion.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !normalizedSuggestion.isEmpty else {
@@ -127,21 +135,24 @@ final class SearchViewModel {
 
         suggestionModels.insert(.custom(title: normalizedSuggestion), at: 0)
         suggestionsStore.saveSuggestions(suggestionModels)
+        analyticsTracker.track(SearchSuggestionAnalyticsEvent.customAdded())
         update(suggestionModels: suggestionModels)
     }
 
     func deleteSuggestion(id: String) {
-        guard suggestionModels.contains(where: { $0.id == id }) else {
+        guard let suggestion = suggestionModels.first(where: { $0.id == id }) else {
             return
         }
 
         suggestionModels.removeAll { $0.id == id }
         suggestionsStore.saveSuggestions(suggestionModels)
+        analyticsTracker.track(SearchSuggestionAnalyticsEvent.deleted(kind: suggestion.kind))
         update(suggestionModels: suggestionModels)
     }
 
     func restoreDefaultSuggestions() {
         suggestionModels = suggestionsStore.restoreDefaultSuggestions()
+        analyticsTracker.track(SearchSuggestionAnalyticsEvent.defaultsRestored())
         update(suggestionModels: suggestionModels)
     }
 

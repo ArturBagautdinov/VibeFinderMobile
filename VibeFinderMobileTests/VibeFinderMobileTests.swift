@@ -235,19 +235,59 @@ struct VibeFinderMobileTests {
     func searchViewModelStoresCustomSuggestion() {
         let repository = SearchRepositorySpy()
         let suggestionsStore = SearchSuggestionsStoreSpy()
+        let analytics = SearchAnalyticsSpy()
         let viewModel = SearchViewModel(
             username: "Artur",
             searchRepository: repository,
-            suggestionsStore: suggestionsStore
+            suggestionsStore: suggestionsStore,
+            analyticsTracker: analytics
         )
         var states: [SearchViewModel.State] = []
         viewModel.onStateChange = { states.append($0) }
 
         viewModel.addCustomSuggestion("  Cyberpunk noir  ")
+        viewModel.addCustomSuggestion("Cyberpunk noir")
 
         #expect(suggestionsStore.savedSuggestions.contains { $0.title == "Cyberpunk noir" })
         #expect(states.last?.allSuggestions.contains { $0.title == "Cyberpunk noir" } == true)
         #expect(states.last?.visibleSuggestions.contains { $0.title == "Cyberpunk noir" } == true)
+        #expect(analytics.events == [
+            AnalyticsEvent(
+                name: "search_suggestion_added",
+                parameters: ["kind": .string("custom")]
+            )
+        ])
+    }
+
+    @Test
+    @MainActor
+    func searchViewModelTracksSuggestionSelectionByKind() {
+        let suggestionsStore = SearchSuggestionsStoreSpy()
+        suggestionsStore.suggestions.insert(.custom(title: "Private suggestion"), at: 0)
+        let analytics = SearchAnalyticsSpy()
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: SearchRepositorySpy(),
+            suggestionsStore: suggestionsStore,
+            analyticsTracker: analytics
+        )
+        let customID = suggestionsStore.suggestions[0].id
+        let builtInID = SearchSuggestion.defaults[0].id
+
+        viewModel.suggestionSelected(id: customID)
+        viewModel.suggestionSelected(id: builtInID)
+        viewModel.suggestionSelected(id: "missing")
+
+        #expect(analytics.events == [
+            AnalyticsEvent(
+                name: "search_suggestion_selected",
+                parameters: ["kind": .string("custom")]
+            ),
+            AnalyticsEvent(
+                name: "search_suggestion_selected",
+                parameters: ["kind": .string("built_in")]
+            )
+        ])
     }
 
     @Test
@@ -255,6 +295,7 @@ struct VibeFinderMobileTests {
     func searchViewModelDeletesCustomSuggestion() {
         let repository = SearchRepositorySpy()
         let suggestionsStore = SearchSuggestionsStoreSpy()
+        let analytics = SearchAnalyticsSpy()
         suggestionsStore.suggestions = [
             .custom(title: "Cyberpunk noir"),
             .custom(title: "Quiet mystery")
@@ -262,7 +303,8 @@ struct VibeFinderMobileTests {
         let viewModel = SearchViewModel(
             username: "Artur",
             searchRepository: repository,
-            suggestionsStore: suggestionsStore
+            suggestionsStore: suggestionsStore,
+            analyticsTracker: analytics
         )
         let suggestion = viewModel.state.allSuggestions.first { $0.title == "Cyberpunk noir" }
 
@@ -271,6 +313,12 @@ struct VibeFinderMobileTests {
         #expect(suggestionsStore.savedSuggestions.contains { $0.title == "Cyberpunk noir" } == false)
         #expect(viewModel.state.allSuggestions.contains { $0.title == "Cyberpunk noir" } == false)
         #expect(viewModel.state.allSuggestions.contains { $0.title == "Quiet mystery" } == true)
+        #expect(analytics.events == [
+            AnalyticsEvent(
+                name: "search_suggestion_deleted",
+                parameters: ["kind": .string("custom")]
+            )
+        ])
     }
 
     @Test
@@ -278,10 +326,12 @@ struct VibeFinderMobileTests {
     func searchViewModelDeletesBuiltInSuggestion() {
         let repository = SearchRepositorySpy()
         let suggestionsStore = SearchSuggestionsStoreSpy()
+        let analytics = SearchAnalyticsSpy()
         let viewModel = SearchViewModel(
             username: "Artur",
             searchRepository: repository,
-            suggestionsStore: suggestionsStore
+            suggestionsStore: suggestionsStore,
+            analyticsTracker: analytics
         )
         let builtInSuggestion = viewModel.state.allSuggestions.first
 
@@ -289,6 +339,12 @@ struct VibeFinderMobileTests {
 
         #expect(suggestionsStore.savedSuggestions.contains { $0.id == builtInSuggestion?.id } == false)
         #expect(viewModel.state.allSuggestions.count == SearchSuggestion.defaults.count - 1)
+        #expect(analytics.events == [
+            AnalyticsEvent(
+                name: "search_suggestion_deleted",
+                parameters: ["kind": .string("built_in")]
+            )
+        ])
     }
 
     @Test
@@ -296,11 +352,13 @@ struct VibeFinderMobileTests {
     func searchViewModelRestoresDefaultSuggestionsWithoutRemovingCustomOnes() {
         let repository = SearchRepositorySpy()
         let suggestionsStore = SearchSuggestionsStoreSpy()
+        let analytics = SearchAnalyticsSpy()
         suggestionsStore.suggestions = [.custom(title: "Cyberpunk noir")]
         let viewModel = SearchViewModel(
             username: "Artur",
             searchRepository: repository,
-            suggestionsStore: suggestionsStore
+            suggestionsStore: suggestionsStore,
+            analyticsTracker: analytics
         )
 
         viewModel.restoreDefaultSuggestions()
@@ -311,6 +369,9 @@ struct VibeFinderMobileTests {
         })
         #expect(viewModel.state.allSuggestions.count == SearchSuggestion.defaults.count + 1)
         #expect(viewModel.state.allSuggestions.contains { $0.title == "Cyberpunk noir" })
+        #expect(analytics.events == [
+            AnalyticsEvent(name: "search_suggestions_defaults_restored")
+        ])
     }
 
     @Test
