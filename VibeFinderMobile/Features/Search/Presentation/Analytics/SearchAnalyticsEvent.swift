@@ -19,7 +19,7 @@ enum SearchAnalyticsEvent {
         return AnalyticsEvent(
             name: "search_failed",
             parameters: [
-                "error_category": .string(SearchAnalyticsErrorCategory(error: error).rawValue)
+                "error_category": .string(APIErrorAnalyticsCategory(error: error).rawValue)
             ]
         )
     }
