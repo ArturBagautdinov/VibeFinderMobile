@@ -17,6 +17,7 @@ final class ProfileViewModel {
     }
     
     private let profileRepository: ProfileRepositoryProtocol
+    private let analyticsTracker: AnalyticsTrackerProtocol
     private(set) var state = State(profile: nil, isLoading: false, errorMessage: nil)
     private var currentPage: ProfilePage?
     var editableProfile: UserProfile? { currentPage?.profile }
@@ -25,8 +26,9 @@ final class ProfileViewModel {
     var onProfileChanged: ((UserProfile) -> Void)?
     var onLogout: (() -> Void)?
     
-    init (profileRepository: ProfileRepositoryProtocol) {
+    init (profileRepository: ProfileRepositoryProtocol, analyticsTracker: AnalyticsTrackerProtocol) {
         self.profileRepository = profileRepository
+        self.analyticsTracker = analyticsTracker
     }
 
     func loadProfileIfNeeded() {
@@ -77,6 +79,7 @@ final class ProfileViewModel {
     }
 
     func logout() {
+        analyticsTracker.track(ProfileLogoutAnalyticsEvent.requested())
         state = State(profile: state.profile, isLoading: true, errorMessage: nil)
         onStateChange?(state)
         
@@ -86,10 +89,12 @@ final class ProfileViewModel {
                 switch result {
                     
                 case .success:
+                    self?.analyticsTracker.track(ProfileLogoutAnalyticsEvent.succeeded())
                     self?.onLogout?()
                     
                 case let .failure(error):
                     guard let self else { return }
+                    self.analyticsTracker.track(ProfileLogoutAnalyticsEvent.failed(error: error))
                     self.setState(
                         profile: self.state.profile,
                         isLoading: false,

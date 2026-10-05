@@ -7,12 +7,14 @@ final class RegisterViewModel {
     }
 
     private let authRepository: AuthRepositoryProtocol
+    private let analyticsTracker: AnalyticsTrackerProtocol
 
     var onStateChange: ((State) -> Void)?
     var onRegistered: ((String) -> Void)?
 
-    init(authRepository: AuthRepositoryProtocol) {
+    init(authRepository: AuthRepositoryProtocol, analyticsTracker: AnalyticsTrackerProtocol) {
         self.authRepository = authRepository
+        self.analyticsTracker = analyticsTracker
     }
 
     func register(
@@ -45,6 +47,7 @@ final class RegisterViewModel {
             return
         }
 
+        analyticsTracker.track(AuthAnalyticsEvent.registrationRequested())
         onStateChange?(State(isLoading: true, errorMessage: nil))
         authRepository.register(
             email: normalizedEmail,
@@ -55,12 +58,15 @@ final class RegisterViewModel {
             confirmPassword: confirmPassword
         ) { [weak self] result in
             DispatchQueue.main.async {
-                self?.onStateChange?(State(isLoading: false, errorMessage: nil))
+                guard let self else { return }
+                self.onStateChange?(State(isLoading: false, errorMessage: nil))
                 switch result {
                 case let .success(submission):
-                    self?.onRegistered?(submission.message)
+                    self.analyticsTracker.track(AuthAnalyticsEvent.registrationSucceeded())
+                    self.onRegistered?(submission.message)
                 case let .failure(error):
-                    self?.onStateChange?(State(isLoading: false, errorMessage: error.userMessage))
+                    self.analyticsTracker.track(AuthAnalyticsEvent.registrationFailed(error: error))
+                    self.onStateChange?(State(isLoading: false, errorMessage: error.userMessage))
                 }
             }
         }

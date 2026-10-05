@@ -56,11 +56,17 @@ final class AppAssembly: Assembly {
         .inObjectScope(.container)
 
         container.register(LoginViewModel.self) { resolver in
-            LoginViewModel(authRepository: resolver.resolve(AuthRepositoryProtocol.self)!)
+            LoginViewModel(
+                authRepository: resolver.resolve(AuthRepositoryProtocol.self)!,
+                analyticsTracker: resolver.resolve(AnalyticsTrackerProtocol.self)!
+            )
         }
 
         container.register(RegisterViewModel.self) { resolver in
-            RegisterViewModel(authRepository: resolver.resolve(AuthRepositoryProtocol.self)!)
+            RegisterViewModel(
+                authRepository: resolver.resolve(AuthRepositoryProtocol.self)!,
+                analyticsTracker: resolver.resolve(AnalyticsTrackerProtocol.self)!
+            )
         }
 
         container.register(SearchRepositoryProtocol.self) { resolver in
@@ -109,7 +115,8 @@ final class AppAssembly: Assembly {
 
         container.register(ProfileViewModel.self) { resolver in
             ProfileViewModel(
-                profileRepository: resolver.resolve(ProfileRepositoryProtocol.self)!
+                profileRepository: resolver.resolve(ProfileRepositoryProtocol.self)!,
+                analyticsTracker: resolver.resolve(AnalyticsTrackerProtocol.self)!
             )
         }
 

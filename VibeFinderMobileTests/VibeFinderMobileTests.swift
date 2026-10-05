@@ -7,7 +7,7 @@ struct VibeFinderMobileTests {
     @Test
     func registerViewModelShowsPasswordMismatchBeforeNetworkRequest() {
         let repository = AuthRepositorySpy()
-        let viewModel = RegisterViewModel(authRepository: repository)
+        let viewModel = RegisterViewModel(authRepository: repository, analyticsTracker: SearchAnalyticsSpy())
         var states: [RegisterViewModel.State] = []
         viewModel.onStateChange = { states.append($0) }
 
@@ -27,7 +27,7 @@ struct VibeFinderMobileTests {
     @Test
     func registerViewModelShowsRequiredFieldsBeforeNetworkRequest() {
         let repository = AuthRepositorySpy()
-        let viewModel = RegisterViewModel(authRepository: repository)
+        let viewModel = RegisterViewModel(authRepository: repository, analyticsTracker: SearchAnalyticsSpy())
         var states: [RegisterViewModel.State] = []
         viewModel.onStateChange = { states.append($0) }
 
@@ -47,7 +47,7 @@ struct VibeFinderMobileTests {
     @Test
     func loginViewModelShowsRequiredFieldsBeforeNetworkRequest() {
         let repository = AuthRepositorySpy()
-        let viewModel = LoginViewModel(authRepository: repository)
+        let viewModel = LoginViewModel(authRepository: repository, analyticsTracker: SearchAnalyticsSpy())
         var states: [LoginViewModel.State] = []
         viewModel.onStateChange = { states.append($0) }
 

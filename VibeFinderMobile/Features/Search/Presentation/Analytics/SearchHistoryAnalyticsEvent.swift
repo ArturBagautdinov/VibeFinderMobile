@@ -23,7 +23,7 @@ enum SearchHistoryAnalyticsEvent {
             name: "search_history_open_failed",
             parameters: [
                 "source": .string(source.rawValue),
-                "error_category": .string(SearchAnalyticsErrorCategory(error: error).rawValue)
+                "error_category": .string(APIErrorAnalyticsCategory(error: error).rawValue)
             ]
         )
     }

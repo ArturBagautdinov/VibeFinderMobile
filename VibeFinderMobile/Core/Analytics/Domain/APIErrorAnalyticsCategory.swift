@@ -1,4 +1,4 @@
-enum SearchAnalyticsErrorCategory: String {
+enum APIErrorAnalyticsCategory: String {
     case server
     case httpStatus = "http_status"
     case decoding

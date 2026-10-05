@@ -7,6 +7,46 @@ import UIKit
 struct EditProfileTests {
     @Test
     @MainActor
+    func logoutTracksRequestAndSuccess() async {
+        let repository = EditProfileRepositorySpy()
+        repository.logoutResult = .success(())
+        let analytics = EditProfileAnalyticsSpy()
+        let viewModel = ProfileViewModel(profileRepository: repository, analyticsTracker: analytics)
+
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            viewModel.onLogout = { continuation.resume() }
+            viewModel.logout()
+        }
+
+        #expect(analytics.events == [
+            AnalyticsEvent(name: "auth_logout_requested"),
+            AnalyticsEvent(name: "auth_logout_succeeded")
+        ])
+    }
+
+    @Test
+    @MainActor
+    func logoutTracksFailureCategory() async {
+        let repository = EditProfileRepositorySpy()
+        repository.logoutResult = .failure(.statusCode(503))
+        let analytics = EditProfileAnalyticsSpy()
+        let viewModel = ProfileViewModel(profileRepository: repository, analyticsTracker: analytics)
+
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            viewModel.onStateChange = { state in
+                if state.errorMessage != nil { continuation.resume() }
+            }
+            viewModel.logout()
+        }
+
+        #expect(analytics.events == [
+            AnalyticsEvent(name: "auth_logout_requested"),
+            AnalyticsEvent(name: "auth_logout_failed", parameters: ["error_category": .string("http_status")])
+        ])
+    }
+
+    @Test
+    @MainActor
     func avatarChoicesAreRenderable() {
         let symbols = EditProfileAvatarSymbols.names
         let colors = EditProfileAvatarColors.hexValues
@@ -133,7 +173,10 @@ struct EditProfileTests {
                 hiddenCount: 0
             )
         )
-        let viewModel = ProfileViewModel(profileRepository: repository)
+        let viewModel = ProfileViewModel(
+            profileRepository: repository,
+            analyticsTracker: EditProfileAnalyticsSpy()
+        )
         var observedProfiles: [UserProfile] = []
         viewModel.onProfileChanged = { observedProfiles.append($0) }
 
@@ -223,13 +266,16 @@ struct EditProfileTests {
 private final class EditProfileRepositorySpy: ProfileRepositoryProtocol {
     var lastUpdate: ProfileUpdate?
     var loadPage: ProfilePage?
+    var logoutResult: Result<Void, APIError> = .success(())
     private(set) var loadCallCount = 0
 
     func loadProfile(completion: @escaping (Result<ProfilePage, APIError>) -> Void) {
         loadCallCount += 1
         if let loadPage { completion(.success(loadPage)) }
     }
-    func logout(completion: @escaping (Result<Void, APIError>) -> Void) {}
+    func logout(completion: @escaping (Result<Void, APIError>) -> Void) {
+        completion(logoutResult)
+    }
     func updateProfile(
         _ update: ProfileUpdate,
         completion: @escaping (Result<UserProfile, APIError>) -> Void
