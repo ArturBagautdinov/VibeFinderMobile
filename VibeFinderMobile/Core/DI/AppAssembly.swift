@@ -84,14 +84,18 @@ final class AppAssembly: Assembly {
         .inObjectScope(.container)
 
         container.register(SearchHistoryViewModel.self) { resolver in
-            SearchHistoryViewModel(searchRepository: resolver.resolve(SearchRepositoryProtocol.self)!)
+            SearchHistoryViewModel(
+                searchRepository: resolver.resolve(SearchRepositoryProtocol.self)!,
+                analyticsTracker: resolver.resolve(AnalyticsTrackerProtocol.self)!
+            )
         }
 
         container.register(SearchViewModel.self) { resolver, username in
             SearchViewModel(
                 username: username,
                 searchRepository: resolver.resolve(SearchRepositoryProtocol.self)!,
-                suggestionsStore: resolver.resolve(SearchSuggestionsStoreProtocol.self)!
+                suggestionsStore: resolver.resolve(SearchSuggestionsStoreProtocol.self)!,
+                analyticsTracker: resolver.resolve(AnalyticsTrackerProtocol.self)!
             )
         }
         
@@ -112,8 +116,14 @@ final class AppAssembly: Assembly {
         container.register(EditProfileViewModel.self) { resolver, profile in
             EditProfileViewModel(
                 profile: profile,
-                repository: resolver.resolve(ProfileRepositoryProtocol.self)!
+                repository: resolver.resolve(ProfileRepositoryProtocol.self)!,
+                analyticsTracker: resolver.resolve(AnalyticsTrackerProtocol.self)!
             )
         }
+        
+        container.register(AnalyticsTrackerProtocol.self) { _ in
+            FirebaseAnalyticsTracker()
+        }
+        .inObjectScope(.container)
     }
 }

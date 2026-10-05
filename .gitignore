@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+
+# Xcode build products and local user state
+build/
+DerivedData/
+*.xcresult
+*.xcuserstate
+**/xcuserdata/
+
+# Swift Package Manager local build state
+.build/
+.swiftpm/
+
+# Firebase configuration (provide separately on each machine/CI)
+/GoogleService-Info.plist

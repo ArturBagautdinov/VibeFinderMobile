@@ -140,6 +140,77 @@ struct VibeFinderMobileTests {
 
     @Test
     @MainActor
+    func searchTracksRequestAndSuccessWithoutQueryText() async {
+        let repository = SearchRepositorySpy()
+        repository.result = .success(.fixture())
+        let analytics = SearchAnalyticsSpy()
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: SearchSuggestionsStoreSpy(),
+            analyticsTracker: analytics
+        )
+
+        viewModel.search(query: " private search text ")
+        await Task.yield()
+        await Task.yield()
+
+        #expect(repository.lastQuery == "private search text")
+        #expect(analytics.events == [
+            AnalyticsEvent(name: "search_requested"),
+            AnalyticsEvent(
+                name: "search_succeeded",
+                parameters: ["result_count": .integer(1)]
+            )
+        ])
+    }
+
+    @Test
+    @MainActor
+    func searchTracksFailureCategoryButNotErrorMessage() async {
+        let repository = SearchRepositorySpy()
+        repository.result = .failure(.unknown)
+        let analytics = SearchAnalyticsSpy()
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: SearchSuggestionsStoreSpy(),
+            analyticsTracker: analytics
+        )
+
+        viewModel.search(query: "private search text")
+        await Task.yield()
+        await Task.yield()
+
+        #expect(analytics.events == [
+            AnalyticsEvent(name: "search_requested"),
+            AnalyticsEvent(
+                name: "search_failed",
+                parameters: ["error_category": .string("unknown")]
+            )
+        ])
+    }
+
+    @Test
+    @MainActor
+    func emptySearchDoesNotTrackNetworkRequest() {
+        let repository = SearchRepositorySpy()
+        let analytics = SearchAnalyticsSpy()
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: SearchSuggestionsStoreSpy(),
+            analyticsTracker: analytics
+        )
+
+        viewModel.search(query: "  ")
+
+        #expect(repository.searchCallCount == 0)
+        #expect(analytics.events.isEmpty)
+    }
+
+    @Test
+    @MainActor
     func searchViewModelKeepsSuccessfulSearchInRecentHistoryWhenAPIHistoryIsEmpty() async {
         let repository = SearchRepositorySpy()
         let suggestionsStore = SearchSuggestionsStoreSpy()
@@ -164,19 +235,59 @@ struct VibeFinderMobileTests {
     func searchViewModelStoresCustomSuggestion() {
         let repository = SearchRepositorySpy()
         let suggestionsStore = SearchSuggestionsStoreSpy()
+        let analytics = SearchAnalyticsSpy()
         let viewModel = SearchViewModel(
             username: "Artur",
             searchRepository: repository,
-            suggestionsStore: suggestionsStore
+            suggestionsStore: suggestionsStore,
+            analyticsTracker: analytics
         )
         var states: [SearchViewModel.State] = []
         viewModel.onStateChange = { states.append($0) }
 
         viewModel.addCustomSuggestion("  Cyberpunk noir  ")
+        viewModel.addCustomSuggestion("Cyberpunk noir")
 
         #expect(suggestionsStore.savedSuggestions.contains { $0.title == "Cyberpunk noir" })
         #expect(states.last?.allSuggestions.contains { $0.title == "Cyberpunk noir" } == true)
         #expect(states.last?.visibleSuggestions.contains { $0.title == "Cyberpunk noir" } == true)
+        #expect(analytics.events == [
+            AnalyticsEvent(
+                name: "search_suggestion_added",
+                parameters: ["kind": .string("custom")]
+            )
+        ])
+    }
+
+    @Test
+    @MainActor
+    func searchViewModelTracksSuggestionSelectionByKind() {
+        let suggestionsStore = SearchSuggestionsStoreSpy()
+        suggestionsStore.suggestions.insert(.custom(title: "Private suggestion"), at: 0)
+        let analytics = SearchAnalyticsSpy()
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: SearchRepositorySpy(),
+            suggestionsStore: suggestionsStore,
+            analyticsTracker: analytics
+        )
+        let customID = suggestionsStore.suggestions[0].id
+        let builtInID = SearchSuggestion.defaults[0].id
+
+        viewModel.suggestionSelected(id: customID)
+        viewModel.suggestionSelected(id: builtInID)
+        viewModel.suggestionSelected(id: "missing")
+
+        #expect(analytics.events == [
+            AnalyticsEvent(
+                name: "search_suggestion_selected",
+                parameters: ["kind": .string("custom")]
+            ),
+            AnalyticsEvent(
+                name: "search_suggestion_selected",
+                parameters: ["kind": .string("built_in")]
+            )
+        ])
     }
 
     @Test
@@ -184,6 +295,7 @@ struct VibeFinderMobileTests {
     func searchViewModelDeletesCustomSuggestion() {
         let repository = SearchRepositorySpy()
         let suggestionsStore = SearchSuggestionsStoreSpy()
+        let analytics = SearchAnalyticsSpy()
         suggestionsStore.suggestions = [
             .custom(title: "Cyberpunk noir"),
             .custom(title: "Quiet mystery")
@@ -191,7 +303,8 @@ struct VibeFinderMobileTests {
         let viewModel = SearchViewModel(
             username: "Artur",
             searchRepository: repository,
-            suggestionsStore: suggestionsStore
+            suggestionsStore: suggestionsStore,
+            analyticsTracker: analytics
         )
         let suggestion = viewModel.state.allSuggestions.first { $0.title == "Cyberpunk noir" }
 
@@ -200,6 +313,12 @@ struct VibeFinderMobileTests {
         #expect(suggestionsStore.savedSuggestions.contains { $0.title == "Cyberpunk noir" } == false)
         #expect(viewModel.state.allSuggestions.contains { $0.title == "Cyberpunk noir" } == false)
         #expect(viewModel.state.allSuggestions.contains { $0.title == "Quiet mystery" } == true)
+        #expect(analytics.events == [
+            AnalyticsEvent(
+                name: "search_suggestion_deleted",
+                parameters: ["kind": .string("custom")]
+            )
+        ])
     }
 
     @Test
@@ -207,10 +326,12 @@ struct VibeFinderMobileTests {
     func searchViewModelDeletesBuiltInSuggestion() {
         let repository = SearchRepositorySpy()
         let suggestionsStore = SearchSuggestionsStoreSpy()
+        let analytics = SearchAnalyticsSpy()
         let viewModel = SearchViewModel(
             username: "Artur",
             searchRepository: repository,
-            suggestionsStore: suggestionsStore
+            suggestionsStore: suggestionsStore,
+            analyticsTracker: analytics
         )
         let builtInSuggestion = viewModel.state.allSuggestions.first
 
@@ -218,6 +339,12 @@ struct VibeFinderMobileTests {
 
         #expect(suggestionsStore.savedSuggestions.contains { $0.id == builtInSuggestion?.id } == false)
         #expect(viewModel.state.allSuggestions.count == SearchSuggestion.defaults.count - 1)
+        #expect(analytics.events == [
+            AnalyticsEvent(
+                name: "search_suggestion_deleted",
+                parameters: ["kind": .string("built_in")]
+            )
+        ])
     }
 
     @Test
@@ -225,11 +352,13 @@ struct VibeFinderMobileTests {
     func searchViewModelRestoresDefaultSuggestionsWithoutRemovingCustomOnes() {
         let repository = SearchRepositorySpy()
         let suggestionsStore = SearchSuggestionsStoreSpy()
+        let analytics = SearchAnalyticsSpy()
         suggestionsStore.suggestions = [.custom(title: "Cyberpunk noir")]
         let viewModel = SearchViewModel(
             username: "Artur",
             searchRepository: repository,
-            suggestionsStore: suggestionsStore
+            suggestionsStore: suggestionsStore,
+            analyticsTracker: analytics
         )
 
         viewModel.restoreDefaultSuggestions()
@@ -240,6 +369,9 @@ struct VibeFinderMobileTests {
         })
         #expect(viewModel.state.allSuggestions.count == SearchSuggestion.defaults.count + 1)
         #expect(viewModel.state.allSuggestions.contains { $0.title == "Cyberpunk noir" })
+        #expect(analytics.events == [
+            AnalyticsEvent(name: "search_suggestions_defaults_restored")
+        ])
     }
 
     @Test
@@ -319,11 +451,13 @@ struct VibeFinderMobileTests {
     func searchViewModelLoadsResultByHistoryID() async {
         let repository = SearchRepositorySpy()
         let suggestionsStore = SearchSuggestionsStoreSpy()
+        let analytics = SearchAnalyticsSpy()
         repository.pageByIDResult = .success(.fixture(id: 303))
         let viewModel = SearchViewModel(
             username: "Artur",
             searchRepository: repository,
-            suggestionsStore: suggestionsStore
+            suggestionsStore: suggestionsStore,
+            analyticsTracker: analytics
         )
         var resultPage: SearchPage?
         viewModel.onResultsReady = { page in
@@ -337,6 +471,48 @@ struct VibeFinderMobileTests {
         #expect(repository.searchCallCount == 0)
         #expect(repository.loadedPageIDs == [303])
         #expect(resultPage?.id == 303)
+        #expect(analytics.events == [
+            AnalyticsEvent(
+                name: "search_history_open_requested",
+                parameters: ["source": .string("recent")]
+            ),
+            AnalyticsEvent(
+                name: "search_history_open_succeeded",
+                parameters: ["source": .string("recent")]
+            )
+        ])
+    }
+
+    @Test
+    @MainActor
+    func recentHistoryOpenTracksFailureWithoutQueryOrID() async {
+        let repository = SearchRepositorySpy()
+        repository.pageByIDResult = .failure(.unknown)
+        let analytics = SearchAnalyticsSpy()
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: SearchSuggestionsStoreSpy(),
+            analyticsTracker: analytics
+        )
+
+        viewModel.openHistoryResult(.fixture(id: 303, originalQuery: "private query"))
+        await Task.yield()
+        await Task.yield()
+
+        #expect(analytics.events == [
+            AnalyticsEvent(
+                name: "search_history_open_requested",
+                parameters: ["source": .string("recent")]
+            ),
+            AnalyticsEvent(
+                name: "search_history_open_failed",
+                parameters: [
+                    "source": .string("recent"),
+                    "error_category": .string("unknown")
+                ]
+            )
+        ])
     }
 
     @Test
@@ -348,7 +524,10 @@ struct VibeFinderMobileTests {
             .fixture(id: 102, originalQuery: "Cozy game", resultCount: 2),
             .fixture(id: 103, originalQuery: "Dark book", resultCount: 4)
         ])
-        let viewModel = SearchHistoryViewModel(searchRepository: repository)
+        let viewModel = SearchHistoryViewModel(
+            searchRepository: repository,
+            analyticsTracker: SearchAnalyticsSpy()
+        )
         var states: [SearchHistoryViewModel.State] = []
         viewModel.onStateChange = { states.append($0) }
 
@@ -365,7 +544,11 @@ struct VibeFinderMobileTests {
     func searchHistoryViewModelLoadsResultByHistoryID() async {
         let repository = SearchRepositorySpy()
         repository.pageByIDResult = .success(.fixture(id: 202))
-        let viewModel = SearchHistoryViewModel(searchRepository: repository)
+        let analytics = SearchAnalyticsSpy()
+        let viewModel = SearchHistoryViewModel(
+            searchRepository: repository,
+            analyticsTracker: analytics
+        )
         var resultPage: SearchPage?
         viewModel.onResultsReady = { page in
             resultPage = page
@@ -377,6 +560,46 @@ struct VibeFinderMobileTests {
 
         #expect(repository.loadedPageIDs == [202])
         #expect(resultPage?.id == 202)
+        #expect(analytics.events == [
+            AnalyticsEvent(
+                name: "search_history_open_requested",
+                parameters: ["source": .string("full")]
+            ),
+            AnalyticsEvent(
+                name: "search_history_open_succeeded",
+                parameters: ["source": .string("full")]
+            )
+        ])
+    }
+
+    @Test
+    @MainActor
+    func fullHistoryOpenTracksFailureWithoutID() async {
+        let repository = SearchRepositorySpy()
+        repository.pageByIDResult = .failure(.unknown)
+        let analytics = SearchAnalyticsSpy()
+        let viewModel = SearchHistoryViewModel(
+            searchRepository: repository,
+            analyticsTracker: analytics
+        )
+
+        viewModel.selectHistory(id: 202)
+        await Task.yield()
+        await Task.yield()
+
+        #expect(analytics.events == [
+            AnalyticsEvent(
+                name: "search_history_open_requested",
+                parameters: ["source": .string("full")]
+            ),
+            AnalyticsEvent(
+                name: "search_history_open_failed",
+                parameters: [
+                    "source": .string("full"),
+                    "error_category": .string("unknown")
+                ]
+            )
+        ])
     }
 
     @Test
@@ -388,7 +611,10 @@ struct VibeFinderMobileTests {
             .fixture(id: 102, originalQuery: "Cozy game", resultCount: 2)
         ])
         repository.deleteHistoryItemResult = .success(())
-        let viewModel = SearchHistoryViewModel(searchRepository: repository)
+        let viewModel = SearchHistoryViewModel(
+            searchRepository: repository,
+            analyticsTracker: SearchAnalyticsSpy()
+        )
 
         viewModel.loadHistory()
         await Task.yield()
@@ -417,7 +643,10 @@ struct VibeFinderMobileTests {
             .fixture(id: 102, originalQuery: "Cozy game", resultCount: 2)
         ])
         repository.deleteHistoryItemResult = .failure(.unknown)
-        let viewModel = SearchHistoryViewModel(searchRepository: repository)
+        let viewModel = SearchHistoryViewModel(
+            searchRepository: repository,
+            analyticsTracker: SearchAnalyticsSpy()
+        )
 
         viewModel.loadHistory()
         await Task.yield()
@@ -440,7 +669,10 @@ struct VibeFinderMobileTests {
             .fixture(id: 101, originalQuery: "Rainy movie", resultCount: 3)
         ])
         repository.clearHistoryResult = .success(())
-        let viewModel = SearchHistoryViewModel(searchRepository: repository)
+        let viewModel = SearchHistoryViewModel(
+            searchRepository: repository,
+            analyticsTracker: SearchAnalyticsSpy()
+        )
 
         viewModel.loadHistory()
         await Task.yield()
@@ -621,6 +853,29 @@ private final class SearchSuggestionsStoreSpy: SearchSuggestionsStoreProtocol {
         let restoredSuggestions = suggestions + missingDefaultSuggestions
         saveSuggestions(restoredSuggestions)
         return restoredSuggestions
+    }
+}
+
+private final class SearchAnalyticsSpy: AnalyticsTrackerProtocol {
+    private(set) var events: [AnalyticsEvent] = []
+
+    func track(_ event: AnalyticsEvent) {
+        events.append(event)
+    }
+}
+
+private extension SearchViewModel {
+    convenience init(
+        username: String,
+        searchRepository: SearchRepositoryProtocol,
+        suggestionsStore: SearchSuggestionsStoreProtocol
+    ) {
+        self.init(
+            username: username,
+            searchRepository: searchRepository,
+            suggestionsStore: suggestionsStore,
+            analyticsTracker: SearchAnalyticsSpy()
+        )
     }
 }
 

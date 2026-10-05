@@ -11,14 +11,19 @@ final class SearchHistoryViewModel {
     }
 
     private let searchRepository: SearchRepositoryProtocol
+    private let analyticsTracker: AnalyticsTrackerProtocol
     private var historyEntries: [SearchHistoryEntry] = []
     private(set) var state: State
 
     var onStateChange: ((State) -> Void)?
     var onResultsReady: ((SearchPage) -> Void)?
 
-    init(searchRepository: SearchRepositoryProtocol) {
+    init(
+        searchRepository: SearchRepositoryProtocol,
+        analyticsTracker: AnalyticsTrackerProtocol
+    ) {
         self.searchRepository = searchRepository
+        self.analyticsTracker = analyticsTracker
         self.state = Self.makeState(from: [])
     }
 
@@ -39,14 +44,18 @@ final class SearchHistoryViewModel {
     }
 
     func selectHistory(id: Int) {
+        analyticsTracker.track(SearchHistoryAnalyticsEvent.openRequested(source: .full))
         update(isInitialLoading: true, errorMessage: nil)
-        searchRepository.loadSearchPage(id: id) { [weak self] result in
+        let tracker = analyticsTracker
+        searchRepository.loadSearchPage(id: id) { [weak self, tracker] result in
             Task {
                 switch result {
                 case let .success(page):
+                    tracker.track(SearchHistoryAnalyticsEvent.openSucceeded(source: .full))
                     self?.update(isInitialLoading: false, errorMessage: nil)
                     self?.onResultsReady?(page)
                 case let .failure(error):
+                    tracker.track(SearchHistoryAnalyticsEvent.openFailed(source: .full, error: error))
                     self?.update(isInitialLoading: false, errorMessage: error.userMessage)
                 }
             }

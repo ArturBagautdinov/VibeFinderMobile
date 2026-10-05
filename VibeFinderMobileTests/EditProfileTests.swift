@@ -70,7 +70,10 @@ struct EditProfileTests {
             backgroundHex: "#4F46E5",
             foregroundHex: "#FFFFFF"
         ))
-        let viewModel = EditProfileViewModel(profile: profile, repository: repository)
+        let viewModel = EditProfileViewModel(
+            profile: profile,
+            repository: repository,
+            analyticsTracker: EditProfileAnalyticsSpy())
 
         viewModel.setNames(firstName: " New ", lastName: "Name")
         #expect(viewModel.state.canSave)
@@ -94,7 +97,10 @@ struct EditProfileTests {
             backgroundHex: "#4F46E5",
             foregroundHex: "#FFFFFF"
         ))
-        let viewModel = EditProfileViewModel(profile: profile, repository: repository)
+        let viewModel = EditProfileViewModel(
+            profile: profile,
+            repository: repository,
+            analyticsTracker: EditProfileAnalyticsSpy())
 
         viewModel.selectStyle(.none)
         #expect(viewModel.state.canSave)
@@ -184,6 +190,34 @@ struct EditProfileTests {
             createdAt: "2026-01-01T00:00:00Z"
         )
     }
+    @Test
+    @MainActor
+    func savingProfileTracksOneEventWithoutPersonalData() {
+        let repository = EditProfileRepositorySpy()
+        let analytics = EditProfileAnalyticsSpy()
+        let profile = profileFixture(avatar: nil)
+        let viewModel = EditProfileViewModel(
+            profile: profile,
+            repository: repository,
+            analyticsTracker: analytics
+        )
+
+        viewModel.setNames(firstName: "New", lastName: "Name")
+        viewModel.save()
+        viewModel.save() // Пока запрос выполняется, повторного события быть не должно.
+
+        #expect(analytics.events == [
+            AnalyticsEvent(
+                name: "profile_edit_save_requested",
+                parameters: [
+                    "first_name_changed": .integer(1),
+                    "last_name_changed": .integer(1),
+                    "avatar_action": .string("unchanged"),
+                    "avatar_style": .string("none")
+                ]
+            )
+        ])
+    }
 }
 
 private final class EditProfileRepositorySpy: ProfileRepositoryProtocol {
@@ -201,5 +235,13 @@ private final class EditProfileRepositorySpy: ProfileRepositoryProtocol {
         completion: @escaping (Result<UserProfile, APIError>) -> Void
     ) {
         lastUpdate = update
+    }
+}
+
+private final class EditProfileAnalyticsSpy: AnalyticsTrackerProtocol {
+    private(set) var events: [AnalyticsEvent] = []
+
+    func track(_ event: AnalyticsEvent) {
+        events.append(event)
     }
 }

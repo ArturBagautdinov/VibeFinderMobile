@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B99B9DE9306B9D5100D41CA6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B99B9DE8306B9D5100D41CA6 /* GoogleService-Info.plist */; };
+		B99F1378306BA2FB00614973 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = B99F1377306BA2FB00614973 /* FirebaseAnalytics */; };
+		B99F137A306BA2FB00614973 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = B99F1379306BA2FB00614973 /* FirebaseCrashlytics */; };
+		B99F137C306BA2FB00614973 /* FirebasePerformance in Frameworks */ = {isa = PBXBuildFile; productRef = B99F137B306BA2FB00614973 /* FirebasePerformance */; };
 		B9B199F4302D8D9B0021A532 /* Swinject in Frameworks */ = {isa = PBXBuildFile; productRef = B9B199F3302D8D9B0021A532 /* Swinject */; };
 		B9B199F7302D8E190021A532 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = B9B199F6302D8E190021A532 /* Alamofire */; };
 /* End PBXBuildFile section */
@@ -29,6 +33,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B99B9DE8306B9D5100D41CA6 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B9B199A1302D89B70021A532 /* VibeFinderMobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VibeFinderMobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9B199B7302D89B70021A532 /* VibeFinderMobileTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VibeFinderMobileTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9B199C1302D89B70021A532 /* VibeFinderMobileUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VibeFinderMobileUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -71,7 +76,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				B9B199F7302D8E190021A532 /* Alamofire in Frameworks */,
+				B99F137A306BA2FB00614973 /* FirebaseCrashlytics in Frameworks */,
+				B99F137C306BA2FB00614973 /* FirebasePerformance in Frameworks */,
 				B9B199F4302D8D9B0021A532 /* Swinject in Frameworks */,
+				B99F1378306BA2FB00614973 /* FirebaseAnalytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -98,6 +106,7 @@
 				B9B199A3302D89B70021A532 /* VibeFinderMobile */,
 				B9B199BA302D89B70021A532 /* VibeFinderMobileTests */,
 				B9B199C4302D89B70021A532 /* VibeFinderMobileUITests */,
+				B99B9DE8306B9D5100D41CA6 /* GoogleService-Info.plist */,
 				B9B199A2302D89B70021A532 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -136,6 +145,9 @@
 			packageProductDependencies = (
 				B9B199F3302D8D9B0021A532 /* Swinject */,
 				B9B199F6302D8E190021A532 /* Alamofire */,
+				B99F1377306BA2FB00614973 /* FirebaseAnalytics */,
+				B99F1379306BA2FB00614973 /* FirebaseCrashlytics */,
+				B99F137B306BA2FB00614973 /* FirebasePerformance */,
 			);
 			productName = VibeFinderMobile;
 			productReference = B9B199A1302D89B70021A532 /* VibeFinderMobile.app */;
@@ -223,6 +235,7 @@
 			packageReferences = (
 				B9B199F2302D8D9B0021A532 /* XCRemoteSwiftPackageReference "Swinject" */,
 				B9B199F5302D8E190021A532 /* XCRemoteSwiftPackageReference "Alamofire" */,
+				B99F1376306BA2FB00614973 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B9B199A2302D89B70021A532 /* Products */;
@@ -241,6 +254,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B99B9DE9306B9D5100D41CA6 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -361,12 +375,13 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.coolOrganization.VibeFinderMobile;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ArthurBagautdinov.VibeFinderMobile;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -392,12 +407,13 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.coolOrganization.VibeFinderMobile;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ArthurBagautdinov.VibeFinderMobile;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -656,6 +672,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		B99F1376306BA2FB00614973 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.19.2;
+			};
+		};
 		B9B199F2302D8D9B0021A532 /* XCRemoteSwiftPackageReference "Swinject" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Swinject/Swinject.git";
@@ -675,6 +699,21 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		B99F1377306BA2FB00614973 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B99F1376306BA2FB00614973 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		B99F1379306BA2FB00614973 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B99F1376306BA2FB00614973 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
+		B99F137B306BA2FB00614973 /* FirebasePerformance */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B99F1376306BA2FB00614973 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebasePerformance;
+		};
 		B9B199F3302D8D9B0021A532 /* Swinject */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = B9B199F2302D8D9B0021A532 /* XCRemoteSwiftPackageReference "Swinject" */;

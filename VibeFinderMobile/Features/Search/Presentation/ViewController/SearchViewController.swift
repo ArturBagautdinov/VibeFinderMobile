@@ -80,6 +80,7 @@ final class SearchViewController: UIViewController {
     }
 
     func selectSuggestion(_ suggestion: SearchSuggestionDisplayModel) {
+        viewModel.suggestionSelected(id: suggestion.id)
         searchView.setPromptText(suggestion.title)
     }
 

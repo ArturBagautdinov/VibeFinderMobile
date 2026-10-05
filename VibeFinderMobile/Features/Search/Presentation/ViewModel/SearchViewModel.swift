@@ -17,6 +17,7 @@ final class SearchViewModel {
 
     private let searchRepository: SearchRepositoryProtocol
     private let suggestionsStore: SearchSuggestionsStoreProtocol
+    private let analyticsTracker: AnalyticsTrackerProtocol
     private var suggestionModels: [SearchSuggestion]
     private var optimisticRecentHistory: [SearchHistoryEntryDisplayModel] = []
     private var pendingRecentHistoryInsertionID: Int?
@@ -33,10 +34,12 @@ final class SearchViewModel {
     init(
         username: String,
         searchRepository: SearchRepositoryProtocol,
-        suggestionsStore: SearchSuggestionsStoreProtocol
+        suggestionsStore: SearchSuggestionsStoreProtocol,
+        analyticsTracker: AnalyticsTrackerProtocol
     ) {
         self.searchRepository = searchRepository
         self.suggestionsStore = suggestionsStore
+        self.analyticsTracker = analyticsTracker
         let suggestionModels = suggestionsStore.loadSuggestions()
         let suggestionState = Self.makeSuggestionState(from: suggestionModels)
         self.suggestionModels = suggestionModels
@@ -90,20 +93,32 @@ final class SearchViewModel {
             return
         }
 
+        analyticsTracker.track(SearchAnalyticsEvent.requested())
         update(isLoading: true, errorMessage: nil)
-        searchRepository.search(query: normalizedQuery) { [weak self] result in
+        let tracker = analyticsTracker
+        searchRepository.search(query: normalizedQuery) { [weak self, tracker] result in
             Task {
                 switch result {
                 case let .success(page):
+                    tracker.track(SearchAnalyticsEvent.succeeded(page: page))
                     self?.prependOptimisticHistory(from: page)
                     self?.update(isLoading: false, errorMessage: nil)
                     self?.loadRecentHistory()
                     self?.onResultsReady?(page)
                 case let .failure(error):
+                    tracker.track(SearchAnalyticsEvent.failed(error: error))
                     self?.update(isLoading: false, errorMessage: error.userMessage)
                 }
             }
         }
+    }
+
+    func suggestionSelected(id: String) {
+        guard let suggestion = suggestionModels.first(where: { $0.id == id }) else {
+            return
+        }
+
+        analyticsTracker.track(SearchSuggestionAnalyticsEvent.selected(kind: suggestion.kind))
     }
 
     func addCustomSuggestion(_ suggestion: String) {
@@ -120,21 +135,24 @@ final class SearchViewModel {
 
         suggestionModels.insert(.custom(title: normalizedSuggestion), at: 0)
         suggestionsStore.saveSuggestions(suggestionModels)
+        analyticsTracker.track(SearchSuggestionAnalyticsEvent.customAdded())
         update(suggestionModels: suggestionModels)
     }
 
     func deleteSuggestion(id: String) {
-        guard suggestionModels.contains(where: { $0.id == id }) else {
+        guard let suggestion = suggestionModels.first(where: { $0.id == id }) else {
             return
         }
 
         suggestionModels.removeAll { $0.id == id }
         suggestionsStore.saveSuggestions(suggestionModels)
+        analyticsTracker.track(SearchSuggestionAnalyticsEvent.deleted(kind: suggestion.kind))
         update(suggestionModels: suggestionModels)
     }
 
     func restoreDefaultSuggestions() {
         suggestionModels = suggestionsStore.restoreDefaultSuggestions()
+        analyticsTracker.track(SearchSuggestionAnalyticsEvent.defaultsRestored())
         update(suggestionModels: suggestionModels)
     }
 
@@ -155,14 +173,18 @@ final class SearchViewModel {
     }
 
     func openHistoryResult(_ history: SearchHistoryEntryDisplayModel) {
+        analyticsTracker.track(SearchHistoryAnalyticsEvent.openRequested(source: .recent))
         update(isLoading: true, errorMessage: nil)
-        searchRepository.loadSearchPage(id: history.id) { [weak self] result in
+        let tracker = analyticsTracker
+        searchRepository.loadSearchPage(id: history.id) { [weak self, tracker] result in
             Task {
                 switch result {
                 case let .success(page):
+                    tracker.track(SearchHistoryAnalyticsEvent.openSucceeded(source: .recent))
                     self?.update(isLoading: false, errorMessage: nil)
                     self?.onResultsReady?(page)
                 case let .failure(error):
+                    tracker.track(SearchHistoryAnalyticsEvent.openFailed(source: .recent, error: error))
                     self?.update(isLoading: false, errorMessage: error.userMessage)
                 }
             }
