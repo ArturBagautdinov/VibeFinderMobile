@@ -2,6 +2,7 @@ import Foundation
 
 @MainActor
 final class SearchViewModel {
+
     struct State {
         let username: String
         let avatar: ProfileAvatar?
@@ -25,6 +26,9 @@ final class SearchViewModel {
 
     var onStateChange: ((State) -> Void)?
     var onResultsReady: ((SearchPage) -> Void)?
+
+    var onSearchStarted: (() -> Void)?
+    var onSearchFailed: (() -> Void)?
 
     private enum Constants {
         static let visibleSuggestionLimit = 5
@@ -93,6 +97,7 @@ final class SearchViewModel {
             return
         }
 
+        onSearchStarted?()
         analyticsTracker.track(SearchAnalyticsEvent.requested())
         update(isLoading: true, errorMessage: nil)
         let tracker = analyticsTracker
@@ -108,6 +113,7 @@ final class SearchViewModel {
                 case let .failure(error):
                     tracker.track(SearchAnalyticsEvent.failed(error: error))
                     self?.update(isLoading: false, errorMessage: error.userMessage)
+                    self?.onSearchFailed?()
                 }
             }
         }

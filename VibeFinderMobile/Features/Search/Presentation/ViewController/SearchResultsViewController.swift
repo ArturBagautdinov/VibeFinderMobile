@@ -8,6 +8,12 @@ final class SearchResultsViewController: UIViewController, UICollectionViewDeleg
 
     var onBackSelected: (() -> Void)?
 
+    private var didApplyInitialSnapshot = false
+    private var didAppear = false
+    private var didReportFirstDisplay = false
+
+    var onFirstDisplay: (() -> Void)?
+
     init(page: SearchPage, imageLoader: SearchResultImageLoading) {
         self.viewModel = SearchResultsViewModel(page: page)
         self.imageLoader = imageLoader
@@ -16,6 +22,12 @@ final class SearchResultsViewController: UIViewController, UICollectionViewDeleg
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        didAppear = true
+        reportFirstDisplayIfReady()
     }
 
     override func loadView() {
@@ -41,7 +53,23 @@ final class SearchResultsViewController: UIViewController, UICollectionViewDeleg
             imageLoader: imageLoader
         )
         self.dataSource = dataSource
-        dataSource.apply(sections: viewModel.sections)
+        dataSource.apply(sections: viewModel.sections) { [weak self] in
+            self?.didApplyInitialSnapshot = true
+            self?.reportFirstDisplayIfReady()
+        }
+    }
+
+    private func reportFirstDisplayIfReady() {
+        guard didAppear,
+              didApplyInitialSnapshot,
+              !didReportFirstDisplay else {
+            return
+        }
+
+        didReportFirstDisplay = true
+        let callback = onFirstDisplay
+        onFirstDisplay = nil
+        callback?()
     }
 
     @objc private func backTapped() {

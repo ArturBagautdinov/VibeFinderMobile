@@ -7,6 +7,9 @@ final class SearchCoordinator: Coordinator {
     private let username: String
     private weak var searchViewModel: SearchViewModel?
 
+    private let performanceTracker: SearchPerformanceTracking
+    private var activeSearchTrace: SearchPerformanceTrace?
+
     init(
         navigationController: UINavigationController,
         container: Container,
@@ -15,15 +18,29 @@ final class SearchCoordinator: Coordinator {
         self.navigationController = navigationController
         self.container = container
         self.username = username
+        self.performanceTracker = container.resolve(SearchPerformanceTracking.self)!
     }
 
     func start() {
         let viewModel = container.resolve(SearchViewModel.self, argument: username)!
         searchViewModel = viewModel
         let viewController = SearchViewController(viewModel: viewModel)
-        viewController.onResultsReady = { [weak self] page in
-            self?.showResults(page)
+
+        viewModel.onSearchStarted = { [weak self] in
+            guard let self else { return }
+
+            self.finishSearchTrace(outcome: .cancelled)
+            self.activeSearchTrace = self.performanceTracker.startSearchToResults()
         }
+
+        viewModel.onSearchFailed = { [weak self] in
+            self?.finishSearchTrace(outcome: .failed)
+        }
+
+        viewController.onResultsReady = { [weak self] page in
+            self?.showResults(page, completesSearchTrace: true)
+        }
+
         viewController.onMoreSuggestionsSelected = { [weak self, weak viewController] suggestions in
             self?.showSuggestionsPicker(
                 suggestions: suggestions,
@@ -48,7 +65,10 @@ final class SearchCoordinator: Coordinator {
         searchViewModel?.updateProfileAppearance(avatar: avatar, initials: initials)
     }
 
-    private func showResults(_ page: SearchPage) {
+    private func showResults(
+        _ page: SearchPage,
+        completesSearchTrace: Bool = false
+    ) {
         let viewController = SearchResultsViewController(
             page: page,
             imageLoader: container.resolve(SearchResultImageLoading.self)!
@@ -56,7 +76,19 @@ final class SearchCoordinator: Coordinator {
         viewController.onBackSelected = { [weak self] in
             self?.navigationController.popViewController(animated: true)
         }
+
+        if completesSearchTrace {
+            viewController.onFirstDisplay = { [weak self] in
+                self?.finishSearchTrace(outcome: .shown)
+            }
+        }
+
         navigationController.pushViewController(viewController, animated: true)
+    }
+
+    private func finishSearchTrace(outcome: SearchPerformanceOutcome) {
+        activeSearchTrace?.finish(outcome: outcome)
+        activeSearchTrace = nil
     }
 
     private func showSuggestionsPicker(
