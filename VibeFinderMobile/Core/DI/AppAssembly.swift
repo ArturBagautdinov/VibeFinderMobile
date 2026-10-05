@@ -98,15 +98,15 @@ final class AppAssembly: Assembly {
                 analyticsTracker: resolver.resolve(AnalyticsTrackerProtocol.self)!
             )
         }
-        
+
         container.register(ProfileRepositoryProtocol.self) { resolver in
             ProfileRepository(apiClient: resolver.resolve(APIClientProtocol.self)!,
                               authRepository: resolver.resolve(AuthRepositoryProtocol.self)!
             )
-            
+
         }
         .inObjectScope(.container)
-        
+
         container.register(ProfileViewModel.self) { resolver in
             ProfileViewModel(
                 profileRepository: resolver.resolve(ProfileRepositoryProtocol.self)!
@@ -120,9 +120,14 @@ final class AppAssembly: Assembly {
                 analyticsTracker: resolver.resolve(AnalyticsTrackerProtocol.self)!
             )
         }
-        
+
         container.register(AnalyticsTrackerProtocol.self) { _ in
             FirebaseAnalyticsTracker()
+        }
+        .inObjectScope(.container)
+
+        container.register(SearchPerformanceTracking.self) { _ in
+            FirebaseSearchPerformanceTracker()
         }
         .inObjectScope(.container)
     }

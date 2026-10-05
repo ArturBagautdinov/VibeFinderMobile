@@ -60,8 +60,19 @@ final class SearchResultsDataSource {
         configureDataSource(for: collectionView)
     }
 
-    func apply(sections: [SearchResultsSectionDisplayModel]) {
-        dataSource?.apply(makeSnapshot(from: sections), animatingDifferences: true)
+    func apply(
+        sections: [SearchResultsSectionDisplayModel],
+        completion: @escaping () -> Void
+    ) {
+        guard let dataSource else {
+            completion()
+            return
+        }
+        dataSource.apply(
+            makeSnapshot(from: sections),
+            animatingDifferences: true,
+            completion: completion
+        )
     }
 
     private func configureDataSource(for collectionView: UICollectionView) {
