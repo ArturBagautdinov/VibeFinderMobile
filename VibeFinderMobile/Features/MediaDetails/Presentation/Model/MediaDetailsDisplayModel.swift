@@ -2,6 +2,7 @@ import Foundation
 
 struct MediaDetailsTagGroupDisplayModel {
     let title: String
+    let symbol: String
     let tags: [String]
 }
 
@@ -12,6 +13,7 @@ struct MediaDetailsDisplayModel {
     let releaseYear: String?
     let imageURL: URL?
     let fallbackSymbol: String
+    let artworkStartsBelowSafeArea: Bool
     let rating: String?
     let facts: [String]
     let description: String?
@@ -25,6 +27,7 @@ struct MediaDetailsDisplayModel {
             $0 == details.title ? nil : $0
         }
         imageURL = details.imageUrl
+        artworkStartsBelowSafeArea = details.mediaType == .game
         releaseYear = details.releaseYear.map(String.init)
         description = Self.nonEmpty(details.fullDescription)
             ?? Self.nonEmpty(details.shortDescription)
@@ -65,10 +68,26 @@ struct MediaDetailsDisplayModel {
         self.facts = facts
 
         tagGroups = [
-            MediaDetailsTagGroupDisplayModel(title: L10n.Media.Details.genres, tags: details.genres),
-            MediaDetailsTagGroupDisplayModel(title: L10n.Media.Details.atmospheres, tags: details.atmosphereTags),
-            MediaDetailsTagGroupDisplayModel(title: L10n.Media.Details.themes, tags: details.themeTags),
-            MediaDetailsTagGroupDisplayModel(title: L10n.Media.Details.platforms, tags: details.platforms)
+            MediaDetailsTagGroupDisplayModel(
+                title: L10n.Media.Details.genres,
+                symbol: "theatermasks.fill",
+                tags: details.genres
+            ),
+            MediaDetailsTagGroupDisplayModel(
+                title: L10n.Media.Details.atmospheres,
+                symbol: "sparkles",
+                tags: details.atmosphereTags
+            ),
+            MediaDetailsTagGroupDisplayModel(
+                title: L10n.Media.Details.themes,
+                symbol: "circle.grid.2x2.fill",
+                tags: details.themeTags
+            ),
+            MediaDetailsTagGroupDisplayModel(
+                title: L10n.Media.Details.platforms,
+                symbol: "gamecontroller.fill",
+                tags: details.platforms
+            )
         ].filter { !$0.tags.isEmpty }
     }
 

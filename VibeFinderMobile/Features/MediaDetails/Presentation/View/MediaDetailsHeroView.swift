@@ -1,20 +1,39 @@
 import UIKit
 
 final class MediaDetailsHeroView: UIView {
+    private enum ArtworkMetrics {
+        static let gameTopInset: CGFloat = 48
+        static let gameTopFadeRatio: CGFloat = 0.22
+        static let gameBottomFadeRatio: CGFloat = 0.30
+        static let standardLandscapeBottomFadeRatio: CGFloat = 0.48
+        static let standardBottomFadeRatio: CGFloat = 0.58
+    }
+
     private let imageLoader: RemoteImageLoading
     private var imageTask: URLSessionDataTask?
     private var representedURL: URL?
 
     private let posterView = UIView()
     private let posterImageView = UIImageView()
+    private var posterImageTopConstraint: NSLayoutConstraint?
+    private var posterImageHeightConstraint: NSLayoutConstraint?
+    private var posterHeightConstraint: NSLayoutConstraint?
     private let fallbackIconView = UIImageView()
-    private let gradientLayer = CAGradientLayer()
-    private let mediaTypeLabel = UILabel()
+    private let fallbackGradient = CAGradientLayer()
+    private let topFadeView = MediaDetailsPosterFadeView(edge: .top)
+    private let posterFadeView = MediaDetailsPosterFadeView()
+    private var fadeBottomConstraint: NSLayoutConstraint?
+    private var fadeHeightConstraint: NSLayoutConstraint?
+    private var safeAreaTopInset: CGFloat = 0
+    private var artworkStartsBelowSafeArea = false
+
+    private let mediaTypeLabel = PaddedLabel()
     private let titleLabel = UILabel()
     private let originalTitleLabel = UILabel()
-    private let yearLabel = UILabel()
-    private let ratingLabel = UILabel()
+    private let yearLabel = PaddedLabel()
+    private let ratingLabel = PaddedLabel()
     private let metadataStack = UIStackView()
+    private let informationStack = UIStackView()
 
     init(imageLoader: RemoteImageLoading) {
         self.imageLoader = imageLoader
@@ -32,7 +51,13 @@ final class MediaDetailsHeroView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        gradientLayer.frame = posterView.bounds
+        fallbackGradient.frame = posterView.bounds
+    }
+
+    func updateSafeAreaTopInset(_ inset: CGFloat) {
+        guard safeAreaTopInset != inset else { return }
+        safeAreaTopInset = inset
+        updateArtworkTopInset()
     }
 
     func configure(with model: MediaDetailsDisplayModel) {
@@ -51,94 +76,241 @@ final class MediaDetailsHeroView: UIView {
         imageTask?.cancel()
         representedURL = model.imageURL
         posterImageView.image = nil
+        artworkStartsBelowSafeArea = model.artworkStartsBelowSafeArea
+        updateArtworkTopInset()
+        setPosterImage(nil)
         fallbackIconView.image = UIImage(systemName: model.fallbackSymbol)
         fallbackIconView.isHidden = false
         imageTask = imageLoader.loadImage(from: model.imageURL) { [weak self] image in
             guard let self, self.representedURL == model.imageURL else { return }
-            self.posterImageView.image = image
+            self.setPosterImage(image)
             self.fallbackIconView.isHidden = image != nil
         }
     }
 
     private func configure() {
-        posterView.backgroundColor = AppTheme.Color.surface
-        posterView.layer.cornerRadius = 24
-        posterView.layer.cornerCurve = .continuous
-        posterView.layer.masksToBounds = true
-        posterView.layer.borderWidth = 1
-        posterView.layer.borderColor = AppTheme.Color.border.cgColor
+        backgroundColor = AppTheme.Color.background
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) {
+            (view: MediaDetailsHeroView, _) in
+            view.updateFallbackColors()
+        }
+        configurePoster()
+        configureInformation()
 
-        gradientLayer.colors = [
-            AppTheme.Color.primary.withAlphaComponent(0.46).cgColor,
-            AppTheme.Color.surface.cgColor,
-            AppTheme.Color.accent.withAlphaComponent(0.32).cgColor
-        ]
-        gradientLayer.startPoint = CGPoint(x: 0, y: 0)
-        gradientLayer.endPoint = CGPoint(x: 1, y: 1)
-        posterView.layer.addSublayer(gradientLayer)
+        [posterView, informationStack].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            addSubview($0)
+        }
 
-        posterImageView.contentMode = .scaleAspectFill
+        let preferredHeight = posterView.heightAnchor.constraint(
+            equalTo: posterView.widthAnchor,
+            multiplier: 1.4
+        )
+        preferredHeight.priority = .defaultHigh
+        posterHeightConstraint = preferredHeight
+
+        NSLayoutConstraint.activate([
+            posterView.topAnchor.constraint(equalTo: topAnchor),
+            posterView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            posterView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            preferredHeight,
+            posterView.heightAnchor.constraint(greaterThanOrEqualToConstant: 220),
+            posterView.heightAnchor.constraint(lessThanOrEqualToConstant: 620),
+
+            informationStack.topAnchor.constraint(equalTo: posterView.bottomAnchor, constant: -32),
+            informationStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
+            informationStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
+            informationStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
+            titleLabel.widthAnchor.constraint(equalTo: informationStack.widthAnchor),
+            originalTitleLabel.widthAnchor.constraint(equalTo: informationStack.widthAnchor)
+        ])
+        setPosterImage(nil)
+    }
+
+    private func configurePoster() {
+        posterView.backgroundColor = AppTheme.Color.background
+        posterView.clipsToBounds = true
+
+        updateFallbackColors()
+        fallbackGradient.startPoint = CGPoint(x: 0, y: 0)
+        fallbackGradient.endPoint = CGPoint(x: 1, y: 1)
+        posterView.layer.addSublayer(fallbackGradient)
+
+        posterImageView.contentMode = .scaleToFill
         posterImageView.clipsToBounds = true
-        fallbackIconView.tintColor = AppTheme.Color.primary
+        fallbackIconView.tintColor = AppTheme.Color.textPrimary.withAlphaComponent(0.52)
         fallbackIconView.contentMode = .scaleAspectFit
 
-        posterView.addSubview(posterImageView)
-        posterView.addSubview(fallbackIconView)
-        [posterImageView, fallbackIconView].forEach { $0.translatesAutoresizingMaskIntoConstraints = false }
+        [posterImageView, fallbackIconView, topFadeView, posterFadeView].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            posterView.addSubview($0)
+        }
+        topFadeView.isHidden = true
 
-        mediaTypeLabel.font = .systemFont(ofSize: 12, weight: .heavy)
-        mediaTypeLabel.textColor = AppTheme.Color.secondaryAccent
-        mediaTypeLabel.textAlignment = .center
+        let preferredTopFadeHeight = topFadeView.heightAnchor.constraint(
+            equalTo: posterImageView.heightAnchor,
+            multiplier: ArtworkMetrics.gameTopFadeRatio
+        )
+        preferredTopFadeHeight.priority = .defaultHigh
 
-        titleLabel.font = .systemFont(ofSize: 31, weight: .black)
+        let initialFadeBottom = posterFadeView.bottomAnchor.constraint(equalTo: posterView.bottomAnchor)
+        let initialFadeHeight = posterFadeView.heightAnchor.constraint(
+            equalTo: posterView.heightAnchor,
+            multiplier: ArtworkMetrics.standardBottomFadeRatio
+        )
+        fadeBottomConstraint = initialFadeBottom
+        fadeHeightConstraint = initialFadeHeight
+
+        let imageTop = posterImageView.topAnchor.constraint(equalTo: posterView.topAnchor)
+        posterImageTopConstraint = imageTop
+
+        NSLayoutConstraint.activate([
+            imageTop,
+            posterImageView.leadingAnchor.constraint(equalTo: posterView.leadingAnchor),
+            posterImageView.trailingAnchor.constraint(equalTo: posterView.trailingAnchor),
+
+            fallbackIconView.centerXAnchor.constraint(equalTo: posterView.centerXAnchor),
+            fallbackIconView.centerYAnchor.constraint(equalTo: posterView.centerYAnchor, constant: -36),
+            fallbackIconView.widthAnchor.constraint(equalToConstant: 86),
+            fallbackIconView.heightAnchor.constraint(equalTo: fallbackIconView.widthAnchor),
+
+            topFadeView.topAnchor.constraint(equalTo: posterImageView.topAnchor),
+            topFadeView.leadingAnchor.constraint(equalTo: posterView.leadingAnchor),
+            topFadeView.trailingAnchor.constraint(equalTo: posterView.trailingAnchor),
+            preferredTopFadeHeight,
+            topFadeView.heightAnchor.constraint(lessThanOrEqualToConstant: 100),
+
+            posterFadeView.leadingAnchor.constraint(equalTo: posterView.leadingAnchor),
+            posterFadeView.trailingAnchor.constraint(equalTo: posterView.trailingAnchor),
+            initialFadeBottom,
+            initialFadeHeight
+        ])
+    }
+
+    private func configureInformation() {
+        mediaTypeLabel.font = .systemFont(ofSize: 11, weight: .heavy)
+        mediaTypeLabel.textColor = AppTheme.Color.primary
+        mediaTypeLabel.backgroundColor = AppTheme.Color.primary.withAlphaComponent(0.11)
+        mediaTypeLabel.contentInsets = UIEdgeInsets(top: 7, left: 11, bottom: 7, right: 11)
+        mediaTypeLabel.layer.cornerRadius = 11
+        mediaTypeLabel.layer.cornerCurve = .continuous
+        mediaTypeLabel.clipsToBounds = true
+
+        titleLabel.font = UIFontMetrics(forTextStyle: .largeTitle).scaledFont(
+            for: .systemFont(ofSize: 34, weight: .bold)
+        )
         titleLabel.textColor = AppTheme.Color.textPrimary
-        titleLabel.textAlignment = .center
         titleLabel.numberOfLines = 0
         titleLabel.adjustsFontForContentSizeCategory = true
 
-        originalTitleLabel.font = .systemFont(ofSize: 13, weight: .medium)
+        originalTitleLabel.font = .preferredFont(forTextStyle: .subheadline)
         originalTitleLabel.textColor = AppTheme.Color.textSecondary
-        originalTitleLabel.textAlignment = .center
         originalTitleLabel.numberOfLines = 0
+        originalTitleLabel.adjustsFontForContentSizeCategory = true
 
         [yearLabel, ratingLabel].forEach { label in
-            label.font = .systemFont(ofSize: 14, weight: .bold)
+            label.font = .systemFont(ofSize: 13, weight: .semibold)
             label.textColor = AppTheme.Color.textPrimary
-            label.textAlignment = .center
+            label.backgroundColor = AppTheme.Color.surface
+            label.layer.borderWidth = 1
+            label.layer.borderColor = AppTheme.Color.border.cgColor
+            label.layer.cornerRadius = 13
+            label.layer.cornerCurve = .continuous
+            label.clipsToBounds = true
+            label.contentInsets = UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
         }
         ratingLabel.textColor = AppTheme.Color.secondaryAccent
+
         metadataStack.axis = .horizontal
-        metadataStack.alignment = .center
-        metadataStack.spacing = 16
+        metadataStack.spacing = 8
         metadataStack.addArrangedSubview(yearLabel)
         metadataStack.addArrangedSubview(ratingLabel)
 
-        let stack = UIStackView(arrangedSubviews: [posterView, mediaTypeLabel, titleLabel, originalTitleLabel, metadataStack])
-        stack.axis = .vertical
-        stack.alignment = .center
-        stack.spacing = 10
-        stack.setCustomSpacing(24, after: posterView)
-        stack.setCustomSpacing(4, after: titleLabel)
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(stack)
+        informationStack.axis = .vertical
+        informationStack.alignment = .leading
+        informationStack.spacing = 10
+        [mediaTypeLabel, titleLabel, originalTitleLabel, metadataStack].forEach {
+            informationStack.addArrangedSubview($0)
+        }
+        informationStack.setCustomSpacing(14, after: mediaTypeLabel)
+        informationStack.setCustomSpacing(16, after: originalTitleLabel)
+    }
 
-        NSLayoutConstraint.activate([
-            posterView.widthAnchor.constraint(equalToConstant: 198),
-            posterView.heightAnchor.constraint(equalToConstant: 288),
-            posterImageView.topAnchor.constraint(equalTo: posterView.topAnchor),
-            posterImageView.leadingAnchor.constraint(equalTo: posterView.leadingAnchor),
-            posterImageView.trailingAnchor.constraint(equalTo: posterView.trailingAnchor),
-            posterImageView.bottomAnchor.constraint(equalTo: posterView.bottomAnchor),
-            fallbackIconView.centerXAnchor.constraint(equalTo: posterView.centerXAnchor),
-            fallbackIconView.centerYAnchor.constraint(equalTo: posterView.centerYAnchor),
-            fallbackIconView.widthAnchor.constraint(equalToConstant: 76),
-            fallbackIconView.heightAnchor.constraint(equalTo: fallbackIconView.widthAnchor),
-            stack.topAnchor.constraint(equalTo: topAnchor),
-            stack.leadingAnchor.constraint(equalTo: leadingAnchor),
-            stack.trailingAnchor.constraint(equalTo: trailingAnchor),
-            stack.bottomAnchor.constraint(equalTo: bottomAnchor),
-            titleLabel.widthAnchor.constraint(equalTo: stack.widthAnchor),
-            originalTitleLabel.widthAnchor.constraint(equalTo: stack.widthAnchor)
-        ])
+    private func updateFallbackColors() {
+        let traits = traitCollection
+        fallbackGradient.colors = [
+            AppTheme.Color.primary.resolvedColor(with: traits).withAlphaComponent(0.58).cgColor,
+            AppTheme.Color.accent.resolvedColor(with: traits).withAlphaComponent(0.38).cgColor,
+            AppTheme.Color.surface.resolvedColor(with: traits).cgColor
+        ]
+    }
+
+    private func setPosterImage(_ image: UIImage?) {
+        posterImageView.image = image
+        topFadeView.isHidden = image == nil || !artworkStartsBelowSafeArea
+        fallbackGradient.isHidden = image != nil
+        posterImageHeightConstraint?.isActive = false
+        posterHeightConstraint?.isActive = false
+        fadeBottomConstraint?.isActive = false
+        fadeHeightConstraint?.isActive = false
+
+        if let image, image.size.width > 0 {
+            let aspectRatio = image.size.height / image.size.width
+            posterImageHeightConstraint = posterImageView.heightAnchor.constraint(
+                equalTo: posterImageView.widthAnchor,
+                multiplier: aspectRatio
+            )
+            if aspectRatio < 1.1 {
+                posterHeightConstraint = posterView.heightAnchor.constraint(
+                    equalTo: posterImageView.heightAnchor,
+                    constant: 48 + (posterImageTopConstraint?.constant ?? 0)
+                )
+                fadeBottomConstraint = posterFadeView.bottomAnchor.constraint(
+                    equalTo: posterImageView.bottomAnchor
+                )
+                fadeHeightConstraint = posterFadeView.heightAnchor.constraint(
+                    equalTo: posterImageView.heightAnchor,
+                    multiplier: artworkStartsBelowSafeArea
+                        ? ArtworkMetrics.gameBottomFadeRatio
+                        : ArtworkMetrics.standardLandscapeBottomFadeRatio
+                )
+            } else {
+                configurePortraitLayout()
+            }
+        } else {
+            posterImageHeightConstraint = posterImageView.heightAnchor.constraint(
+                equalTo: posterView.heightAnchor
+            )
+            configurePortraitLayout()
+        }
+        posterHeightConstraint?.priority = .defaultHigh
+        [posterImageHeightConstraint, posterHeightConstraint, fadeBottomConstraint, fadeHeightConstraint]
+            .compactMap { $0 }
+            .forEach { $0.isActive = true }
+    }
+
+    private func configurePortraitLayout() {
+        posterHeightConstraint = posterView.heightAnchor.constraint(
+            equalTo: posterView.widthAnchor,
+            multiplier: 1.4
+        )
+        fadeBottomConstraint = posterFadeView.bottomAnchor.constraint(equalTo: posterView.bottomAnchor)
+        fadeHeightConstraint = posterFadeView.heightAnchor.constraint(
+            equalTo: posterView.heightAnchor,
+            multiplier: artworkStartsBelowSafeArea
+                ? ArtworkMetrics.gameBottomFadeRatio
+                : ArtworkMetrics.standardBottomFadeRatio
+        )
+    }
+
+    private func updateArtworkTopInset() {
+        let inset = artworkStartsBelowSafeArea
+            ? safeAreaTopInset + ArtworkMetrics.gameTopInset
+            : 0
+        guard posterImageTopConstraint?.constant != inset else { return }
+        posterImageTopConstraint?.constant = inset
+        if let image = posterImageView.image {
+            setPosterImage(image)
+        }
     }
 }

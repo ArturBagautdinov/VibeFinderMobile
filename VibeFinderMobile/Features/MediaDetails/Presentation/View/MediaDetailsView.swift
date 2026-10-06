@@ -6,6 +6,7 @@ final class MediaDetailsView: UIView {
 
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
+    private let bodyStack = UIStackView()
     private let heroView: MediaDetailsHeroView
     private let loadingIndicator = UIActivityIndicatorView(style: .large)
     private let loadingStack = UIStackView()
@@ -20,6 +21,13 @@ final class MediaDetailsView: UIView {
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    override func safeAreaInsetsDidChange() {
+        super.safeAreaInsetsDidChange()
+        heroView.updateSafeAreaTopInset(safeAreaInsets.top)
+        scrollView.contentInset.bottom = safeAreaInsets.bottom
+        scrollView.verticalScrollIndicatorInsets.bottom = safeAreaInsets.bottom
     }
 
     func showLoading() {
@@ -42,37 +50,36 @@ final class MediaDetailsView: UIView {
         loadingIndicator.stopAnimating()
         errorStack.isHidden = true
 
-        contentStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        bodyStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         heroView.configure(with: model)
-        contentStack.addArrangedSubview(heroView)
-        contentStack.setCustomSpacing(26, after: heroView)
 
         if !model.facts.isEmpty {
-            contentStack.addArrangedSubview(MediaDetailsChipRowView(title: nil, items: model.facts))
+            bodyStack.addArrangedSubview(MediaDetailsChipRowView(title: nil, items: model.facts))
         }
         if let explanation = model.explanation {
-            contentStack.addArrangedSubview(MediaDetailsTextSectionView(
+            bodyStack.addArrangedSubview(MediaDetailsTextSectionView(
                 title: L10n.Media.Details.whyFits,
                 body: explanation,
                 style: .highlight
             ))
         }
         if let warning = model.warning {
-            contentStack.addArrangedSubview(MediaDetailsTextSectionView(
+            bodyStack.addArrangedSubview(MediaDetailsTextSectionView(
                 title: L10n.Media.Details.warning,
                 body: warning,
                 style: .warning
             ))
         }
         if let description = model.description {
-            contentStack.addArrangedSubview(MediaDetailsTextSectionView(
+            bodyStack.addArrangedSubview(MediaDetailsTextSectionView(
                 title: L10n.Media.Details.about,
                 body: description
             ))
         }
         for group in model.tagGroups {
-            contentStack.addArrangedSubview(MediaDetailsChipRowView(
+            bodyStack.addArrangedSubview(MediaDetailsChipRowView(
                 title: group.title,
+                symbol: group.symbol,
                 items: group.tags
             ))
         }
@@ -100,7 +107,7 @@ final class MediaDetailsView: UIView {
             backButton.widthAnchor.constraint(equalToConstant: 42),
             backButton.heightAnchor.constraint(equalTo: backButton.widthAnchor),
 
-            scrollView.topAnchor.constraint(equalTo: backButton.bottomAnchor, constant: 12),
+            scrollView.topAnchor.constraint(equalTo: topAnchor),
             scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
@@ -124,12 +131,16 @@ final class MediaDetailsView: UIView {
         var configuration = UIButton.Configuration.filled()
         configuration.image = UIImage(systemName: "chevron.left")
         configuration.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 17, weight: .bold)
-        configuration.baseBackgroundColor = AppTheme.Color.surface
+        configuration.baseBackgroundColor = AppTheme.Color.surface.withAlphaComponent(0.88)
         configuration.baseForegroundColor = AppTheme.Color.primary
         configuration.cornerStyle = .capsule
         backButton.configuration = configuration
         backButton.layer.borderWidth = 1
         backButton.layer.borderColor = AppTheme.Color.border.cgColor
+        backButton.layer.shadowColor = UIColor.black.cgColor
+        backButton.layer.shadowOpacity = 0.17
+        backButton.layer.shadowRadius = 12
+        backButton.layer.shadowOffset = CGSize(width: 0, height: 5)
         backButton.accessibilityIdentifier = "media.details.backButton"
         backButton.accessibilityLabel = L10n.Media.Details.back
     }
@@ -137,17 +148,30 @@ final class MediaDetailsView: UIView {
     private func configureScrollView() {
         scrollView.showsVerticalScrollIndicator = false
         scrollView.alwaysBounceVertical = true
+        scrollView.contentInsetAdjustmentBehavior = .never
         contentStack.axis = .vertical
         contentStack.spacing = 18
         contentStack.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(contentStack)
 
+        bodyStack.axis = .vertical
+        bodyStack.spacing = 18
+        bodyStack.isLayoutMarginsRelativeArrangement = true
+        bodyStack.directionalLayoutMargins = NSDirectionalEdgeInsets(
+            top: 0,
+            leading: 20,
+            bottom: 0,
+            trailing: 20
+        )
+        contentStack.addArrangedSubview(heroView)
+        contentStack.addArrangedSubview(bodyStack)
+
         NSLayoutConstraint.activate([
-            contentStack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: 10),
-            contentStack.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor, constant: 20),
-            contentStack.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor, constant: -20),
+            contentStack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
+            contentStack.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
+            contentStack.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
             contentStack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -36),
-            contentStack.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor, constant: -40)
+            contentStack.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor)
         ])
     }
 

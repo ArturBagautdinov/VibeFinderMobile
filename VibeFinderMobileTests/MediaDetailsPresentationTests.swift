@@ -25,6 +25,9 @@ struct MediaDetailsPresentationTests {
             L10n.Media.Details.genres,
             L10n.Media.Details.atmospheres
         ])
+        #expect(model.tagGroups.map(\.symbol) == ["theatermasks.fill", "sparkles"])
+        #expect(!model.artworkStartsBelowSafeArea)
+        #expect(MediaDetailsDisplayModel(details: makeDetails(mediaType: .game)).artworkStartsBelowSafeArea)
     }
 
     @Test
