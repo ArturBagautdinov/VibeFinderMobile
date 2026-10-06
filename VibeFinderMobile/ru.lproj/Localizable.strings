@@ -136,3 +136,23 @@
 "profile.edit.discardAction" = "Не сохранять";
 "profile.edit.validationRequired" = "Введите имя и фамилию.";
 "profile.edit.validationLength" = "Имя и фамилия должны содержать от 2 до 80 символов.";
+
+"media.details.back" = "К результатам";
+"media.details.loading" = "Загружаем детали…";
+"media.details.errorTitle" = "Не удалось загрузить детали";
+"media.details.whyFits" = "Почему подходит";
+"media.details.warning" = "Стоит учесть";
+"media.details.about" = "О контенте";
+"media.details.originalTitle" = "Оригинальное название";
+"media.details.genres" = "Жанры";
+"media.details.atmospheres" = "Атмосфера";
+"media.details.themes" = "Темы";
+"media.details.platforms" = "Где найти";
+"media.details.movie" = "Фильм";
+"media.details.series" = "Сериал";
+"media.details.book" = "Книга";
+"media.details.game" = "Игра";
+"media.details.minutes" = "%d мин";
+"media.details.seasons" = "%d сез.";
+"media.details.pages" = "%d стр.";
+"media.details.hours" = "%d ч";

@@ -79,6 +79,13 @@ final class AppAssembly: Assembly {
         }
         .inObjectScope(.container)
 
+        container.register(MediaDetailsViewModel.self) { resolver, context in
+            MediaDetailsViewModel(
+                context: context,
+                repository: resolver.resolve(MediaDetailsRepositoryProtocol.self)!
+            )
+        }
+
         container.register(CoreDataStack.self) { _ in
             CoreDataStack()
         }
@@ -89,8 +96,8 @@ final class AppAssembly: Assembly {
         }
         .inObjectScope(.container)
 
-        container.register(SearchResultImageLoading.self) { _ in
-            SearchResultImageLoader()
+        container.register(RemoteImageLoading.self) { _ in
+            RemoteImageLoader()
         }
         .inObjectScope(.container)
 

@@ -30,7 +30,6 @@ final class SearchHistoryViewController: UIViewController {
     private func configure() {
         navigationItem.title = nil
         navigationItem.hidesBackButton = true
-        navigationController?.setNavigationBarHidden(true, animated: false)
 
         historyView.backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
         historyView.onHistorySelected = { [weak self] history in

@@ -1,13 +1,13 @@
 import UIKit
 
-protocol SearchResultImageLoading: AnyObject {
+protocol RemoteImageLoading: AnyObject {
     func loadImage(
         from url: URL?,
         completion: @escaping (UIImage?) -> Void
     ) -> URLSessionDataTask?
 }
 
-final class SearchResultImageLoader: SearchResultImageLoading {
+final class RemoteImageLoader: RemoteImageLoading {
     func loadImage(
         from url: URL?,
         completion: @escaping (UIImage?) -> Void

@@ -118,6 +118,56 @@ internal enum L10n {
       return L10n.tr("Localizable", "home.welcome", String(describing: p1), fallback: "Welcome, %@.")
     }
   }
+  internal enum Media {
+    internal enum Details {
+      /// About
+      internal static let about = L10n.tr("Localizable", "media.details.about", fallback: "About")
+      /// Atmosphere
+      internal static let atmospheres = L10n.tr("Localizable", "media.details.atmospheres", fallback: "Atmosphere")
+      /// Back to results
+      internal static let back = L10n.tr("Localizable", "media.details.back", fallback: "Back to results")
+      /// Book
+      internal static let book = L10n.tr("Localizable", "media.details.book", fallback: "Book")
+      /// Couldn’t load details
+      internal static let errorTitle = L10n.tr("Localizable", "media.details.errorTitle", fallback: "Couldn’t load details")
+      /// Game
+      internal static let game = L10n.tr("Localizable", "media.details.game", fallback: "Game")
+      /// Genres
+      internal static let genres = L10n.tr("Localizable", "media.details.genres", fallback: "Genres")
+      /// %d h
+      internal static func hours(_ p1: Int) -> String {
+        return L10n.tr("Localizable", "media.details.hours", p1, fallback: "%d h")
+      }
+      /// Loading details…
+      internal static let loading = L10n.tr("Localizable", "media.details.loading", fallback: "Loading details…")
+      /// %d min
+      internal static func minutes(_ p1: Int) -> String {
+        return L10n.tr("Localizable", "media.details.minutes", p1, fallback: "%d min")
+      }
+      /// Movie
+      internal static let movie = L10n.tr("Localizable", "media.details.movie", fallback: "Movie")
+      /// Original title
+      internal static let originalTitle = L10n.tr("Localizable", "media.details.originalTitle", fallback: "Original title")
+      /// %d pages
+      internal static func pages(_ p1: Int) -> String {
+        return L10n.tr("Localizable", "media.details.pages", p1, fallback: "%d pages")
+      }
+      /// Where to find it
+      internal static let platforms = L10n.tr("Localizable", "media.details.platforms", fallback: "Where to find it")
+      /// %d seasons
+      internal static func seasons(_ p1: Int) -> String {
+        return L10n.tr("Localizable", "media.details.seasons", p1, fallback: "%d seasons")
+      }
+      /// Series
+      internal static let series = L10n.tr("Localizable", "media.details.series", fallback: "Series")
+      /// Themes
+      internal static let themes = L10n.tr("Localizable", "media.details.themes", fallback: "Themes")
+      /// Worth knowing
+      internal static let warning = L10n.tr("Localizable", "media.details.warning", fallback: "Worth knowing")
+      /// Why it fits
+      internal static let whyFits = L10n.tr("Localizable", "media.details.whyFits", fallback: "Why it fits")
+    }
+  }
   internal enum Profile {
     /// Email not verified
     internal static let notVerified = L10n.tr("Localizable", "profile.notVerified", fallback: "Email not verified")

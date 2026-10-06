@@ -136,3 +136,23 @@
 "profile.edit.discardAction" = "Discard";
 "profile.edit.validationRequired" = "Enter your first and last name.";
 "profile.edit.validationLength" = "First and last name must contain 2–80 characters.";
+
+"media.details.back" = "Back to results";
+"media.details.loading" = "Loading details…";
+"media.details.errorTitle" = "Couldn’t load details";
+"media.details.whyFits" = "Why it fits";
+"media.details.warning" = "Worth knowing";
+"media.details.about" = "About";
+"media.details.originalTitle" = "Original title";
+"media.details.genres" = "Genres";
+"media.details.atmospheres" = "Atmosphere";
+"media.details.themes" = "Themes";
+"media.details.platforms" = "Where to find it";
+"media.details.movie" = "Movie";
+"media.details.series" = "Series";
+"media.details.book" = "Book";
+"media.details.game" = "Game";
+"media.details.minutes" = "%d min";
+"media.details.seasons" = "%d seasons";
+"media.details.pages" = "%d pages";
+"media.details.hours" = "%d h";

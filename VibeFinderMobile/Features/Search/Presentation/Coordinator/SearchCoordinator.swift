@@ -22,6 +22,7 @@ final class SearchCoordinator: Coordinator {
     }
 
     func start() {
+        navigationController.setNavigationBarHidden(true, animated: false)
         let viewModel = container.resolve(SearchViewModel.self, argument: username)!
         searchViewModel = viewModel
         let viewController = SearchViewController(viewModel: viewModel)
@@ -71,10 +72,13 @@ final class SearchCoordinator: Coordinator {
     ) {
         let viewController = SearchResultsViewController(
             page: page,
-            imageLoader: container.resolve(SearchResultImageLoading.self)!
+            imageLoader: container.resolve(RemoteImageLoading.self)!
         )
         viewController.onBackSelected = { [weak self] in
             self?.navigationController.popViewController(animated: true)
+        }
+        viewController.onMediaSelected = { [weak self] mediaId in
+            self?.showMediaDetails(mediaId: mediaId, searchSessionId: page.id)
         }
 
         if completesSearchTrace {
@@ -83,6 +87,19 @@ final class SearchCoordinator: Coordinator {
             }
         }
 
+        navigationController.pushViewController(viewController, animated: true)
+    }
+
+    private func showMediaDetails(mediaId: Int, searchSessionId: Int) {
+        let context = MediaDetailsContext(mediaId: mediaId, searchSessionId: searchSessionId)
+        let viewModel = container.resolve(MediaDetailsViewModel.self, argument: context)!
+        let viewController = MediaDetailsViewController(
+            viewModel: viewModel,
+            imageLoader: container.resolve(RemoteImageLoading.self)!
+        )
+        viewController.onBackSelected = { [weak self] in
+            self?.navigationController.popViewController(animated: true)
+        }
         navigationController.pushViewController(viewController, animated: true)
     }
 

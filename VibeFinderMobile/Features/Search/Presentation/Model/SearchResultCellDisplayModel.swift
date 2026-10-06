@@ -3,6 +3,7 @@ import Foundation
 
 nonisolated struct SearchResultCellDisplayModel: Sendable {
     let id: String
+    let mediaId: Int
     let title: String
     let meta: String
     let mediaType: String
