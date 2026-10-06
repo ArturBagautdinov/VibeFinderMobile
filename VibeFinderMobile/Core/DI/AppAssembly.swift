@@ -74,6 +74,11 @@ final class AppAssembly: Assembly {
         }
         .inObjectScope(.container)
 
+        container.register(MediaDetailsRepositoryProtocol.self) { resolver in
+            MediaDetailsRepository(apiClient: resolver.resolve(APIClientProtocol.self)!)
+        }
+        .inObjectScope(.container)
+
         container.register(CoreDataStack.self) { _ in
             CoreDataStack()
         }
