@@ -7,6 +7,8 @@ struct MediaDetailsTagGroupDisplayModel {
 }
 
 struct MediaDetailsDisplayModel {
+    var isFavorite: Bool
+    var isFavoriteSaving = false
     let title: String
     let originalTitle: String?
     let mediaType: String
@@ -22,6 +24,7 @@ struct MediaDetailsDisplayModel {
     let tagGroups: [MediaDetailsTagGroupDisplayModel]
 
     init(details: MediaDetails) {
+        isFavorite = details.isFavorite
         title = details.title
         originalTitle = Self.nonEmpty(details.originalTitle).flatMap {
             $0 == details.title ? nil : $0

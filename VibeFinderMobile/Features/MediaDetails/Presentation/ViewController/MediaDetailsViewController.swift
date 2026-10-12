@@ -1,6 +1,6 @@
 import UIKit
 
-final class MediaDetailsViewController: UIViewController {
+final class MediaDetailsViewController: UIViewController, AlertPresenting {
     private let viewModel: MediaDetailsViewModel
     private let imageLoader: RemoteImageLoading
     private lazy var detailsView = MediaDetailsView(imageLoader: imageLoader)
@@ -25,8 +25,12 @@ final class MediaDetailsViewController: UIViewController {
         super.viewDidLoad()
         detailsView.backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
         detailsView.retryButton.addTarget(self, action: #selector(retryTapped), for: .touchUpInside)
+        detailsView.favoriteButton.addTarget(self, action: #selector(favoriteTapped), for: .touchUpInside)
         viewModel.onStateChange = { [weak self] state in
             self?.render(state)
+        }
+        viewModel.onFavoriteError = { [weak self] message in
+            self?.showAlert(title: L10n.Media.Details.favoriteErrorTitle, message: message)
         }
         viewModel.load()
     }
@@ -48,5 +52,9 @@ final class MediaDetailsViewController: UIViewController {
 
     @objc private func retryTapped() {
         viewModel.load()
+    }
+
+    @objc private func favoriteTapped() {
+        viewModel.toggleFavorite()
     }
 }

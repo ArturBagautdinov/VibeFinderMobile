@@ -138,6 +138,9 @@
 "profile.edit.validationLength" = "Имя и фамилия должны содержать от 2 до 80 символов.";
 
 "media.details.back" = "К результатам";
+"media.details.addToFavorites" = "Добавить в избранное";
+"media.details.removeFromFavorites" = "Убрать из избранного";
+"media.details.favoriteErrorTitle" = "Не удалось изменить избранное";
 "media.details.loading" = "Загружаем детали…";
 "media.details.errorTitle" = "Не удалось загрузить детали";
 "media.details.whyFits" = "Почему подходит";

@@ -138,6 +138,9 @@
 "profile.edit.validationLength" = "First and last name must contain 2–80 characters.";
 
 "media.details.back" = "Back to results";
+"media.details.addToFavorites" = "Add to favorites";
+"media.details.removeFromFavorites" = "Remove from favorites";
+"media.details.favoriteErrorTitle" = "Couldn’t update favorites";
 "media.details.loading" = "Loading details…";
 "media.details.errorTitle" = "Couldn’t load details";
 "media.details.whyFits" = "Why it fits";

@@ -70,6 +70,14 @@ extension APIEndpoint {
         )
     }
 
+    static func addFavorite(mediaId: Int) -> APIEndpoint {
+        APIEndpoint(path: "api/favorites/\(mediaId)", method: .post, requiresAuthorization: true)
+    }
+
+    static func removeFavorite(mediaId: Int) -> APIEndpoint {
+        APIEndpoint(path: "api/favorites/\(mediaId)", method: .delete, requiresAuthorization: true)
+    }
+
     static func deleteSearchHistoryItem(id: Int) -> APIEndpoint {
         APIEndpoint(path: "api/search/\(id)", method: .delete, headers: [.accept("application/json")], requiresAuthorization: true)
     }

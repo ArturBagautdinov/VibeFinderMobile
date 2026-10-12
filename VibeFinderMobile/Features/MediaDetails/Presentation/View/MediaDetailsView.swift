@@ -2,6 +2,7 @@ import UIKit
 
 final class MediaDetailsView: UIView {
     let backButton = UIButton(type: .system)
+    let favoriteButton = UIButton(type: .custom)
     let retryButton = UIButton(type: .system)
 
     private let scrollView = UIScrollView()
@@ -12,6 +13,8 @@ final class MediaDetailsView: UIView {
     private let loadingStack = UIStackView()
     private let errorStack = UIStackView()
     private let errorMessageLabel = UILabel()
+    private let favoriteIconView = UIImageView()
+    private var displayedFavoriteState: Bool?
 
     init(imageLoader: RemoteImageLoading) {
         heroView = MediaDetailsHeroView(imageLoader: imageLoader)
@@ -32,6 +35,7 @@ final class MediaDetailsView: UIView {
 
     func showLoading() {
         scrollView.isHidden = true
+        favoriteButton.isHidden = true
         errorStack.isHidden = true
         loadingStack.isHidden = false
         loadingIndicator.startAnimating()
@@ -39,6 +43,7 @@ final class MediaDetailsView: UIView {
 
     func showError(_ message: String) {
         scrollView.isHidden = true
+        favoriteButton.isHidden = true
         loadingStack.isHidden = true
         loadingIndicator.stopAnimating()
         errorMessageLabel.text = message
@@ -49,6 +54,10 @@ final class MediaDetailsView: UIView {
         loadingStack.isHidden = true
         loadingIndicator.stopAnimating()
         errorStack.isHidden = true
+
+        updateFavoriteButton(with: model)
+        favoriteButton.isHidden = false
+        guard scrollView.isHidden else { return }
 
         bodyStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         heroView.configure(with: model)
@@ -92,11 +101,12 @@ final class MediaDetailsView: UIView {
         backgroundColor = AppTheme.Color.background
         accessibilityIdentifier = "media.details.screen"
         configureBackButton()
+        configureFavoriteButton()
         configureScrollView()
         configureLoadingState()
         configureErrorState()
 
-        [scrollView, loadingStack, errorStack, backButton].forEach {
+        [scrollView, loadingStack, errorStack, backButton, favoriteButton].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             addSubview($0)
         }
@@ -106,6 +116,11 @@ final class MediaDetailsView: UIView {
             backButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
             backButton.widthAnchor.constraint(equalToConstant: 42),
             backButton.heightAnchor.constraint(equalTo: backButton.widthAnchor),
+
+            favoriteButton.topAnchor.constraint(equalTo: backButton.topAnchor),
+            favoriteButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
+            favoriteButton.widthAnchor.constraint(equalToConstant: 42),
+            favoriteButton.heightAnchor.constraint(equalTo: favoriteButton.widthAnchor),
 
             scrollView.topAnchor.constraint(equalTo: topAnchor),
             scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
@@ -125,6 +140,7 @@ final class MediaDetailsView: UIView {
         scrollView.isHidden = true
         loadingStack.isHidden = true
         errorStack.isHidden = true
+        favoriteButton.isHidden = true
     }
 
     private func configureBackButton() {
@@ -143,6 +159,47 @@ final class MediaDetailsView: UIView {
         backButton.layer.shadowOffset = CGSize(width: 0, height: 5)
         backButton.accessibilityIdentifier = "media.details.backButton"
         backButton.accessibilityLabel = L10n.Media.Details.back
+    }
+
+    private func configureFavoriteButton() {
+        favoriteButton.backgroundColor = AppTheme.Color.surface.withAlphaComponent(0.88)
+        favoriteButton.layer.cornerRadius = 21
+        favoriteButton.layer.borderWidth = 1
+        favoriteButton.layer.borderColor = AppTheme.Color.border.cgColor
+        favoriteButton.layer.shadowColor = UIColor.black.cgColor
+        favoriteButton.layer.shadowOpacity = 0.17
+        favoriteButton.layer.shadowRadius = 12
+        favoriteButton.layer.shadowOffset = CGSize(width: 0, height: 5)
+        favoriteButton.accessibilityIdentifier = "media.details.favoriteButton"
+
+        favoriteIconView.tintColor = AppTheme.Color.primary
+        favoriteIconView.contentMode = .scaleAspectFit
+        favoriteIconView.translatesAutoresizingMaskIntoConstraints = false
+        favoriteButton.addSubview(favoriteIconView)
+
+        NSLayoutConstraint.activate([
+            favoriteIconView.centerXAnchor.constraint(equalTo: favoriteButton.centerXAnchor),
+            favoriteIconView.centerYAnchor.constraint(equalTo: favoriteButton.centerYAnchor),
+            favoriteIconView.widthAnchor.constraint(equalToConstant: 20),
+            favoriteIconView.heightAnchor.constraint(equalToConstant: 20)
+        ])
+    }
+
+    private func updateFavoriteButton(with model: MediaDetailsDisplayModel) {
+        if displayedFavoriteState != model.isFavorite {
+            let symbol = model.isFavorite ? "heart.fill" : "heart"
+            let image = UIImage(
+                systemName: symbol,
+                withConfiguration: UIImage.SymbolConfiguration(pointSize: 17, weight: .semibold)
+            )
+            favoriteIconView.image = image
+            displayedFavoriteState = model.isFavorite
+        }
+
+        favoriteButton.isEnabled = !model.isFavoriteSaving
+        favoriteButton.accessibilityLabel = model.isFavorite
+            ? L10n.Media.Details.removeFromFavorites
+            : L10n.Media.Details.addToFavorites
     }
 
     private func configureScrollView() {

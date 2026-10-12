@@ -122,6 +122,8 @@ internal enum L10n {
     internal enum Details {
       /// About
       internal static let about = L10n.tr("Localizable", "media.details.about", fallback: "About")
+      /// Add to favorites
+      internal static let addToFavorites = L10n.tr("Localizable", "media.details.addToFavorites", fallback: "Add to favorites")
       /// Atmosphere
       internal static let atmospheres = L10n.tr("Localizable", "media.details.atmospheres", fallback: "Atmosphere")
       /// Back to results
@@ -130,6 +132,8 @@ internal enum L10n {
       internal static let book = L10n.tr("Localizable", "media.details.book", fallback: "Book")
       /// Couldn’t load details
       internal static let errorTitle = L10n.tr("Localizable", "media.details.errorTitle", fallback: "Couldn’t load details")
+      /// Couldn’t update favorites
+      internal static let favoriteErrorTitle = L10n.tr("Localizable", "media.details.favoriteErrorTitle", fallback: "Couldn’t update favorites")
       /// Game
       internal static let game = L10n.tr("Localizable", "media.details.game", fallback: "Game")
       /// Genres
@@ -154,6 +158,8 @@ internal enum L10n {
       }
       /// Where to find it
       internal static let platforms = L10n.tr("Localizable", "media.details.platforms", fallback: "Where to find it")
+      /// Remove from favorites
+      internal static let removeFromFavorites = L10n.tr("Localizable", "media.details.removeFromFavorites", fallback: "Remove from favorites")
       /// %d seasons
       internal static func seasons(_ p1: Int) -> String {
         return L10n.tr("Localizable", "media.details.seasons", p1, fallback: "%d seasons")
