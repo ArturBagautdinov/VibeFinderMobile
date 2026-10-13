@@ -4,9 +4,9 @@ final class MediaDetailsHeroView: UIView {
     private enum ArtworkMetrics {
         static let gameTopInset: CGFloat = 48
         static let gameTopFadeRatio: CGFloat = 0.22
-        static let gameBottomFadeRatio: CGFloat = 0.30
-        static let standardLandscapeBottomFadeRatio: CGFloat = 0.48
-        static let standardBottomFadeRatio: CGFloat = 0.58
+        static let gameBottomFadeRatio: CGFloat = 0.25
+        static let standardLandscapeBottomFadeRatio: CGFloat = 0.43
+        static let standardBottomFadeRatio: CGFloat = 0.5
     }
 
     private let imageLoader: RemoteImageLoading
