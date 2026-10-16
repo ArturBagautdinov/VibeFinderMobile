@@ -749,6 +749,7 @@ struct VibeFinderMobileTests {
         #expect(viewModel.sections.count == 1)
         #expect(viewModel.sections.first?.title == "Exact match")
         #expect(viewModel.sections.first?.items.first?.title == "Arrival")
+        #expect(viewModel.sections.first?.items.first?.mediaId == 5)
         #expect(viewModel.sections.first?.items.first?.meta == "2016 · sci-fi")
         #expect(viewModel.sections.first?.items.first?.matchText == "★ 92%")
         #expect(viewModel.sections.first?.items.first?.isTopMatch == true)

@@ -42,7 +42,6 @@ final class SearchViewController: UIViewController {
     private func configure() {
         navigationItem.title = nil
         navigationItem.hidesBackButton = true
-        navigationController?.setNavigationBarHidden(true, animated: false)
         searchView.submitButton.addTarget(self, action: #selector(searchTapped), for: .touchUpInside)
         searchView.onSuggestionSelected = { [weak self] suggestion in
             self?.selectSuggestion(suggestion)

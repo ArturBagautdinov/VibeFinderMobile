@@ -1,0 +1,279 @@
+import UIKit
+
+final class MediaDetailsView: UIView {
+    let backButton = UIButton(type: .system)
+    let favoriteButton = UIButton(type: .custom)
+    let retryButton = UIButton(type: .system)
+
+    private let scrollView = UIScrollView()
+    private let contentStack = UIStackView()
+    private let bodyStack = UIStackView()
+    private let heroView: MediaDetailsHeroView
+    private let loadingIndicator = UIActivityIndicatorView(style: .large)
+    private let loadingStack = UIStackView()
+    private let errorStack = UIStackView()
+    private let errorMessageLabel = UILabel()
+    private let favoriteIconView = UIImageView()
+    private var displayedFavoriteState: Bool?
+
+    init(imageLoader: RemoteImageLoading) {
+        heroView = MediaDetailsHeroView(imageLoader: imageLoader)
+        super.init(frame: .zero)
+        configure()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func safeAreaInsetsDidChange() {
+        super.safeAreaInsetsDidChange()
+        heroView.updateSafeAreaTopInset(safeAreaInsets.top)
+        scrollView.contentInset.bottom = safeAreaInsets.bottom
+        scrollView.verticalScrollIndicatorInsets.bottom = safeAreaInsets.bottom
+    }
+
+    func showLoading() {
+        scrollView.isHidden = true
+        favoriteButton.isHidden = true
+        errorStack.isHidden = true
+        loadingStack.isHidden = false
+        loadingIndicator.startAnimating()
+    }
+
+    func showError(_ message: String) {
+        scrollView.isHidden = true
+        favoriteButton.isHidden = true
+        loadingStack.isHidden = true
+        loadingIndicator.stopAnimating()
+        errorMessageLabel.text = message
+        errorStack.isHidden = false
+    }
+
+    func showContent(_ model: MediaDetailsDisplayModel) {
+        loadingStack.isHidden = true
+        loadingIndicator.stopAnimating()
+        errorStack.isHidden = true
+
+        updateFavoriteButton(with: model)
+        favoriteButton.isHidden = false
+        guard scrollView.isHidden else { return }
+
+        bodyStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        heroView.configure(with: model)
+
+        if !model.facts.isEmpty {
+            bodyStack.addArrangedSubview(MediaDetailsChipRowView(title: nil, items: model.facts))
+        }
+        if let explanation = model.explanation {
+            bodyStack.addArrangedSubview(MediaDetailsTextSectionView(
+                title: L10n.Media.Details.whyFits,
+                body: explanation,
+                style: .highlight
+            ))
+        }
+        if let warning = model.warning {
+            bodyStack.addArrangedSubview(MediaDetailsTextSectionView(
+                title: L10n.Media.Details.warning,
+                body: warning,
+                style: .warning
+            ))
+        }
+        if let description = model.description {
+            bodyStack.addArrangedSubview(MediaDetailsTextSectionView(
+                title: L10n.Media.Details.about,
+                body: description
+            ))
+        }
+        for group in model.tagGroups {
+            bodyStack.addArrangedSubview(MediaDetailsChipRowView(
+                title: group.title,
+                symbol: group.symbol,
+                items: group.tags
+            ))
+        }
+
+        scrollView.setContentOffset(.zero, animated: false)
+        scrollView.isHidden = false
+    }
+
+    private func configure() {
+        backgroundColor = AppTheme.Color.background
+        accessibilityIdentifier = "media.details.screen"
+        configureBackButton()
+        configureFavoriteButton()
+        configureScrollView()
+        configureLoadingState()
+        configureErrorState()
+
+        [scrollView, loadingStack, errorStack, backButton, favoriteButton].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            addSubview($0)
+        }
+
+        NSLayoutConstraint.activate([
+            backButton.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 8),
+            backButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
+            backButton.widthAnchor.constraint(equalToConstant: 42),
+            backButton.heightAnchor.constraint(equalTo: backButton.widthAnchor),
+
+            favoriteButton.topAnchor.constraint(equalTo: backButton.topAnchor),
+            favoriteButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
+            favoriteButton.widthAnchor.constraint(equalToConstant: 42),
+            favoriteButton.heightAnchor.constraint(equalTo: favoriteButton.widthAnchor),
+
+            scrollView.topAnchor.constraint(equalTo: topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
+
+            loadingStack.centerXAnchor.constraint(equalTo: centerXAnchor),
+            loadingStack.centerYAnchor.constraint(equalTo: safeAreaLayoutGuide.centerYAnchor),
+
+            errorStack.centerXAnchor.constraint(equalTo: centerXAnchor),
+            errorStack.centerYAnchor.constraint(equalTo: safeAreaLayoutGuide.centerYAnchor),
+            errorStack.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 24),
+            errorStack.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -24),
+            errorStack.widthAnchor.constraint(lessThanOrEqualToConstant: 330)
+        ])
+
+        scrollView.isHidden = true
+        loadingStack.isHidden = true
+        errorStack.isHidden = true
+        favoriteButton.isHidden = true
+    }
+
+    private func configureBackButton() {
+        var configuration = UIButton.Configuration.filled()
+        configuration.image = UIImage(systemName: "chevron.left")
+        configuration.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 17, weight: .bold)
+        configuration.baseBackgroundColor = AppTheme.Color.surface.withAlphaComponent(0.88)
+        configuration.baseForegroundColor = AppTheme.Color.primary
+        configuration.cornerStyle = .capsule
+        backButton.configuration = configuration
+        backButton.layer.borderWidth = 1
+        backButton.layer.borderColor = AppTheme.Color.border.cgColor
+        backButton.layer.shadowColor = UIColor.black.cgColor
+        backButton.layer.shadowOpacity = 0.17
+        backButton.layer.shadowRadius = 12
+        backButton.layer.shadowOffset = CGSize(width: 0, height: 5)
+        backButton.accessibilityIdentifier = "media.details.backButton"
+        backButton.accessibilityLabel = L10n.Media.Details.back
+    }
+
+    private func configureFavoriteButton() {
+        favoriteButton.backgroundColor = AppTheme.Color.surface.withAlphaComponent(0.88)
+        favoriteButton.layer.cornerRadius = 21
+        favoriteButton.layer.borderWidth = 1
+        favoriteButton.layer.borderColor = AppTheme.Color.border.cgColor
+        favoriteButton.layer.shadowColor = UIColor.black.cgColor
+        favoriteButton.layer.shadowOpacity = 0.17
+        favoriteButton.layer.shadowRadius = 12
+        favoriteButton.layer.shadowOffset = CGSize(width: 0, height: 5)
+        favoriteButton.accessibilityIdentifier = "media.details.favoriteButton"
+
+        favoriteIconView.tintColor = AppTheme.Color.primary
+        favoriteIconView.contentMode = .scaleAspectFit
+        favoriteIconView.translatesAutoresizingMaskIntoConstraints = false
+        favoriteButton.addSubview(favoriteIconView)
+
+        NSLayoutConstraint.activate([
+            favoriteIconView.centerXAnchor.constraint(equalTo: favoriteButton.centerXAnchor),
+            favoriteIconView.centerYAnchor.constraint(equalTo: favoriteButton.centerYAnchor),
+            favoriteIconView.widthAnchor.constraint(equalToConstant: 20),
+            favoriteIconView.heightAnchor.constraint(equalToConstant: 20)
+        ])
+    }
+
+    private func updateFavoriteButton(with model: MediaDetailsDisplayModel) {
+        if displayedFavoriteState != model.isFavorite {
+            let symbol = model.isFavorite ? "heart.fill" : "heart"
+            let image = UIImage(
+                systemName: symbol,
+                withConfiguration: UIImage.SymbolConfiguration(pointSize: 17, weight: .semibold)
+            )
+            favoriteIconView.image = image
+            displayedFavoriteState = model.isFavorite
+        }
+
+        favoriteButton.isEnabled = !model.isFavoriteSaving
+        favoriteButton.accessibilityLabel = model.isFavorite
+            ? L10n.Media.Details.removeFromFavorites
+            : L10n.Media.Details.addToFavorites
+    }
+
+    private func configureScrollView() {
+        scrollView.showsVerticalScrollIndicator = false
+        scrollView.alwaysBounceVertical = true
+        scrollView.contentInsetAdjustmentBehavior = .never
+        contentStack.axis = .vertical
+        contentStack.spacing = 18
+        contentStack.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.addSubview(contentStack)
+
+        bodyStack.axis = .vertical
+        bodyStack.spacing = 18
+        bodyStack.isLayoutMarginsRelativeArrangement = true
+        bodyStack.directionalLayoutMargins = NSDirectionalEdgeInsets(
+            top: 0,
+            leading: 20,
+            bottom: 0,
+            trailing: 20
+        )
+        contentStack.addArrangedSubview(heroView)
+        contentStack.addArrangedSubview(bodyStack)
+
+        NSLayoutConstraint.activate([
+            contentStack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
+            contentStack.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
+            contentStack.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
+            contentStack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -36),
+            contentStack.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor)
+        ])
+    }
+
+    private func configureLoadingState() {
+        loadingIndicator.color = AppTheme.Color.primary
+        let label = UILabel()
+        label.text = L10n.Media.Details.loading
+        label.font = .systemFont(ofSize: 15, weight: .medium)
+        label.textColor = AppTheme.Color.textSecondary
+        loadingStack.axis = .vertical
+        loadingStack.alignment = .center
+        loadingStack.spacing = 14
+        loadingStack.addArrangedSubview(loadingIndicator)
+        loadingStack.addArrangedSubview(label)
+    }
+
+    private func configureErrorState() {
+        let icon = UIImageView(image: UIImage(systemName: "exclamationmark.triangle.fill"))
+        icon.tintColor = AppTheme.Color.secondaryAccent
+        icon.contentMode = .scaleAspectFit
+        icon.heightAnchor.constraint(equalToConstant: 42).isActive = true
+
+        let titleLabel = UILabel()
+        titleLabel.text = L10n.Media.Details.errorTitle
+        titleLabel.font = .systemFont(ofSize: 21, weight: .bold)
+        titleLabel.textColor = AppTheme.Color.textPrimary
+        titleLabel.textAlignment = .center
+
+        errorMessageLabel.font = .systemFont(ofSize: 15)
+        errorMessageLabel.textColor = AppTheme.Color.textSecondary
+        errorMessageLabel.textAlignment = .center
+        errorMessageLabel.numberOfLines = 0
+
+        var retryConfiguration = UIButton.Configuration.filled()
+        retryConfiguration.title = L10n.Common.retry
+        retryConfiguration.baseBackgroundColor = AppTheme.Color.primary
+        retryConfiguration.baseForegroundColor = AppTheme.Color.background
+        retryConfiguration.cornerStyle = .capsule
+        retryButton.configuration = retryConfiguration
+        retryButton.accessibilityIdentifier = "media.details.retryButton"
+
+        errorStack.axis = .vertical
+        errorStack.alignment = .fill
+        errorStack.spacing = 14
+        [icon, titleLabel, errorMessageLabel, retryButton].forEach(errorStack.addArrangedSubview)
+        errorStack.setCustomSpacing(24, after: errorMessageLabel)
+    }
+}

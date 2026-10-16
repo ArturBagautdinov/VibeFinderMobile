@@ -2,11 +2,12 @@ import UIKit
 
 final class SearchResultsViewController: UIViewController, UICollectionViewDelegate {
     private let viewModel: SearchResultsViewModel
-    private let imageLoader: SearchResultImageLoading
+    private let imageLoader: RemoteImageLoading
     private lazy var resultsView = SearchResultsView(page: viewModel.page)
     private var dataSource: SearchResultsDataSource?
 
     var onBackSelected: (() -> Void)?
+    var onMediaSelected: ((Int) -> Void)?
 
     private var didApplyInitialSnapshot = false
     private var didAppear = false
@@ -14,7 +15,7 @@ final class SearchResultsViewController: UIViewController, UICollectionViewDeleg
 
     var onFirstDisplay: (() -> Void)?
 
-    init(page: SearchPage, imageLoader: SearchResultImageLoading) {
+    init(page: SearchPage, imageLoader: RemoteImageLoading) {
         self.viewModel = SearchResultsViewModel(page: page)
         self.imageLoader = imageLoader
         super.init(nibName: nil, bundle: nil)
@@ -42,7 +43,6 @@ final class SearchResultsViewController: UIViewController, UICollectionViewDeleg
     private func configure() {
         navigationItem.title = nil
         navigationItem.hidesBackButton = true
-        navigationController?.setNavigationBarHidden(true, animated: false)
 
         resultsView.backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
         resultsView.collectionView.delegate = self
@@ -74,6 +74,12 @@ final class SearchResultsViewController: UIViewController, UICollectionViewDeleg
 
     @objc private func backTapped() {
         onBackSelected?()
+    }
+
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        collectionView.deselectItem(at: indexPath, animated: true)
+        guard let mediaId = dataSource?.mediaId(at: indexPath) else { return }
+        onMediaSelected?(mediaId)
     }
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {

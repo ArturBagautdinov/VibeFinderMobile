@@ -80,11 +80,14 @@ final class MainTabBarCoordinator: Coordinator {
     
     private func configureTabBar() {
         let appearance = UITabBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = AppTheme.Color.background
+        appearance.configureWithTransparentBackground()
+        appearance.backgroundColor = .clear
+        appearance.backgroundEffect = nil
         
         tabBarController.tabBar.standardAppearance = appearance
         tabBarController.tabBar.scrollEdgeAppearance = appearance
+        tabBarController.tabBar.backgroundColor = .clear
+        tabBarController.tabBar.isTranslucent = true
         tabBarController.tabBar.tintColor = AppTheme.Color.primary
         tabBarController.tabBar.unselectedItemTintColor = AppTheme.Color.textSecondary
     }

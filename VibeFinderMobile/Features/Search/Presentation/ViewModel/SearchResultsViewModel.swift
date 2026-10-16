@@ -26,6 +26,7 @@ final class SearchResultsViewModel {
                     items: bucket.items.map { recommendation in
                         SearchResultCellDisplayModel(
                             id: "\(bucket.code)-\(recommendation.mediaId)",
+                            mediaId: recommendation.mediaId,
                             title: recommendation.title,
                             meta: Self.makeMetaText(for: recommendation),
                             mediaType: recommendation.mediaType.uppercased(),

@@ -60,6 +60,24 @@ extension APIEndpoint {
         APIEndpoint(path: "api/search/\(id)", method: .get, headers: [.accept("application/json")], requiresAuthorization: true)
     }
 
+    static func mediaDetails(id: Int, searchSessionId: Int?) -> APIEndpoint {
+        APIEndpoint(
+            path: "api/media/\(id)",
+            method: .get,
+            headers: [.accept("application/json")],
+            queryItems: searchSessionId.map { [URLQueryItem(name: "searchSessionId", value: String($0))] } ?? [],
+            requiresAuthorization: true
+        )
+    }
+
+    static func addFavorite(mediaId: Int) -> APIEndpoint {
+        APIEndpoint(path: "api/favorites/\(mediaId)", method: .post, requiresAuthorization: true)
+    }
+
+    static func removeFavorite(mediaId: Int) -> APIEndpoint {
+        APIEndpoint(path: "api/favorites/\(mediaId)", method: .delete, requiresAuthorization: true)
+    }
+
     static func deleteSearchHistoryItem(id: Int) -> APIEndpoint {
         APIEndpoint(path: "api/search/\(id)", method: .delete, headers: [.accept("application/json")], requiresAuthorization: true)
     }

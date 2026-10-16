@@ -37,9 +37,10 @@ final class SearchResultCell: UICollectionViewCell {
 
     func configure(
         with displayModel: SearchResultCellDisplayModel,
-        imageLoader: SearchResultImageLoading
+        imageLoader: RemoteImageLoading
     ) {
         mediaTypeLabel.text = displayModel.mediaType
+        accessibilityIdentifier = "search.results.media.\(displayModel.mediaId)"
         matchLabel.text = displayModel.matchText
         titleLabel.text = displayModel.title
         metaLabel.text = displayModel.meta
@@ -165,7 +166,7 @@ final class SearchResultCell: UICollectionViewCell {
         contentView.layer.shadowOffset = CGSize(width: 0, height: 12)
     }
 
-    private func loadImage(from url: URL?, imageLoader: SearchResultImageLoading) {
+    private func loadImage(from url: URL?, imageLoader: RemoteImageLoading) {
         imageTask = imageLoader.loadImage(from: url) { [weak self] image in
             self?.imageView.image = image
             self?.fallbackIconView.isHidden = image != nil

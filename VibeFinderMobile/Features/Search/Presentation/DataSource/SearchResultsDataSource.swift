@@ -47,13 +47,13 @@ final class SearchResultsDataSource {
     >
 
     private let header: SearchResultsHeaderDisplayModel
-    private let imageLoader: SearchResultImageLoading
+    private let imageLoader: RemoteImageLoading
     private var dataSource: DataSource?
 
     init(
         collectionView: UICollectionView,
         header: SearchResultsHeaderDisplayModel,
-        imageLoader: SearchResultImageLoading
+        imageLoader: RemoteImageLoading
     ) {
         self.header = header
         self.imageLoader = imageLoader
@@ -73,6 +73,10 @@ final class SearchResultsDataSource {
             animatingDifferences: true,
             completion: completion
         )
+    }
+
+    func mediaId(at indexPath: IndexPath) -> Int? {
+        dataSource?.itemIdentifier(for: indexPath)?.displayModel.mediaId
     }
 
     private func configureDataSource(for collectionView: UICollectionView) {
