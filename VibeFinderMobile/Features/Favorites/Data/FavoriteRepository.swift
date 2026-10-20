@@ -5,6 +5,24 @@ final class FavoriteRepository: FavoriteRepositoryProtocol {
         self.apiClient = apiClient
     }
 
+    func loadFavorites(
+        completion: @escaping (Result<[FavoriteItem], APIError>) -> Void
+    ) {
+        apiClient.request(.favorites) { (result: Result<[FavoriteItemResponse], APIError>) in
+            switch result {
+            case let .success(response):
+                let items = response.compactMap { $0.toDomain() }
+                guard items.count == response.count else {
+                    completion(.failure(.decodingFailed))
+                    return
+                }
+                completion(.success(items))
+            case let .failure(error):
+                completion(.failure(error))
+            }
+        }
+    }
+
     func setFavorite(
         mediaId: Int,
         isFavorite: Bool,

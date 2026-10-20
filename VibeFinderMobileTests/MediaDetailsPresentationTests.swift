@@ -293,6 +293,11 @@ private final class FavoriteRepositorySpy: FavoriteRepositoryProtocol {
     private(set) var requests: [(mediaId: Int, isFavorite: Bool)] = []
     private var completions: [(Result<Bool, APIError>) -> Void] = []
 
+    func loadFavorites(completion: @escaping (Result<[FavoriteItem], APIError>) -> Void) {
+        Issue.record("Media details must not load the favorites list")
+        completion(.failure(.unknown))
+    }
+
     func setFavorite(mediaId: Int, isFavorite: Bool, completion: @escaping (Result<Bool, APIError>) -> Void) {
         requests.append((mediaId, isFavorite))
         completions.append(completion)
