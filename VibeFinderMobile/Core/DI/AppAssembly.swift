@@ -84,6 +84,13 @@ final class AppAssembly: Assembly {
         }
         .inObjectScope(.container)
 
+        container.register(FavoritesViewModel.self) { resolver in
+            FavoritesViewModel(
+                repository: resolver.resolve(FavoriteRepositoryProtocol.self)!,
+                analyticsTracker: resolver.resolve(AnalyticsTrackerProtocol.self)!
+            )
+        }
+
         container.register(MediaDetailsViewModel.self) { resolver, context in
             MediaDetailsViewModel(
                 context: context,
