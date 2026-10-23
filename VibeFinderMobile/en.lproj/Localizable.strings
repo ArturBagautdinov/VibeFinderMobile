@@ -159,3 +159,10 @@
 "media.details.seasons" = "%d seasons";
 "media.details.pages" = "%d pages";
 "media.details.hours" = "%d h";
+
+"favorites.title" = "Favorites";
+"favorites.subtitle" = "Stories worth coming back to";
+"favorites.empty.title" = "Nothing saved yet";
+"favorites.empty.subtitle" = "Tap the heart on a title you love, and it will appear here.";
+"favorites.error.title" = "Couldn’t load favorites";
+"favorites.refresh" = "Refresh favorites";

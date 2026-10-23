@@ -159,3 +159,10 @@
 "media.details.seasons" = "%d сез.";
 "media.details.pages" = "%d стр.";
 "media.details.hours" = "%d ч";
+
+"favorites.title" = "Избранное";
+"favorites.subtitle" = "Истории, к которым хочется вернуться";
+"favorites.empty.title" = "Пока ничего не сохранено";
+"favorites.empty.subtitle" = "Нажмите на сердечко у понравившегося контента, и он появится здесь.";
+"favorites.error.title" = "Не удалось загрузить избранное";
+"favorites.refresh" = "Обновить избранное";
