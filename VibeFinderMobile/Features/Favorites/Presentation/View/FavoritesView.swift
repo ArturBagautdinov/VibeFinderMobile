@@ -100,12 +100,25 @@ final class FavoritesView: UIView {
     }
 
     private func makeHeader() -> UIView {
+        let accentLine = UIView()
+        accentLine.backgroundColor = AppTheme.Color.primary
+        accentLine.layer.cornerRadius = 2
+        accentLine.layer.cornerCurve = .continuous
+        accentLine.layer.shadowColor = AppTheme.Color.primary.cgColor
+        accentLine.layer.shadowOpacity = 0.4
+        accentLine.layer.shadowRadius = 9
+        accentLine.layer.shadowOffset = .zero
+
         let iconContainer = UIView()
-        iconContainer.backgroundColor = AppTheme.Color.primary.withAlphaComponent(0.18)
-        iconContainer.layer.cornerRadius = 18
+        iconContainer.backgroundColor = AppTheme.Color.primary.withAlphaComponent(0.16)
+        iconContainer.layer.cornerRadius = 17
         iconContainer.layer.cornerCurve = .continuous
         iconContainer.layer.borderWidth = 1
-        iconContainer.layer.borderColor = AppTheme.Color.primary.withAlphaComponent(0.32).cgColor
+        iconContainer.layer.borderColor = AppTheme.Color.primary.withAlphaComponent(0.3).cgColor
+        iconContainer.layer.shadowColor = AppTheme.Color.primary.cgColor
+        iconContainer.layer.shadowOpacity = 0.18
+        iconContainer.layer.shadowRadius = 14
+        iconContainer.layer.shadowOffset = CGSize(width: 0, height: 6)
 
         let iconView = UIImageView(image: UIImage(systemName: "heart.fill"))
         iconView.tintColor = AppTheme.Color.primary
@@ -117,6 +130,7 @@ final class FavoritesView: UIView {
         titleLabel.text = L10n.Favorites.title
         titleLabel.font = .systemFont(ofSize: 28, weight: .black)
         titleLabel.textColor = AppTheme.Color.textPrimary
+        titleLabel.numberOfLines = 0
         titleLabel.adjustsFontForContentSizeCategory = true
 
         let subtitleLabel = UILabel()
@@ -128,15 +142,18 @@ final class FavoritesView: UIView {
 
         let labels = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
         labels.axis = .vertical
-        labels.spacing = 3
+        labels.spacing = 5
 
-        let header = UIStackView(arrangedSubviews: [iconContainer, labels])
+        let header = UIStackView(arrangedSubviews: [accentLine, iconContainer, labels])
         header.axis = .horizontal
         header.alignment = .center
-        header.spacing = 14
+        header.spacing = 12
+        header.setCustomSpacing(14, after: iconContainer)
 
         NSLayoutConstraint.activate([
-            iconContainer.widthAnchor.constraint(equalToConstant: 56),
+            accentLine.widthAnchor.constraint(equalToConstant: 3),
+            accentLine.heightAnchor.constraint(equalToConstant: 48),
+            iconContainer.widthAnchor.constraint(equalToConstant: 52),
             iconContainer.heightAnchor.constraint(equalTo: iconContainer.widthAnchor),
             iconView.centerXAnchor.constraint(equalTo: iconContainer.centerXAnchor),
             iconView.centerYAnchor.constraint(equalTo: iconContainer.centerYAnchor),
