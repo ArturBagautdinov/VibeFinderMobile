@@ -15,7 +15,7 @@ struct MediaDetailsDisplayModel {
     let releaseYear: String?
     let imageURL: URL?
     let fallbackSymbol: String
-    let artworkStartsBelowSafeArea: Bool
+    let usesGameArtworkLayout: Bool
     let rating: String?
     let facts: [String]
     let description: String?
@@ -30,7 +30,7 @@ struct MediaDetailsDisplayModel {
             $0 == details.title ? nil : $0
         }
         imageURL = details.imageUrl
-        artworkStartsBelowSafeArea = details.mediaType == .game
+        usesGameArtworkLayout = details.mediaType == .game
         releaseYear = details.releaseYear.map(String.init)
         description = Self.nonEmpty(details.fullDescription)
             ?? Self.nonEmpty(details.shortDescription)

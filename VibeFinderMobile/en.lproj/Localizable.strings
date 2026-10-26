@@ -98,6 +98,7 @@
 "search.validation.empty_query" = "Describe what you are in the mood for.";
 
 "tab.search" = "Search";
+"tab.favorites" = "Favorites";
 "tab.profile" = "Profile";
 
 "profile.verified" = "Email verified";
@@ -166,3 +167,4 @@
 "favorites.empty.subtitle" = "Tap the heart on a title you love, and it will appear here.";
 "favorites.error.title" = "Couldn’t load favorites";
 "favorites.refresh" = "Refresh favorites";
+"favorites.backToList" = "Back to favorites";

@@ -3,13 +3,19 @@ import UIKit
 final class MediaDetailsViewController: UIViewController, AlertPresenting {
     private let viewModel: MediaDetailsViewModel
     private let imageLoader: RemoteImageLoading
+    private let backAccessibilityLabel: String
     private lazy var detailsView = MediaDetailsView(imageLoader: imageLoader)
 
     var onBackSelected: (() -> Void)?
 
-    init(viewModel: MediaDetailsViewModel, imageLoader: RemoteImageLoading) {
+    init(
+        viewModel: MediaDetailsViewModel,
+        imageLoader: RemoteImageLoading,
+        backAccessibilityLabel: String = L10n.Media.Details.back
+    ) {
         self.viewModel = viewModel
         self.imageLoader = imageLoader
+        self.backAccessibilityLabel = backAccessibilityLabel
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -23,6 +29,7 @@ final class MediaDetailsViewController: UIViewController, AlertPresenting {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        detailsView.backButton.accessibilityLabel = backAccessibilityLabel
         detailsView.backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
         detailsView.retryButton.addTarget(self, action: #selector(retryTapped), for: .touchUpInside)
         detailsView.favoriteButton.addTarget(self, action: #selector(favoriteTapped), for: .touchUpInside)

@@ -82,7 +82,7 @@ final class FavoritesItemCell: UICollectionViewCell {
 
         NSLayoutConstraint.activate([
             artworkView.widthAnchor.constraint(equalToConstant: 104),
-            artworkView.heightAnchor.constraint(equalToConstant: 138),
+            artworkView.heightAnchor.constraint(equalToConstant: 148),
             row.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
             row.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 12),
             row.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
@@ -96,7 +96,7 @@ final class FavoritesItemCell: UICollectionViewCell {
         artworkView.layer.cornerCurve = .continuous
         artworkView.layer.masksToBounds = true
 
-        imageView.contentMode = .scaleAspectFit
+        imageView.contentMode = .scaleAspectFill
         fallbackIconView.tintColor = AppTheme.Color.primary
         fallbackIconView.contentMode = .scaleAspectFit
 

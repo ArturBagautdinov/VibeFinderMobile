@@ -3,7 +3,12 @@ import UIKit
 final class MediaDetailsHeroView: UIView {
     private enum ArtworkMetrics {
         static let gameTopInset: CGFloat = 48
+        static let standardTopInset: CGFloat = 54
         static let gameTopFadeRatio: CGFloat = 0.22
+        static let standardTopFadeRatio: CGFloat = 0.14
+        static let gameTopFadeMaximumHeight: CGFloat = 100
+        static let standardTopFadeMaximumHeight: CGFloat = 72
+        static let posterMaximumHeight: CGFloat = 620
         static let gameBottomFadeRatio: CGFloat = 0.25
         static let standardLandscapeBottomFadeRatio: CGFloat = 0.43
         static let standardBottomFadeRatio: CGFloat = 0.5
@@ -18,14 +23,17 @@ final class MediaDetailsHeroView: UIView {
     private var posterImageTopConstraint: NSLayoutConstraint?
     private var posterImageHeightConstraint: NSLayoutConstraint?
     private var posterHeightConstraint: NSLayoutConstraint?
+    private var posterMaximumHeightConstraint: NSLayoutConstraint?
     private let fallbackIconView = UIImageView()
     private let fallbackGradient = CAGradientLayer()
     private let topFadeView = MediaDetailsPosterFadeView(edge: .top)
     private let posterFadeView = MediaDetailsPosterFadeView()
+    private var topFadeHeightConstraint: NSLayoutConstraint?
+    private var topFadeMaximumHeightConstraint: NSLayoutConstraint?
     private var fadeBottomConstraint: NSLayoutConstraint?
     private var fadeHeightConstraint: NSLayoutConstraint?
     private var safeAreaTopInset: CGFloat = 0
-    private var artworkStartsBelowSafeArea = false
+    private var usesGameArtworkLayout = false
 
     private let mediaTypeLabel = PaddedLabel()
     private let titleLabel = UILabel()
@@ -76,7 +84,7 @@ final class MediaDetailsHeroView: UIView {
         imageTask?.cancel()
         representedURL = model.imageURL
         posterImageView.image = nil
-        artworkStartsBelowSafeArea = model.artworkStartsBelowSafeArea
+        usesGameArtworkLayout = model.usesGameArtworkLayout
         updateArtworkTopInset()
         setPosterImage(nil)
         fallbackIconView.image = UIImage(systemName: model.fallbackSymbol)
@@ -108,6 +116,10 @@ final class MediaDetailsHeroView: UIView {
         )
         preferredHeight.priority = .defaultHigh
         posterHeightConstraint = preferredHeight
+        let maximumHeight = posterView.heightAnchor.constraint(
+            lessThanOrEqualToConstant: ArtworkMetrics.posterMaximumHeight
+        )
+        posterMaximumHeightConstraint = maximumHeight
 
         NSLayoutConstraint.activate([
             posterView.topAnchor.constraint(equalTo: topAnchor),
@@ -115,7 +127,7 @@ final class MediaDetailsHeroView: UIView {
             posterView.trailingAnchor.constraint(equalTo: trailingAnchor),
             preferredHeight,
             posterView.heightAnchor.constraint(greaterThanOrEqualToConstant: 220),
-            posterView.heightAnchor.constraint(lessThanOrEqualToConstant: 620),
+            maximumHeight,
 
             informationStack.topAnchor.constraint(equalTo: posterView.bottomAnchor, constant: -32),
             informationStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
@@ -152,6 +164,11 @@ final class MediaDetailsHeroView: UIView {
             multiplier: ArtworkMetrics.gameTopFadeRatio
         )
         preferredTopFadeHeight.priority = .defaultHigh
+        topFadeHeightConstraint = preferredTopFadeHeight
+        let maximumTopFadeHeight = topFadeView.heightAnchor.constraint(
+            lessThanOrEqualToConstant: ArtworkMetrics.gameTopFadeMaximumHeight
+        )
+        topFadeMaximumHeightConstraint = maximumTopFadeHeight
 
         let initialFadeBottom = posterFadeView.bottomAnchor.constraint(equalTo: posterView.bottomAnchor)
         let initialFadeHeight = posterFadeView.heightAnchor.constraint(
@@ -178,7 +195,7 @@ final class MediaDetailsHeroView: UIView {
             topFadeView.leadingAnchor.constraint(equalTo: posterView.leadingAnchor),
             topFadeView.trailingAnchor.constraint(equalTo: posterView.trailingAnchor),
             preferredTopFadeHeight,
-            topFadeView.heightAnchor.constraint(lessThanOrEqualToConstant: 100),
+            maximumTopFadeHeight,
 
             posterFadeView.leadingAnchor.constraint(equalTo: posterView.leadingAnchor),
             posterFadeView.trailingAnchor.constraint(equalTo: posterView.trailingAnchor),
@@ -247,12 +264,25 @@ final class MediaDetailsHeroView: UIView {
 
     private func setPosterImage(_ image: UIImage?) {
         posterImageView.image = image
-        topFadeView.isHidden = image == nil || !artworkStartsBelowSafeArea
+        topFadeView.isHidden = image == nil
         fallbackGradient.isHidden = image != nil
+        topFadeHeightConstraint?.isActive = false
         posterImageHeightConstraint?.isActive = false
         posterHeightConstraint?.isActive = false
         fadeBottomConstraint?.isActive = false
         fadeHeightConstraint?.isActive = false
+
+        let topFadeHeight = topFadeView.heightAnchor.constraint(
+            equalTo: posterImageView.heightAnchor,
+            multiplier: usesGameArtworkLayout
+                ? ArtworkMetrics.gameTopFadeRatio
+                : ArtworkMetrics.standardTopFadeRatio
+        )
+        topFadeHeight.priority = .defaultHigh
+        topFadeHeightConstraint = topFadeHeight
+        topFadeMaximumHeightConstraint?.constant = usesGameArtworkLayout
+            ? ArtworkMetrics.gameTopFadeMaximumHeight
+            : ArtworkMetrics.standardTopFadeMaximumHeight
 
         if let image, image.size.width > 0 {
             let aspectRatio = image.size.height / image.size.width
@@ -270,7 +300,7 @@ final class MediaDetailsHeroView: UIView {
                 )
                 fadeHeightConstraint = posterFadeView.heightAnchor.constraint(
                     equalTo: posterImageView.heightAnchor,
-                    multiplier: artworkStartsBelowSafeArea
+                    multiplier: usesGameArtworkLayout
                         ? ArtworkMetrics.gameBottomFadeRatio
                         : ArtworkMetrics.standardLandscapeBottomFadeRatio
                 )
@@ -284,7 +314,8 @@ final class MediaDetailsHeroView: UIView {
             configurePortraitLayout()
         }
         posterHeightConstraint?.priority = .defaultHigh
-        [posterImageHeightConstraint, posterHeightConstraint, fadeBottomConstraint, fadeHeightConstraint]
+        [topFadeHeightConstraint, posterImageHeightConstraint, posterHeightConstraint,
+         fadeBottomConstraint, fadeHeightConstraint]
             .compactMap { $0 }
             .forEach { $0.isActive = true }
     }
@@ -292,25 +323,27 @@ final class MediaDetailsHeroView: UIView {
     private func configurePortraitLayout() {
         posterHeightConstraint = posterView.heightAnchor.constraint(
             equalTo: posterView.widthAnchor,
-            multiplier: 1.4
+            multiplier: 1.4,
+            constant: usesGameArtworkLayout ? 0 : (posterImageTopConstraint?.constant ?? 0)
         )
         fadeBottomConstraint = posterFadeView.bottomAnchor.constraint(equalTo: posterView.bottomAnchor)
         fadeHeightConstraint = posterFadeView.heightAnchor.constraint(
             equalTo: posterView.heightAnchor,
-            multiplier: artworkStartsBelowSafeArea
+            multiplier: usesGameArtworkLayout
                 ? ArtworkMetrics.gameBottomFadeRatio
                 : ArtworkMetrics.standardBottomFadeRatio
         )
     }
 
     private func updateArtworkTopInset() {
-        let inset = artworkStartsBelowSafeArea
-            ? safeAreaTopInset + ArtworkMetrics.gameTopInset
-            : 0
+        let topInset = usesGameArtworkLayout
+            ? ArtworkMetrics.gameTopInset
+            : ArtworkMetrics.standardTopInset
+        let inset = safeAreaTopInset + topInset
         guard posterImageTopConstraint?.constant != inset else { return }
         posterImageTopConstraint?.constant = inset
-        if let image = posterImageView.image {
-            setPosterImage(image)
-        }
+        posterMaximumHeightConstraint?.constant = ArtworkMetrics.posterMaximumHeight
+            + (usesGameArtworkLayout ? 0 : inset)
+        setPosterImage(posterImageView.image)
     }
 }

@@ -111,6 +111,8 @@ internal enum L10n {
     internal static let unknown = L10n.tr("Localizable", "error.unknown", fallback: "Something went wrong. Please try again.")
   }
   internal enum Favorites {
+    /// Back to favorites
+    internal static let backToList = L10n.tr("Localizable", "favorites.backToList", fallback: "Back to favorites")
     /// Refresh favorites
     internal static let refresh = L10n.tr("Localizable", "favorites.refresh", fallback: "Refresh favorites")
     /// Stories worth coming back to
@@ -401,6 +403,8 @@ internal enum L10n {
     }
   }
   internal enum Tab {
+    /// Favorites
+    internal static let favorites = L10n.tr("Localizable", "tab.favorites", fallback: "Favorites")
     /// Profile
     internal static let profile = L10n.tr("Localizable", "tab.profile", fallback: "Profile")
     /// Search
