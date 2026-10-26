@@ -110,6 +110,26 @@ internal enum L10n {
     /// Something went wrong. Please try again.
     internal static let unknown = L10n.tr("Localizable", "error.unknown", fallback: "Something went wrong. Please try again.")
   }
+  internal enum Favorites {
+    /// Back to favorites
+    internal static let backToList = L10n.tr("Localizable", "favorites.backToList", fallback: "Back to favorites")
+    /// Refresh favorites
+    internal static let refresh = L10n.tr("Localizable", "favorites.refresh", fallback: "Refresh favorites")
+    /// Stories worth coming back to
+    internal static let subtitle = L10n.tr("Localizable", "favorites.subtitle", fallback: "Stories worth coming back to")
+    /// Favorites
+    internal static let title = L10n.tr("Localizable", "favorites.title", fallback: "Favorites")
+    internal enum Empty {
+      /// Tap the heart on a title you love, and it will appear here.
+      internal static let subtitle = L10n.tr("Localizable", "favorites.empty.subtitle", fallback: "Tap the heart on a title you love, and it will appear here.")
+      /// Nothing saved yet
+      internal static let title = L10n.tr("Localizable", "favorites.empty.title", fallback: "Nothing saved yet")
+    }
+    internal enum Error {
+      /// Couldn’t load favorites
+      internal static let title = L10n.tr("Localizable", "favorites.error.title", fallback: "Couldn’t load favorites")
+    }
+  }
   internal enum Home {
     /// VibeFinder
     internal static let title = L10n.tr("Localizable", "home.title", fallback: "VibeFinder")
@@ -383,6 +403,8 @@ internal enum L10n {
     }
   }
   internal enum Tab {
+    /// Favorites
+    internal static let favorites = L10n.tr("Localizable", "tab.favorites", fallback: "Favorites")
     /// Profile
     internal static let profile = L10n.tr("Localizable", "tab.profile", fallback: "Profile")
     /// Search

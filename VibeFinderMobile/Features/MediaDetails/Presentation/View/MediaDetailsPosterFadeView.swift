@@ -47,6 +47,16 @@ final class MediaDetailsPosterFadeView: UIView {
 
         backgroundGradient.locations = [0, 0.36, 0.76, 1]
         if edge == .top {
+            blurMask.colors = [
+                UIColor.clear.cgColor,
+                UIColor.black.withAlphaComponent(0.07).cgColor,
+                UIColor.black.withAlphaComponent(0.22).cgColor,
+                UIColor.black.withAlphaComponent(0.46).cgColor,
+                UIColor.black.withAlphaComponent(0.72).cgColor,
+                UIColor.black.cgColor
+            ]
+            blurMask.locations = [0, 0.2, 0.4, 0.6, 0.8, 1]
+            backgroundGradient.locations = [0, 0.2, 0.4, 0.6, 0.8, 1]
             blurMask.startPoint = CGPoint(x: 0.5, y: 1)
             blurMask.endPoint = CGPoint(x: 0.5, y: 0)
             backgroundGradient.startPoint = CGPoint(x: 0.5, y: 1)
@@ -66,11 +76,22 @@ final class MediaDetailsPosterFadeView: UIView {
 
     private func updateBackgroundColors() {
         let background = AppTheme.Color.background.resolvedColor(with: traitCollection)
-        backgroundGradient.colors = [
-            background.withAlphaComponent(0).cgColor,
-            background.withAlphaComponent(0.08).cgColor,
-            background.withAlphaComponent(0.74).cgColor,
-            background.cgColor
-        ]
+        if edge == .top {
+            backgroundGradient.colors = [
+                background.withAlphaComponent(0).cgColor,
+                background.withAlphaComponent(0.04).cgColor,
+                background.withAlphaComponent(0.13).cgColor,
+                background.withAlphaComponent(0.32).cgColor,
+                background.withAlphaComponent(0.62).cgColor,
+                background.cgColor
+            ]
+        } else {
+            backgroundGradient.colors = [
+                background.withAlphaComponent(0).cgColor,
+                background.withAlphaComponent(0.08).cgColor,
+                background.withAlphaComponent(0.74).cgColor,
+                background.cgColor
+            ]
+        }
     }
 }

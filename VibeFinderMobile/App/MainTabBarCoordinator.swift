@@ -16,6 +16,7 @@ final class MainTabBarCoordinator: Coordinator {
     
     private let tabBarController = UITabBarController()
     private var searchCoordinator: SearchCoordinator?
+    private var favoritesCoordinator: FavoritesCoordinator?
     private var profileCoordinator: ProfileCoordinator?
     
     var onLogout: (() -> Void)?
@@ -34,6 +35,7 @@ final class MainTabBarCoordinator: Coordinator {
         configureTabBar()
         
         let searchNavigationController = UINavigationController()
+        let favoritesNavigationController = UINavigationController()
         let profileNavigationController = UINavigationController()
         
         let searchCoordinator = SearchCoordinator(
@@ -44,6 +46,10 @@ final class MainTabBarCoordinator: Coordinator {
         let profileCoordinator = ProfileCoordinator(
             navigationController: profileNavigationController,
             container: container)
+
+        let favoritesCoordinator = FavoritesCoordinator(
+            navigationController: favoritesNavigationController,
+            container: container)
         
         profileCoordinator.onLogout = { [weak self] in
             self?.onLogout?()
@@ -53,9 +59,11 @@ final class MainTabBarCoordinator: Coordinator {
         }
         
         self.searchCoordinator = searchCoordinator
+        self.favoritesCoordinator = favoritesCoordinator
         self.profileCoordinator = profileCoordinator
         
         searchCoordinator.start()
+        favoritesCoordinator.start()
         profileCoordinator.start()
         
         searchNavigationController.tabBarItem = UITabBarItem(
@@ -63,6 +71,12 @@ final class MainTabBarCoordinator: Coordinator {
             image: UIImage(systemName: "sparkles"),
             selectedImage: UIImage(systemName: "sparkles")
             )
+
+        favoritesNavigationController.tabBarItem = UITabBarItem(
+            title: L10n.Tab.favorites,
+            image: UIImage(systemName: "heart"),
+            selectedImage: UIImage(systemName: "heart.fill")
+        )
         
         profileNavigationController.tabBarItem = UITabBarItem(
             title: L10n.Tab.profile,
@@ -71,6 +85,7 @@ final class MainTabBarCoordinator: Coordinator {
         
         tabBarController.viewControllers = [
             searchNavigationController,
+            favoritesNavigationController,
             profileNavigationController
         ]
         

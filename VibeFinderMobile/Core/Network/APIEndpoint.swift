@@ -70,6 +70,13 @@ extension APIEndpoint {
         )
     }
 
+    static let favorites = APIEndpoint(
+        path: "api/favorites",
+        method: .get,
+        headers: [.accept("application/json")],
+        requiresAuthorization: true
+    )
+
     static func addFavorite(mediaId: Int) -> APIEndpoint {
         APIEndpoint(path: "api/favorites/\(mediaId)", method: .post, requiresAuthorization: true)
     }
