@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import UIKit
 @testable import VibeFinderMobile
 
 @Suite(.serialized)
@@ -136,6 +137,27 @@ struct VibeFinderMobileTests {
         #expect(resultPage?.id == 101)
         #expect(states.last?.isLoading == false)
         #expect(states.last?.errorMessage == nil)
+    }
+
+    @Test
+    @MainActor
+    func searchScreenReportsLoadingStartAndFailureForTabBarVisibility() async {
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: SearchRepositorySpy(),
+            suggestionsStore: SearchSuggestionsStoreSpy()
+        )
+        let viewController = SearchViewController(viewModel: viewModel)
+        viewController.loadViewIfNeeded()
+        var loadingStates: [Bool] = []
+        viewController.onLoadingStateChanged = { loadingStates.append($0) }
+
+        viewModel.search(query: "cozy movie")
+        #expect(loadingStates == [true])
+
+        await Task.yield()
+        await Task.yield()
+        #expect(loadingStates.last == false)
     }
 
     @Test

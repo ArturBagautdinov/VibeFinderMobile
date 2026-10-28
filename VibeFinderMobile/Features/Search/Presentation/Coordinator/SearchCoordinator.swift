@@ -9,6 +9,7 @@ final class SearchCoordinator: Coordinator {
 
     private let performanceTracker: SearchPerformanceTracking
     private var activeSearchTrace: SearchPerformanceTrace?
+    var onSearchLoadingChanged: ((Bool) -> Void)?
 
     init(
         navigationController: UINavigationController,
@@ -26,6 +27,9 @@ final class SearchCoordinator: Coordinator {
         let viewModel = container.resolve(SearchViewModel.self, argument: username)!
         searchViewModel = viewModel
         let viewController = SearchViewController(viewModel: viewModel)
+        viewController.onLoadingStateChanged = { [weak self] isLoading in
+            self?.onSearchLoadingChanged?(isLoading)
+        }
 
         viewModel.onSearchStarted = { [weak self] in
             guard let self else { return }

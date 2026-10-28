@@ -5,6 +5,7 @@ final class SearchViewController: UIViewController {
     private lazy var searchView = SearchView(state: viewModel.state)
 
     var onResultsReady: ((SearchPage) -> Void)?
+    var onLoadingStateChanged: ((Bool) -> Void)?
     var onMoreSuggestionsSelected: (([SearchSuggestionDisplayModel]) -> Void)?
     var onHistorySeeAllSelected: (() -> Void)?
 
@@ -67,6 +68,7 @@ final class SearchViewController: UIViewController {
     private func bindViewModel() {
         viewModel.onStateChange = { [weak self] state in
             self?.searchView.render(state)
+            self?.onLoadingStateChanged?(state.isLoading)
         }
         viewModel.onResultsReady = { [weak self] page in
             self?.onResultsReady?(page)
