@@ -3,7 +3,6 @@ import UIKit
 final class SearchLoadingView: UIView {
     var onCancelSelected: (() -> Void)?
 
-    private let glowView = UIView()
     private let cancelButton = UIButton(type: .system)
     private let iconContainer = CircleView()
     private let iconView = UIImageView(image: UIImage(systemName: "sparkles"))
@@ -55,7 +54,6 @@ final class SearchLoadingView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        glowView.layer.cornerRadius = glowView.bounds.width / 2
         updateOrbitPath()
     }
 
@@ -66,7 +64,6 @@ final class SearchLoadingView: UIView {
         isUserInteractionEnabled = false
         accessibilityIdentifier = "search.loadingView"
 
-        configureGlow()
         configureIcon()
         configureLabels()
         configureCancelButton()
@@ -77,18 +74,11 @@ final class SearchLoadingView: UIView {
         stackView.spacing = 16
         stackView.translatesAutoresizingMaskIntoConstraints = false
 
-        addSubview(glowView)
         addSubview(stackView)
         addSubview(cancelButton)
-        glowView.translatesAutoresizingMaskIntoConstraints = false
         cancelButton.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
-            glowView.centerXAnchor.constraint(equalTo: centerXAnchor),
-            glowView.centerYAnchor.constraint(equalTo: centerYAnchor, constant: -42),
-            glowView.widthAnchor.constraint(equalToConstant: 380),
-            glowView.heightAnchor.constraint(equalTo: glowView.widthAnchor),
-
             iconContainer.widthAnchor.constraint(equalToConstant: 86),
             iconContainer.heightAnchor.constraint(equalTo: iconContainer.widthAnchor),
 
@@ -119,14 +109,6 @@ final class SearchLoadingView: UIView {
         cancelButton.addAction(UIAction { [weak self] _ in
             self?.onCancelSelected?()
         }, for: .touchUpInside)
-    }
-
-    private func configureGlow() {
-        glowView.backgroundColor = AppTheme.Color.primary.withAlphaComponent(0.16)
-        glowView.layer.shadowColor = AppTheme.Color.primary.cgColor
-        glowView.layer.shadowOpacity = 0.55
-        glowView.layer.shadowRadius = 46
-        glowView.layer.shadowOffset = .zero
     }
 
     private func configureIcon() {
@@ -205,14 +187,6 @@ final class SearchLoadingView: UIView {
         iconContainer.layoutIfNeeded()
         updateOrbitPath()
         
-        let pulse = CABasicAnimation(keyPath: "transform.scale")
-        pulse.fromValue = 0.92
-        pulse.toValue = 1.08
-        pulse.duration = 1.3
-        pulse.autoreverses = true
-        pulse.repeatCount = .infinity
-        glowView.layer.add(pulse, forKey: "loading.pulse")
-
         let rotation = CABasicAnimation(keyPath: "transform.rotation.z")
         rotation.fromValue = 0
         rotation.toValue = CGFloat.pi * 2
@@ -290,7 +264,6 @@ final class SearchLoadingView: UIView {
     }
 
     private func stopAnimating() {
-        glowView.layer.removeAnimation(forKey: "loading.pulse")
         orbitLayer.removeAnimation(forKey: "loading.orbit")
         secondaryOrbitLayer.removeAnimation(forKey: "loading.secondaryOrbit")
         iconContainer.layer.removeAllAnimations()
