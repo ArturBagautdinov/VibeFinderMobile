@@ -1,7 +1,9 @@
 import UIKit
 
 final class SearchLoadingView: UIView {
-    private let glowView = UIView()
+    var onCancelSelected: (() -> Void)?
+
+    private let cancelButton = UIButton(type: .system)
     private let iconContainer = CircleView()
     private let iconView = UIImageView(image: UIImage(systemName: "sparkles"))
     private let titleLabel = UILabel()
@@ -10,6 +12,7 @@ final class SearchLoadingView: UIView {
     private let secondaryOrbitLayer = CAShapeLayer()
     private var subtitleIndex = 0
     private var subtitleTimer: Timer?
+    private var isPresented = false
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -21,12 +24,13 @@ final class SearchLoadingView: UIView {
     }
 
     func setVisible(_ isVisible: Bool) {
-        guard isHidden == isVisible || alpha != (isVisible ? 1 : 0) else {
-            return
-        }
+        guard isPresented != isVisible else { return }
+        isPresented = isVisible
+        isUserInteractionEnabled = isVisible
 
         if isVisible {
             isHidden = false
+            stopAnimating()
             startAnimating()
             animateContentAppearance()
             startIconBreathing()
@@ -39,7 +43,8 @@ final class SearchLoadingView: UIView {
             options: [.curveEaseInOut, .allowUserInteraction]
         ) {
             self.alpha = isVisible ? 1 : 0
-        } completion: { _ in
+        } completion: { [weak self] _ in
+            guard let self, self.isPresented == isVisible else { return }
             self.isHidden = !isVisible
             if !isVisible {
                 self.stopAnimating()
@@ -49,7 +54,6 @@ final class SearchLoadingView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        glowView.layer.cornerRadius = glowView.bounds.width / 2
         updateOrbitPath()
     }
 
@@ -57,11 +61,12 @@ final class SearchLoadingView: UIView {
         backgroundColor = AppTheme.Color.background.withAlphaComponent(0.99)
         alpha = 0
         isHidden = true
+        isUserInteractionEnabled = false
         accessibilityIdentifier = "search.loadingView"
 
-        configureGlow()
         configureIcon()
         configureLabels()
+        configureCancelButton()
 
         let stackView = UIStackView(arrangedSubviews: [iconContainer, titleLabel, subtitleLabel])
         stackView.axis = .vertical
@@ -69,32 +74,41 @@ final class SearchLoadingView: UIView {
         stackView.spacing = 16
         stackView.translatesAutoresizingMaskIntoConstraints = false
 
-        addSubview(glowView)
         addSubview(stackView)
-        glowView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(cancelButton)
+        cancelButton.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
-            glowView.centerXAnchor.constraint(equalTo: centerXAnchor),
-            glowView.centerYAnchor.constraint(equalTo: centerYAnchor, constant: -42),
-            glowView.widthAnchor.constraint(equalToConstant: 380),
-            glowView.heightAnchor.constraint(equalTo: glowView.widthAnchor),
-
             iconContainer.widthAnchor.constraint(equalToConstant: 86),
             iconContainer.heightAnchor.constraint(equalTo: iconContainer.widthAnchor),
 
             stackView.centerXAnchor.constraint(equalTo: centerXAnchor),
             stackView.centerYAnchor.constraint(equalTo: centerYAnchor, constant: -30),
             stackView.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 28),
-            stackView.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -28)
+            stackView.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -28),
+
+            cancelButton.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 8),
+            cancelButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
+            cancelButton.widthAnchor.constraint(equalToConstant: 42),
+            cancelButton.heightAnchor.constraint(equalTo: cancelButton.widthAnchor)
         ])
     }
 
-    private func configureGlow() {
-        glowView.backgroundColor = AppTheme.Color.primary.withAlphaComponent(0.16)
-        glowView.layer.shadowColor = AppTheme.Color.primary.cgColor
-        glowView.layer.shadowOpacity = 0.55
-        glowView.layer.shadowRadius = 46
-        glowView.layer.shadowOffset = .zero
+    private func configureCancelButton() {
+        var configuration = UIButton.Configuration.filled()
+        configuration.image = UIImage(systemName: "chevron.left")
+        configuration.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 17, weight: .bold)
+        configuration.baseBackgroundColor = AppTheme.Color.surface
+        configuration.baseForegroundColor = AppTheme.Color.primary
+        configuration.cornerStyle = .capsule
+        cancelButton.configuration = configuration
+        cancelButton.layer.borderWidth = 1
+        cancelButton.layer.borderColor = AppTheme.Color.border.cgColor
+        cancelButton.accessibilityLabel = L10n.Common.cancel
+        cancelButton.accessibilityIdentifier = "search.loading.cancelButton"
+        cancelButton.addAction(UIAction { [weak self] _ in
+            self?.onCancelSelected?()
+        }, for: .touchUpInside)
     }
 
     private func configureIcon() {
@@ -173,14 +187,6 @@ final class SearchLoadingView: UIView {
         iconContainer.layoutIfNeeded()
         updateOrbitPath()
         
-        let pulse = CABasicAnimation(keyPath: "transform.scale")
-        pulse.fromValue = 0.92
-        pulse.toValue = 1.08
-        pulse.duration = 1.3
-        pulse.autoreverses = true
-        pulse.repeatCount = .infinity
-        glowView.layer.add(pulse, forKey: "loading.pulse")
-
         let rotation = CABasicAnimation(keyPath: "transform.rotation.z")
         rotation.fromValue = 0
         rotation.toValue = CGFloat.pi * 2
@@ -258,9 +264,10 @@ final class SearchLoadingView: UIView {
     }
 
     private func stopAnimating() {
-        glowView.layer.removeAnimation(forKey: "loading.pulse")
         orbitLayer.removeAnimation(forKey: "loading.orbit")
         secondaryOrbitLayer.removeAnimation(forKey: "loading.secondaryOrbit")
+        iconContainer.layer.removeAllAnimations()
+        iconContainer.transform = .identity
         iconView.layer.removeAllAnimations()
         iconView.transform = .identity
         

@@ -22,6 +22,7 @@ final class SearchViewModel {
     private var suggestionModels: [SearchSuggestion]
     private var optimisticRecentHistory: [SearchHistoryEntryDisplayModel] = []
     private var pendingRecentHistoryInsertionID: Int?
+    private var activeRequest: ActiveRequest?
     private(set) var state: State
 
     var onStateChange: ((State) -> Void)?
@@ -29,6 +30,12 @@ final class SearchViewModel {
 
     var onSearchStarted: (() -> Void)?
     var onSearchFailed: (() -> Void)?
+    var onSearchCancelled: (() -> Void)?
+
+    private enum ActiveRequest: Equatable {
+        case search(UUID)
+        case recentHistory(UUID)
+    }
 
     private enum Constants {
         static let visibleSuggestionLimit = 5
@@ -91,32 +98,47 @@ final class SearchViewModel {
     }
 
     func search(query: String) {
+        guard !state.isLoading else { return }
         let normalizedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !normalizedQuery.isEmpty else {
             update(errorMessage: L10n.Search.Validation.emptyQuery)
             return
         }
 
+        let request = ActiveRequest.search(UUID())
+        activeRequest = request
         onSearchStarted?()
         analyticsTracker.track(SearchAnalyticsEvent.requested())
         update(isLoading: true, errorMessage: nil)
         let tracker = analyticsTracker
         searchRepository.search(query: normalizedQuery) { [weak self, tracker] result in
             Task {
+                guard let self, self.activeRequest == request else { return }
+                self.activeRequest = nil
                 switch result {
                 case let .success(page):
                     tracker.track(SearchAnalyticsEvent.succeeded(page: page))
-                    self?.prependOptimisticHistory(from: page)
-                    self?.update(isLoading: false, errorMessage: nil)
-                    self?.loadRecentHistory()
-                    self?.onResultsReady?(page)
+                    self.prependOptimisticHistory(from: page)
+                    self.update(isLoading: false, errorMessage: nil)
+                    self.loadRecentHistory()
+                    self.onResultsReady?(page)
                 case let .failure(error):
                     tracker.track(SearchAnalyticsEvent.failed(error: error))
-                    self?.update(isLoading: false, errorMessage: error.userMessage)
-                    self?.onSearchFailed?()
+                    self.update(isLoading: false, errorMessage: error.userMessage)
+                    self.onSearchFailed?()
                 }
             }
         }
+    }
+
+    func cancelSearch() {
+        guard let activeRequest else { return }
+        self.activeRequest = nil
+        if case .search = activeRequest {
+            analyticsTracker.track(SearchAnalyticsEvent.cancelled())
+        }
+        update(isLoading: false, errorMessage: nil)
+        onSearchCancelled?()
     }
 
     func suggestionSelected(id: String) {
@@ -179,19 +201,24 @@ final class SearchViewModel {
     }
 
     func openHistoryResult(_ history: SearchHistoryEntryDisplayModel) {
+        guard !state.isLoading else { return }
+        let request = ActiveRequest.recentHistory(UUID())
+        activeRequest = request
         analyticsTracker.track(SearchHistoryAnalyticsEvent.openRequested(source: .recent))
         update(isLoading: true, errorMessage: nil)
         let tracker = analyticsTracker
         searchRepository.loadSearchPage(id: history.id) { [weak self, tracker] result in
             Task {
+                guard let self, self.activeRequest == request else { return }
+                self.activeRequest = nil
                 switch result {
                 case let .success(page):
                     tracker.track(SearchHistoryAnalyticsEvent.openSucceeded(source: .recent))
-                    self?.update(isLoading: false, errorMessage: nil)
-                    self?.onResultsReady?(page)
+                    self.update(isLoading: false, errorMessage: nil)
+                    self.onResultsReady?(page)
                 case let .failure(error):
                     tracker.track(SearchHistoryAnalyticsEvent.openFailed(source: .recent, error: error))
-                    self?.update(isLoading: false, errorMessage: error.userMessage)
+                    self.update(isLoading: false, errorMessage: error.userMessage)
                 }
             }
         }

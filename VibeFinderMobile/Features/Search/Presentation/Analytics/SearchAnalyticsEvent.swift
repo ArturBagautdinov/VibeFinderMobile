@@ -23,4 +23,8 @@ enum SearchAnalyticsEvent {
             ]
         )
     }
+
+    static func cancelled() -> AnalyticsEvent {
+        AnalyticsEvent(name: "search_cancelled")
+    }
 }

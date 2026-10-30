@@ -57,6 +57,9 @@ final class MainTabBarCoordinator: Coordinator {
         profileCoordinator.onAppearanceChanged = { [weak self] avatar, initials in
             self?.searchCoordinator?.updateProfileAppearance(avatar: avatar, initials: initials)
         }
+        searchCoordinator.onSearchLoadingChanged = { [weak self] isLoading in
+            self?.tabBarController.tabBar.isHidden = isLoading
+        }
         
         self.searchCoordinator = searchCoordinator
         self.favoritesCoordinator = favoritesCoordinator

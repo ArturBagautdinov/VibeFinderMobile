@@ -7,6 +7,7 @@ final class SearchView: UIView {
     var onMoreSuggestionsSelected: (() -> Void)?
     var onHistorySeeAllSelected: (() -> Void)?
     var onHistorySelected: ((SearchHistoryEntryDisplayModel) -> Void)?
+    var onLoadingCancelSelected: (() -> Void)?
 
     var promptTextView: UITextView {
         promptCardView.textView
@@ -59,6 +60,9 @@ final class SearchView: UIView {
         }
         recentVibesView.onHistorySelected = { [weak self] history in
             self?.onHistorySelected?(history)
+        }
+        loadingView.onCancelSelected = { [weak self] in
+            self?.onLoadingCancelSelected?()
         }
         let dismissTapGesture = UITapGestureRecognizer(target: self, action: #selector(backgroundTapped))
         dismissTapGesture.cancelsTouchesInView = false
