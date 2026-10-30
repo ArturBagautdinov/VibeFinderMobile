@@ -1,7 +1,10 @@
 import UIKit
 
 final class SearchLoadingView: UIView {
+    var onCancelSelected: (() -> Void)?
+
     private let glowView = UIView()
+    private let cancelButton = UIButton(type: .system)
     private let iconContainer = CircleView()
     private let iconView = UIImageView(image: UIImage(systemName: "sparkles"))
     private let titleLabel = UILabel()
@@ -10,6 +13,7 @@ final class SearchLoadingView: UIView {
     private let secondaryOrbitLayer = CAShapeLayer()
     private var subtitleIndex = 0
     private var subtitleTimer: Timer?
+    private var isPresented = false
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -21,12 +25,13 @@ final class SearchLoadingView: UIView {
     }
 
     func setVisible(_ isVisible: Bool) {
-        guard isHidden == isVisible || alpha != (isVisible ? 1 : 0) else {
-            return
-        }
+        guard isPresented != isVisible else { return }
+        isPresented = isVisible
+        isUserInteractionEnabled = isVisible
 
         if isVisible {
             isHidden = false
+            stopAnimating()
             startAnimating()
             animateContentAppearance()
             startIconBreathing()
@@ -39,7 +44,8 @@ final class SearchLoadingView: UIView {
             options: [.curveEaseInOut, .allowUserInteraction]
         ) {
             self.alpha = isVisible ? 1 : 0
-        } completion: { _ in
+        } completion: { [weak self] _ in
+            guard let self, self.isPresented == isVisible else { return }
             self.isHidden = !isVisible
             if !isVisible {
                 self.stopAnimating()
@@ -57,11 +63,13 @@ final class SearchLoadingView: UIView {
         backgroundColor = AppTheme.Color.background.withAlphaComponent(0.99)
         alpha = 0
         isHidden = true
+        isUserInteractionEnabled = false
         accessibilityIdentifier = "search.loadingView"
 
         configureGlow()
         configureIcon()
         configureLabels()
+        configureCancelButton()
 
         let stackView = UIStackView(arrangedSubviews: [iconContainer, titleLabel, subtitleLabel])
         stackView.axis = .vertical
@@ -71,7 +79,9 @@ final class SearchLoadingView: UIView {
 
         addSubview(glowView)
         addSubview(stackView)
+        addSubview(cancelButton)
         glowView.translatesAutoresizingMaskIntoConstraints = false
+        cancelButton.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
             glowView.centerXAnchor.constraint(equalTo: centerXAnchor),
@@ -85,8 +95,30 @@ final class SearchLoadingView: UIView {
             stackView.centerXAnchor.constraint(equalTo: centerXAnchor),
             stackView.centerYAnchor.constraint(equalTo: centerYAnchor, constant: -30),
             stackView.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 28),
-            stackView.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -28)
+            stackView.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -28),
+
+            cancelButton.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 8),
+            cancelButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
+            cancelButton.widthAnchor.constraint(equalToConstant: 42),
+            cancelButton.heightAnchor.constraint(equalTo: cancelButton.widthAnchor)
         ])
+    }
+
+    private func configureCancelButton() {
+        var configuration = UIButton.Configuration.filled()
+        configuration.image = UIImage(systemName: "chevron.left")
+        configuration.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 17, weight: .bold)
+        configuration.baseBackgroundColor = AppTheme.Color.surface
+        configuration.baseForegroundColor = AppTheme.Color.primary
+        configuration.cornerStyle = .capsule
+        cancelButton.configuration = configuration
+        cancelButton.layer.borderWidth = 1
+        cancelButton.layer.borderColor = AppTheme.Color.border.cgColor
+        cancelButton.accessibilityLabel = L10n.Common.cancel
+        cancelButton.accessibilityIdentifier = "search.loading.cancelButton"
+        cancelButton.addAction(UIAction { [weak self] _ in
+            self?.onCancelSelected?()
+        }, for: .touchUpInside)
     }
 
     private func configureGlow() {
@@ -261,6 +293,8 @@ final class SearchLoadingView: UIView {
         glowView.layer.removeAnimation(forKey: "loading.pulse")
         orbitLayer.removeAnimation(forKey: "loading.orbit")
         secondaryOrbitLayer.removeAnimation(forKey: "loading.secondaryOrbit")
+        iconContainer.layer.removeAllAnimations()
+        iconContainer.transform = .identity
         iconView.layer.removeAllAnimations()
         iconView.transform = .identity
         

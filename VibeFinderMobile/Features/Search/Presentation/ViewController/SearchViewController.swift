@@ -63,6 +63,9 @@ final class SearchViewController: UIViewController {
         searchView.onHistorySelected = { [weak self] history in
             self?.selectHistory(history)
         }
+        searchView.onLoadingCancelSelected = { [weak self] in
+            self?.viewModel.cancelSearch()
+        }
     }
 
     private func bindViewModel() {

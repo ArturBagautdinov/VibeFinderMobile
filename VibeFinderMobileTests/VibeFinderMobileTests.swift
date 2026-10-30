@@ -162,6 +162,82 @@ struct VibeFinderMobileTests {
 
     @Test
     @MainActor
+    func loadingBackButtonCancelsSearchAndIgnoresLateResult() async throws {
+        let repository = SearchRepositorySpy()
+        repository.defersSearchCompletion = true
+        let analytics = SearchAnalyticsSpy()
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: SearchSuggestionsStoreSpy(),
+            analyticsTracker: analytics
+        )
+        let viewController = SearchViewController(viewModel: viewModel)
+        viewController.loadViewIfNeeded()
+        let loadingView = try #require(viewController.view.subviews.compactMap {
+            $0 as? SearchLoadingView
+        }.first)
+        let backButton = try #require(loadingView.subviews.compactMap {
+            $0 as? UIButton
+        }.first)
+        var loadingStates: [Bool] = []
+        var shownPageIDs: [Int] = []
+        var cancellationCount = 0
+        viewController.onLoadingStateChanged = { loadingStates.append($0) }
+        viewController.onResultsReady = { shownPageIDs.append($0.id) }
+        viewModel.onSearchCancelled = { cancellationCount += 1 }
+
+        viewModel.search(query: "cozy movie")
+        #expect(loadingStates == [true])
+        #expect(backButton.accessibilityIdentifier == "search.loading.cancelButton")
+        backButton.sendActions(for: .touchUpInside)
+
+        #expect(viewModel.state.isLoading == false)
+        #expect(loadingStates == [true, false])
+        #expect(cancellationCount == 1)
+        repository.completeDeferredSearch(.success(.fixture()))
+        await Task.yield()
+        await Task.yield()
+        #expect(shownPageIDs.isEmpty)
+        #expect(viewModel.state.recentHistory.isEmpty)
+
+        repository.defersSearchCompletion = false
+        repository.result = .success(.fixture())
+        viewModel.search(query: "new query")
+        await Task.yield()
+        await Task.yield()
+        #expect(shownPageIDs == [101])
+        #expect(analytics.events.map(\.name) == [
+            "search_requested", "search_cancelled", "search_requested", "search_succeeded"
+        ])
+    }
+
+    @Test
+    @MainActor
+    func cancellingRecentHistoryOpenIgnoresLatePage() async {
+        let repository = SearchRepositorySpy()
+        repository.defersPageCompletion = true
+        let viewModel = SearchViewModel(
+            username: "Artur",
+            searchRepository: repository,
+            suggestionsStore: SearchSuggestionsStoreSpy()
+        )
+        var shownPage: SearchPage?
+        viewModel.onResultsReady = { shownPage = $0 }
+
+        viewModel.openHistoryResult(.fixture())
+        #expect(viewModel.state.isLoading)
+        viewModel.cancelSearch()
+        repository.completeDeferredPage(.success(.fixture()))
+        await Task.yield()
+        await Task.yield()
+
+        #expect(viewModel.state.isLoading == false)
+        #expect(shownPage?.id == nil)
+    }
+
+    @Test
+    @MainActor
     func searchTracksRequestAndSuccessWithoutQueryText() async {
         let repository = SearchRepositorySpy()
         repository.result = .success(.fixture())
@@ -826,13 +902,27 @@ private final class SearchRepositorySpy: SearchRepositoryProtocol {
     var result: Result<SearchPage, APIError> = .failure(.unknown)
     var historyResult: Result<[SearchHistoryEntry], APIError> = .success([])
     var pageByIDResult: Result<SearchPage, APIError> = .failure(.unknown)
+    var defersSearchCompletion = false
+    var defersPageCompletion = false
+    private var deferredSearchCompletion: ((Result<SearchPage, APIError>) -> Void)?
+    private var deferredPageCompletion: ((Result<SearchPage, APIError>) -> Void)?
     var deleteHistoryItemResult: Result<Void, APIError> = .success(())
     var clearHistoryResult: Result<Void, APIError> = .success(())
 
     func search(query: String, completion: @escaping (Result<SearchPage, APIError>) -> Void) {
         searchCallCount += 1
         lastQuery = query
-        completion(result)
+        if defersSearchCompletion {
+            deferredSearchCompletion = completion
+        } else {
+            completion(result)
+        }
+    }
+
+    func completeDeferredSearch(_ result: Result<SearchPage, APIError>) {
+        let completion = deferredSearchCompletion
+        deferredSearchCompletion = nil
+        completion?(result)
     }
 
     func loadHistory(completion: @escaping (Result<[SearchHistoryEntry], APIError>) -> Void) {
@@ -841,7 +931,17 @@ private final class SearchRepositorySpy: SearchRepositoryProtocol {
 
     func loadSearchPage(id: Int, completion: @escaping (Result<SearchPage, APIError>) -> Void) {
         loadedPageIDs.append(id)
-        completion(pageByIDResult)
+        if defersPageCompletion {
+            deferredPageCompletion = completion
+        } else {
+            completion(pageByIDResult)
+        }
+    }
+
+    func completeDeferredPage(_ result: Result<SearchPage, APIError>) {
+        let completion = deferredPageCompletion
+        deferredPageCompletion = nil
+        completion?(result)
     }
 
     func deleteHistoryItem(id: Int, completion: @escaping (Result<Void, APIError>) -> Void) {

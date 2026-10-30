@@ -42,6 +42,10 @@ final class SearchCoordinator: Coordinator {
             self?.finishSearchTrace(outcome: .failed)
         }
 
+        viewModel.onSearchCancelled = { [weak self] in
+            self?.finishSearchTrace(outcome: .cancelled)
+        }
+
         viewController.onResultsReady = { [weak self] page in
             self?.showResults(page, completesSearchTrace: true)
         }
